@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AXIS OS</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#f0f2f5;--surf:#fff;--surf2:#f8fafc;--surf3:#f1f5f9;
+  --bdr:#e2e8f0;--bdr2:#cbd5e1;
+  --ink:#0d1117;--ink2:#1c2433;--ink3:#2d3748;
+  --muted:#64748b;--subtle:#94a3b8;--ghost:#cbd5e1;
+  --blue:#2563eb;--blue-l:#eff6ff;--blue-b:#bfdbfe;--blue-d:#1d4ed8;
+  --grn:#16a34a;--grn-l:#f0fdf4;--grn-b:#bbf7d0;
+  --ylw:#ca8a04;--ylw-l:#fefce8;--ylw-b:#fef08a;
+  --red:#dc2626;--red-l:#fef2f2;--red-b:#fecaca;
+  --mono:'JetBrains Mono',monospace;
+  --r:5px;--r2:8px;
+  --sh:0 1px 2px rgba(0,0,0,.06),0 1px 3px rgba(0,0,0,.08);
+  --sh2:0 4px 12px rgba(0,0,0,.1),0 2px 4px rgba(0,0,0,.06);
+  --sb-w:52px;--sb-full:200px;--top-h:48px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden}
+body{font-family:'Inter',sans-serif;background:var(--surf2);color:var(--ink);font-size:13px;line-height:1.5;display:flex;flex-direction:column}
+
+/* ── TOPBAR ── */
+.topbar{height:var(--top-h);background:var(--ink);display:flex;align-items:center;padding:0;gap:0;flex-shrink:0;z-index:60;border-bottom:1px solid var(--ink2)}
+.tb-logo{font-family:var(--mono);font-size:12px;font-weight:500;letter-spacing:3px;color:#e2e8f0;padding:0 16px;border-right:1px solid var(--ink2);height:100%;display:flex;align-items:center;flex-shrink:0;user-select:none}
+.tb-obra{display:flex;align-items:center;gap:0;padding:0 16px;cursor:pointer;height:100%;border-right:1px solid var(--ink2);min-width:0;max-width:320px;transition:background .15s;flex-shrink:0}
+.tb-obra:hover{background:var(--ink2)}
+.tb-obra-stack{display:flex;flex-direction:column;gap:1px;min-width:0}
+.tb-obra-label{font-size:9px;font-weight:600;color:var(--muted);letter-spacing:.8px;text-transform:uppercase}
+.tb-obra-name{font-size:12px;font-weight:600;color:#e2e8f0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tb-obra-caret{margin-left:8px;flex-shrink:0;color:#475569}
+.tb-bc{padding:0 16px;display:flex;align-items:center;gap:6px;font-size:11px;min-width:0;flex:1}
+.tb-bc-item{color:var(--muted);white-space:nowrap}
+.tb-bc-sep{color:var(--ink3);font-size:10px}
+.tb-bc-current{color:var(--subtle);font-weight:500}
+.tb-right{display:flex;align-items:center;gap:2px;padding-right:12px;flex-shrink:0}
+.tb-btn{width:36px;height:36px;border-radius:var(--r);border:none;background:none;color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;position:relative;flex-shrink:0}
+.tb-btn:hover{background:var(--ink2);color:var(--subtle)}
+.tb-btn svg{display:block}
+.tb-notif-dot{position:absolute;top:7px;right:7px;width:6px;height:6px;border-radius:50%;background:var(--red);border:1.5px solid var(--ink)}
+.tb-avatar{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,#1e40af,#7c3aed);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;cursor:pointer;margin-left:4px;flex-shrink:0;letter-spacing:.5px}
+
+/* ── APP ── */
+.app-body{flex:1;display:flex;overflow:hidden;min-height:0}
+
+/* ── SIDEBAR ── */
+.sidebar{width:var(--sb-w);background:var(--ink);display:flex;flex-direction:column;overflow:hidden;flex-shrink:0;transition:width .2s cubic-bezier(.4,0,.2,1);border-right:1px solid var(--ink2);z-index:50}
+.sidebar.open{width:var(--sb-full)}
+.sb-toggle-row{height:40px;display:flex;align-items:center;justify-content:center;border-bottom:1px solid var(--ink2);flex-shrink:0;padding:0 4px}
+.sidebar.open .sb-toggle-row{justify-content:flex-end;padding:0 10px}
+.sb-toggle-btn{width:28px;height:28px;border-radius:var(--r);border:none;background:none;color:var(--ink3);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s}
+.sb-toggle-btn:hover{background:var(--ink2);color:var(--muted)}
+.sb-toggle-btn svg{display:block;transition:transform .2s}
+.sidebar.open .sb-toggle-btn svg{transform:scaleX(-1)}
+.sb-nav{flex:1;overflow-y:auto;overflow-x:hidden;padding:6px 0;display:flex;flex-direction:column;gap:1px}
+.sb-nav::-webkit-scrollbar{width:2px}
+.sb-nav::-webkit-scrollbar-thumb{background:var(--ink2)}
+.sb-section{font-size:9px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--ink3);padding:10px 16px 4px;white-space:nowrap;overflow:hidden;opacity:0;max-height:0;transition:all .15s}
+.sidebar.open .sb-section{opacity:1;max-height:30px}
+.sb-item{display:flex;align-items:center;gap:0;padding:0 0 0 14px;height:36px;cursor:pointer;transition:all .15s;position:relative;color:var(--muted);overflow:hidden;flex-shrink:0}
+.sidebar.open .sb-item{padding:0 0 0 12px;gap:10px}
+.sb-item:hover{background:var(--ink2);color:var(--subtle)}
+.sb-item.active{background:#1e3a5f;color:#60a5fa}
+.sb-item-icon{display:flex;align-items:center;justify-content:center;flex-shrink:0;width:24px}
+.sb-item-icon svg{display:block}
+.sb-item-label{font-size:12px;font-weight:500;white-space:nowrap;overflow:hidden;opacity:0;max-width:0;transition:all .15s}
+.sidebar.open .sb-item-label{opacity:1;max-width:140px}
+.sb-badge{margin-left:auto;margin-right:10px;font-size:9px;font-weight:700;padding:1px 5px;border-radius:10px;flex-shrink:0;opacity:0;transition:opacity .15s}
+.sidebar.open .sb-badge{opacity:1}
+.sb-badge-r{background:rgba(220,38,38,.2);color:#f87171;border:1px solid rgba(220,38,38,.25)}
+.sb-badge-y{background:rgba(202,138,4,.2);color:#facc15;border:1px solid rgba(202,138,4,.25)}
+.sb-badge-b{background:rgba(37,99,235,.2);color:#93c5fd;border:1px solid rgba(37,99,235,.25)}
+.sb-tip{position:fixed;left:calc(var(--sb-w) + 6px);background:var(--ink2);color:#e2e8f0;font-size:11px;font-weight:500;padding:4px 9px;border-radius:var(--r);white-space:nowrap;pointer-events:none;opacity:0;z-index:200;border:1px solid var(--ink3);box-shadow:var(--sh2)}
+.sidebar:not(.open) .sb-item:hover .sb-tip{opacity:1}
+.sb-divider{height:1px;background:var(--ink2);margin:4px 10px;flex-shrink:0}
+.sb-footer{border-top:1px solid var(--ink2);padding:8px 6px;flex-shrink:0}
+.sb-user{display:flex;align-items:center;gap:10px;padding:6px 6px;border-radius:var(--r);cursor:pointer;transition:background .15s;overflow:hidden;height:40px}
+.sb-user:hover{background:var(--ink2)}
+.sb-user-av{width:26px;height:26px;border-radius:50%;flex-shrink:0;background:linear-gradient(135deg,#1e40af,#7c3aed);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;letter-spacing:.5px}
+.sb-user-info{flex:1;min-width:0;opacity:0;max-width:0;transition:all .15s;overflow:hidden}
+.sidebar.open .sb-user-info{opacity:1;max-width:140px}
+.sb-user-name{font-size:11px;font-weight:600;color:#94a3b8;white-space:nowrap}
+.sb-user-role{font-size:10px;color:var(--ink3);white-space:nowrap}
+
+/* ── CONTENT AREA ── */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
+
+/* DASHBOARD VIEW (inline) */
+.dashboard-scroll{flex:1;overflow-y:auto;padding:22px 24px}
+.dashboard-scroll::-webkit-scrollbar{width:4px}
+.dashboard-scroll::-webkit-scrollbar-thumb{background:var(--bdr);border-radius:4px}
+
+/* IFRAME VIEW */
+.iframe-wrap{flex:1;display:flex;flex-direction:column;overflow:hidden;position:relative}
+.module-iframe{flex:1;border:none;width:100%;height:100%;display:block}
+.iframe-loading{position:absolute;inset:0;background:var(--surf2);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px;z-index:10;transition:opacity .3s}
+.iframe-loading.hidden{opacity:0;pointer-events:none}
+.loader-spin{width:24px;height:24px;border:2px solid var(--bdr);border-top-color:var(--blue);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loader-txt{font-size:12px;color:var(--muted)}
+
+/* ── DASHBOARD COMPONENTS ── */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:var(--r);border:1px solid;font-family:'Inter',sans-serif;font-size:12px;font-weight:500;cursor:pointer;transition:all .15s;white-space:nowrap;text-decoration:none}
+.btn-prim{background:var(--blue);color:#fff;border-color:var(--blue-d)}.btn-prim:hover{background:var(--blue-d)}
+.btn-ghost{background:var(--surf);color:var(--ink2);border-color:var(--bdr)}.btn-ghost:hover{background:var(--surf2)}
+.btn-sm{padding:4px 10px;font-size:11px}
+.badge{display:inline-flex;align-items:center;font-size:10px;font-weight:600;padding:2px 7px;border-radius:10px;border:1px solid;white-space:nowrap}
+.b-blue{background:var(--blue-l);color:var(--blue);border-color:var(--blue-b)}
+.b-grn{background:var(--grn-l);color:var(--grn);border-color:var(--grn-b)}
+.b-ylw{background:var(--ylw-l);color:var(--ylw);border-color:var(--ylw-b)}
+.b-red{background:var(--red-l);color:var(--red);border-color:var(--red-b)}
+.b-neu{background:var(--surf3);color:var(--muted);border-color:var(--bdr)}
+
+/* Page header */
+.page-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:18px}
+.ph-title{font-size:18px;font-weight:700}
+.ph-meta{font-size:11px;color:var(--muted);margin-top:3px;display:flex;align-items:center;gap:6px}
+.ph-dot{width:6px;height:6px;border-radius:50%;background:var(--grn);display:inline-block;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+
+/* KPIs */
+.kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px}
+.kpi{background:var(--surf);border:1px solid var(--bdr);border-radius:var(--r2);padding:14px 16px;box-shadow:var(--sh);cursor:pointer;transition:all .15s}
+.kpi:hover{border-color:var(--blue-b);box-shadow:var(--sh2)}
+.kpi-lbl{font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:5px}
+.kpi-val{font-family:var(--mono);font-size:24px;font-weight:600;line-height:1;margin-bottom:3px}
+.kpi-sub{font-size:11px;color:var(--muted)}
+.kpi-bar{height:3px;background:var(--surf3);border-radius:2px;overflow:hidden;margin-top:10px}
+.kpi-bar-fill{height:100%;border-radius:2px}
+
+/* Cards */
+.dash-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+.dash-col{display:flex;flex-direction:column;gap:14px}
+.card{background:var(--surf);border:1px solid var(--bdr);border-radius:var(--r2);box-shadow:var(--sh);overflow:hidden}
+.card-clickable{cursor:pointer;transition:all .15s}
+.card-clickable:hover{border-color:var(--blue-b);box-shadow:var(--sh2)}
+.card-head{padding:11px 14px;border-bottom:1px solid var(--bdr);display:flex;align-items:center;gap:8px}
+.ch-icon{color:var(--muted);flex-shrink:0;display:flex}
+.ch-title{font-size:12px;font-weight:700;flex:1;color:var(--ink)}
+.ch-action{font-size:11px;color:var(--blue);font-weight:500;cursor:pointer;display:flex;align-items:center;gap:3px}
+.ch-action:hover{text-decoration:underline}
+
+/* Alertas */
+.alert-row{display:flex;align-items:flex-start;gap:10px;padding:9px 14px;border-bottom:1px solid var(--surf3);cursor:pointer;transition:background .1s}
+.alert-row:last-child{border-bottom:none}
+.alert-row:hover{background:var(--surf2)}
+.alert-line{width:2px;border-radius:2px;min-height:28px;flex-shrink:0;margin-top:2px}
+.alert-body{flex:1;min-width:0}
+.alert-txt{font-size:12px;font-weight:500;line-height:1.3;color:var(--ink2)}
+.alert-meta{font-size:10px;color:var(--muted);margin-top:2px}
+
+/* Incidencias */
+.inc-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:12px 14px}
+.inc-col-head{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center}
+.inc-n{font-family:var(--mono);font-size:11px}
+.inc-item{background:var(--surf2);border:1px solid var(--bdr);border-radius:var(--r);padding:7px 9px;margin-bottom:4px;border-left:2px solid var(--bdr);cursor:pointer;transition:box-shadow .1s}
+.inc-item:hover{box-shadow:var(--sh)}
+.inc-item:last-child{margin-bottom:0}
+.inc-item.grave{border-left-color:var(--red)}
+.inc-item.media{border-left-color:var(--ylw)}
+.inc-desc{font-size:11px;font-weight:500;color:var(--ink2);line-height:1.3}
+.inc-meta{font-size:10px;color:var(--muted);margin-top:2px}
+
+/* Cert rows */
+.cert-row{display:flex;align-items:center;padding:8px 14px;border-bottom:1px solid var(--surf3)}
+.cert-row:last-child{border-bottom:none}
+.cert-lbl{font-size:12px;color:var(--ink2);flex:1}
+.cert-val{font-family:var(--mono);font-size:12px;font-weight:600}
+
+/* Doc grid */
+.doc-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:12px 14px 8px}
+.doc-cell{background:var(--surf2);border:1px solid var(--bdr);border-radius:var(--r);padding:9px 10px}
+.doc-cell-val{font-family:var(--mono);font-size:18px;font-weight:600;line-height:1}
+.doc-cell-lbl{font-size:10px;color:var(--muted);margin-top:2px}
+.doc-bar-wrap{padding:0 14px 12px}
+.doc-bar{height:4px;background:var(--surf3);border-radius:2px;overflow:hidden;display:flex}
+
+/* Actas */
+.acta-row{display:flex;align-items:center;gap:10px;padding:8px 14px;border-bottom:1px solid var(--surf3);cursor:pointer;transition:background .1s}
+.acta-row:last-child{border-bottom:none}
+.acta-row:hover{background:var(--surf2)}
+.acta-num{font-family:var(--mono);font-size:11px;font-weight:600;color:var(--blue);min-width:32px}
+.acta-info{flex:1}
+.acta-fecha{font-size:12px;font-weight:500}
+.acta-temas{font-size:10px;color:var(--muted)}
+
+/* Actividad */
+.act-row{display:flex;align-items:flex-start;gap:10px;padding:8px 14px;border-bottom:1px solid var(--surf3)}
+.act-row:last-child{border-bottom:none}
+.act-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;margin-top:4px}
+.act-body{flex:1}
+.act-txt{font-size:12px;font-weight:500;color:var(--ink2);line-height:1.3}
+.act-meta{font-size:10px;color:var(--muted);margin-top:1px}
+
+/* Obras screen */
+.obras-head{display:flex;align-items:center;gap:12px;margin-bottom:20px}
+.obras-title{font-size:18px;font-weight:700;flex:1}
+.obras-sub{font-size:12px;color:var(--muted)}
+.filter-row{display:flex;gap:6px;margin-bottom:18px}
+.filt{padding:4px 14px;border-radius:20px;border:1px solid var(--bdr);background:var(--surf);color:var(--muted);font-size:11px;font-weight:500;cursor:pointer;transition:all .15s;font-family:'Inter',sans-serif}
+.filt.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.obras-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px}
+.obra-card{background:var(--surf);border:1px solid var(--bdr);border-radius:var(--r2);padding:16px;cursor:pointer;transition:all .18s;box-shadow:var(--sh);position:relative}
+.obra-card:hover{border-color:var(--blue-b);box-shadow:var(--sh2);transform:translateY(-1px)}
+.obra-card::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;border-radius:var(--r2) var(--r2) 0 0}
+.obra-card.ejec::after{background:var(--blue)}
+.obra-card.fin::after{background:var(--grn)}
+.obra-card.proy::after{background:var(--ghost)}
+.oc-head{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:10px}
+.oc-name{font-size:13px;font-weight:700;line-height:1.3}
+.oc-loc{font-size:11px;color:var(--muted);margin-top:2px}
+.oc-prog{margin-bottom:10px}
+.oc-prog-head{display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-bottom:4px}
+.oc-prog-val{font-family:var(--mono);font-weight:600}
+.oc-prog-track{height:4px;background:var(--surf3);border-radius:2px;overflow:hidden;position:relative}
+.oc-prog-cert{position:absolute;top:0;left:0;height:100%;border-radius:2px;opacity:.45}
+.oc-prog-avance{position:absolute;top:0;left:0;height:100%;border-radius:2px;opacity:.2}
+.oc-meta{display:flex;gap:12px;flex-wrap:wrap}
+.oc-meta-item{font-size:10px;color:var(--muted)}
+.oc-meta-item strong{color:var(--ink2);font-weight:600}
+.oc-alerts{margin-top:8px;display:flex;flex-direction:column;gap:3px}
+.oc-alert{font-size:10px;font-weight:500;display:flex;align-items:center;gap:5px}
+
+/* Obra switcher */
+.sw-overlay{position:fixed;inset:0;background:rgba(13,17,23,.6);z-index:80;display:none;align-items:flex-start;justify-content:center;padding-top:60px;backdrop-filter:blur(4px)}
+.sw-overlay.open{display:flex}
+.sw-panel{background:var(--surf);border-radius:var(--r2);width:520px;max-height:70vh;display:flex;flex-direction:column;box-shadow:var(--sh2);border:1px solid var(--bdr)}
+.sw-head{padding:13px 16px;border-bottom:1px solid var(--bdr);display:flex;align-items:center;gap:10px}
+.sw-title{font-size:13px;font-weight:700;flex:1}
+.sw-x{background:none;border:none;color:var(--muted);cursor:pointer;font-size:18px;line-height:1}
+.sw-x:hover{color:var(--ink)}
+.sw-search{padding:10px 14px;border-bottom:1px solid var(--bdr)}
+.sw-inp{width:100%;background:var(--surf2);border:1px solid var(--bdr);border-radius:var(--r);padding:7px 10px;font-family:'Inter',sans-serif;font-size:13px;color:var(--ink);outline:none}
+.sw-inp:focus{border-color:var(--blue)}
+.sw-list{flex:1;overflow-y:auto;padding:6px}
+.sw-item{display:flex;align-items:center;gap:10px;padding:9px 11px;border-radius:var(--r);cursor:pointer;transition:background .1s;margin-bottom:2px}
+.sw-item:hover{background:var(--surf2)}
+.sw-item.cur{background:var(--blue-l);border:1px solid var(--blue-b)}
+.sw-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.sw-info{flex:1;min-width:0}
+.sw-name{font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sw-dir{font-size:11px;color:var(--muted)}
+.sw-pct{font-family:var(--mono);font-size:11px;color:var(--muted);flex-shrink:0}
+.sw-foot{padding:10px 14px;border-top:1px solid var(--bdr)}
+
+/* Placeholder */
+.placeholder{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:400px;gap:12px;text-align:center}
+.ph-icon{color:var(--ghost)}
+.ph-title{font-size:16px;font-weight:700}
+.ph-sub{font-size:13px;color:var(--muted);max-width:300px;line-height:1.6}
+
+/* Toast */
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--ink);color:#e2e8f0;padding:8px 18px;border-radius:var(--r);font-size:12px;font-weight:500;z-index:600;display:none;box-shadow:var(--sh2)}
+.toast.show{display:block;animation:tin .2s}
+@keyframes tin{from{opacity:0;transform:translateX(-50%) translateY(8px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="tb-logo">AXIS OS</div>
+  <div class="tb-obra" onclick="openSw()" id="tb-obra">
+    <div class="tb-obra-stack">
+      <div class="tb-obra-label">Proyecto</div>
+      <div class="tb-obra-name" id="tb-obra-name">FLEXLIVING 417 LAS ROZAS</div>
+    </div>
+    <div class="tb-obra-caret">
+      <svg width="10" height="6" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 10 6"><path d="M1 1l4 4 4-4"/></svg>
+    </div>
+  </div>
+  <div class="tb-bc" id="tb-bc">
+    <span class="tb-bc-item" id="bc-obra">FLEXLIVING 417</span>
+    <span class="tb-bc-sep">›</span>
+    <span class="tb-bc-current" id="bc-page">Dashboard</span>
+  </div>
+  <div class="tb-right">
+    <button class="tb-btn" onclick="toast('3 notificaciones pendientes')">
+      <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0"/></svg>
+      <div class="tb-notif-dot"></div>
+    </button>
+    <button class="tb-btn" onclick="toast('Búsqueda global — próximamente')">
+      <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+    </button>
+    <button class="tb-btn" onclick="toast('Ajustes')">
+      <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+    </button>
+    <div class="tb-avatar">AG</div>
+  </div>
+</header>
+
+<div class="app-body">
+  <aside class="sidebar" id="sidebar">
+    <div class="sb-toggle-row">
+      <button class="sb-toggle-btn" onclick="toggleSb()">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>
+      </button>
+    </div>
+    <nav class="sb-nav" id="sb-nav"></nav>
+    <div class="sb-footer">
+      <div class="sb-user">
+        <div class="sb-user-av">AG</div>
+        <div class="sb-user-info">
+          <div class="sb-user-name">Ana García</div>
+          <div class="sb-user-role">DEO</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <main class="main" id="main"></main>
+</div>
+
+<!-- SWITCHER -->
+<div class="sw-overlay" id="sw-overlay" onclick="closeSw()">
+  <div class="sw-panel" onclick="event.stopPropagation()">
+    <div class="sw-head">
+      <span class="sw-title">Cambiar proyecto</span>
+      <button class="sw-x" onclick="closeSw()">×</button>
+    </div>
+    <div class="sw-search">
+      <input class="sw-inp" placeholder="Buscar..." id="sw-inp" oninput="filterSw(this.value)">
+    </div>
+    <div class="sw-list" id="sw-list"></div>
+    <div class="sw-foot">
+      <button class="btn btn-prim btn-sm" onclick="closeSw();go('nueva-obra')">
+        <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+        Nueva obra
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast-el"></div>
+
+<script>
+// ── SVG ICONS ─────────────────────────────────────────────────────────────────
+const IC = {
+  obras:     `<svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="1"/><path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/></svg>`,
+  dash:      `<svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>`,
+  actas:     `<svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>`,
+  ordenes:   `<svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>`,
+  inc:       `<svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>`,
+  sistemas:  `<svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><polygon points="12 2 22 8.5 22 15.5 12 22 2 15.5 2 8.5 12 2"/></svg>`,
+  doc:       `<svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>`,
+  calidad:   `<svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>`,
+  cert:      `<svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>`,
+  criterios: `<svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>`,
+  agentes:   `<svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>`,
+  bc3:       `<svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>`,
+  config:    `<svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>`,
+  chevron:   `<svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>`,
+  clock:     `<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>`,
+  plus:      `<svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>`,
+  dl:        `<svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>`,
+};
+
+// ── DATOS ─────────────────────────────────────────────────────────────────────
+const OBRAS = [
+  {id:'o1',nombre:'FLEXLIVING 417 LAS ROZAS',dir:'Calle Mayor 14, Las Rozas (Madrid)',estado:'ejec',avance:68,cert:54,docs:82,inc:8,
+   alerts:[{s:'red',t:'284.000€ bloqueados — docs incompleta'},{s:'ylw',t:'CERT_DOS vence en 8 días'}]},
+  {id:'o2',nombre:'OFICINAS TORRE NORTE',dir:'Av. Constitución 88, Madrid',estado:'fin',avance:94,cert:91,docs:97,inc:3,
+   alerts:[{s:'ylw',t:'12 repasos pendientes de validar'}]},
+  {id:'o3',nombre:'RESIDENCIAL LAS ACACIAS',dir:'C/ Jardines 5, Valencia',estado:'ejec',avance:42,cert:35,docs:61,inc:5,
+   alerts:[{s:'red',t:'2 incidencias graves sin resolver'}]},
+  {id:'o4',nombre:'NAVE INDUSTRIAL POLÍGONO SUR',dir:'C/ Industrial 3, Zaragoza',estado:'proy',avance:0,cert:0,docs:0,inc:0,alerts:[]},
+];
+
+// Nav config — id, icon key, label, section, badge, iframeSrc
+const NAV = [
+  {id:'obras',    ic:'obras',    lbl:'Obras',          sec:null,       badge:null,       src:null},
+  {div:1},
+  {sec:'Gestión'},
+  {id:'dashboard',ic:'dash',     lbl:'Dashboard',      sec:'Gestión',  badge:null,       src:null},
+  {id:'actas',    ic:'actas',    lbl:'Actas',           sec:'Gestión',  badge:null,       src:'axis_actas.html'},
+  {id:'ordenes',  ic:'ordenes',  lbl:'Órdenes',         sec:'Gestión',  badge:null,       src:'axis_ordenes.html'},
+  {id:'inc',      ic:'inc',      lbl:'Incidencias',     sec:'Gestión',  badge:{n:8,c:'r'},src:'axis_incidencias.html'},
+  {div:1},
+  {sec:'Técnico'},
+  {id:'sistemas', ic:'sistemas', lbl:'Sistemas',        sec:'Técnico',  badge:null,       src:'axis_clasificacion.html'},
+  {id:'doc',      ic:'doc',      lbl:'Documentación',   sec:'Técnico',  badge:{n:3,c:'y'},src:'axis_documentacion.html'},
+  {id:'calidad',  ic:'calidad',  lbl:'Calidad',         sec:'Técnico',  badge:null,       src:null},
+  {div:1},
+  {sec:'Económico'},
+  {id:'cert',     ic:'cert',     lbl:'Certificación',   sec:'Económico',badge:{n:1,c:'b'},src:'axis_certificacion.html'},
+  {id:'criterios',ic:'criterios',lbl:'Criterios',       sec:'Económico',badge:null,       src:null},
+  {div:1},
+  {sec:'Config'},
+  {id:'agentes',  ic:'agentes',  lbl:'Agentes',         sec:'Config',   badge:null,       src:null},
+  {id:'bc3',      ic:'bc3',      lbl:'BC3',              sec:'Config',   badge:null,       src:null},
+  {id:'config',   ic:'config',   lbl:'Ajustes',          sec:'Config',   badge:null,       src:null},
+];
+
+const LABELS = {obras:'Obras',dashboard:'Dashboard',actas:'Actas',ordenes:'Órdenes',inc:'Incidencias',
+  sistemas:'Sistemas',doc:'Documentación',calidad:'Calidad',cert:'Certificación',
+  criterios:'Criterios',agentes:'Agentes',bc3:'BC3','config':'Ajustes','nueva-obra':'Nueva obra'};
+
+const SC = {ejec:'var(--blue)',fin:'var(--grn)',proy:'var(--ghost)'};
+const SB = {ejec:'b-blue',fin:'b-grn',proy:'b-neu'};
+const SL = {ejec:'En ejecución',fin:'Finalización',proy:'En proyecto'};
+
+let activeObraId = 'o1';
+let activePage   = 'dashboard';
+let sbOpen       = false;
+
+// ── SIDEBAR ───────────────────────────────────────────────────────────────────
+function renderNav() {
+  const nav = document.getElementById('sb-nav');
+  nav.innerHTML = '';
+  NAV.forEach(item => {
+    if (item.div) { nav.appendChild(Object.assign(document.createElement('div'),{className:'sb-divider'})); return; }
+    if (item.sec && !item.id) {
+      const s = document.createElement('div');
+      s.className = 'sb-section'; s.textContent = item.sec; nav.appendChild(s); return;
+    }
+    const el = document.createElement('div');
+    el.className = `sb-item${activePage===item.id?' active':''}`;
+    el.onclick = () => go(item.id);
+    el.innerHTML = `<div class="sb-item-icon">${IC[item.ic]||''}</div>
+      <span class="sb-item-label">${item.lbl}</span>
+      ${item.badge?`<span class="sb-badge sb-badge-${item.badge.c}">${item.badge.n}</span>`:''}
+      <span class="sb-tip">${item.lbl}${item.badge?` · ${item.badge.n}`:''}</span>`;
+    nav.appendChild(el);
+  });
+}
+
+function toggleSb() {
+  sbOpen = !sbOpen;
+  document.getElementById('sidebar').classList.toggle('open', sbOpen);
+}
+
+// ── NAVEGACIÓN ─────────────────────────────────────────────────────────────────
+function go(page) {
+  activePage = page;
+  renderNav();
+  const obra = OBRAS.find(o=>o.id===activeObraId);
+  document.getElementById('bc-obra').textContent = obra?.nombre?.split(' ').slice(0,2).join(' ')||'';
+  document.getElementById('bc-page').textContent = LABELS[page]||page;
+  document.getElementById('main').innerHTML = '';
+
+  const navItem = NAV.find(n=>n.id===page);
+
+  if (page === 'obras')        renderObrasPage();
+  else if (page === 'dashboard') renderDashPage();
+  else if (navItem?.src)       renderIframe(navItem.src, LABELS[page]||page);
+  else                         renderPlaceholderPage(page);
+}
+
+// ── IFRAME ─────────────────────────────────────────────────────────────────────
+function renderIframe(src, label) {
+  const main = document.getElementById('main');
+  main.innerHTML = `
+    <div class="iframe-wrap">
+      <div class="iframe-loading" id="iframe-loading">
+        <div class="loader-spin"></div>
+        <div class="loader-txt">Cargando ${label}...</div>
+      </div>
+      <iframe class="module-iframe" id="module-iframe" src="${src}"
+        onload="document.getElementById('iframe-loading').classList.add('hidden')">
+      </iframe>
+    </div>`;
+}
+
+// ── DASHBOARD ─────────────────────────────────────────────────────────────────
+function renderDashPage() {
+  const o = OBRAS.find(x=>x.id===activeObraId);
+  const main = document.getElementById('main');
+  main.innerHTML = `<div class="dashboard-scroll">${dashHTML(o)}</div>`;
+}
+
+function dashHTML(o) {
+  return `
+    <div class="page-head">
+      <div>
+        <div class="ph-title">${o.nombre}</div>
+        <div class="ph-meta"><span class="ph-dot"></span>En ejecución · Cert. nº6 en curso · DEO: Ana García</div>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-ghost btn-sm">${IC.dl} Exportar</button>
+        <button class="btn btn-prim btn-sm" onclick="go('actas')">Nueva acta</button>
+      </div>
+    </div>
+
+    <div class="kpi-row">
+      ${[
+        {l:'Avance',v:`${o.avance}%`,s:'↑ +5% vs cert. anterior',c:'var(--blue)',p:o.avance,pg:''},
+        {l:'Certificación',v:`${o.cert}%`,s:'Nº6 · 284k€ bloqueados',c:'var(--grn)',p:o.cert,pg:'cert'},
+        {l:'Documentación',v:`${o.docs}%`,s:'3 sistemas bloqueando cert.',c:'var(--ylw)',p:o.docs,pg:'doc'},
+        {l:'Incidencias',v:`${o.inc}`,s:'2 graves · 3 en curso',c:'var(--red)',p:Math.min(100,o.inc*10),pg:'inc'},
+      ].map(k=>`
+        <div class="kpi" onclick="${k.pg?`go('${k.pg}')`:``}">
+          <div class="kpi-lbl">${k.l}</div>
+          <div class="kpi-val" style="color:${k.c}">${k.v}</div>
+          <div class="kpi-sub">${k.s}</div>
+          <div class="kpi-bar"><div class="kpi-bar-fill" style="width:${k.p}%;background:${k.c}"></div></div>
+        </div>`).join('')}
+    </div>
+
+    <div class="dash-grid">
+      <div class="dash-col">
+
+        <div class="card">
+          <div class="card-head">
+            <span class="ch-icon">${IC.inc}</span>
+            <span class="ch-title">Alertas</span>
+            <span class="ch-action">Ver todas ${IC.chevron}</span>
+          </div>
+          ${[
+            {s:'red',t:'284.000€ bloqueados — docs incompleta',m:'Documentación · Albañilería',p:'doc'},
+            {s:'red',t:'CERT_DOS HA-25 caduca en 8 días',m:'Documentación · Hormigón armado',p:'doc'},
+            {s:'red',t:'Incidencia #42 sin resolver — 7 días',m:'Incidencias · Estructura',p:'inc'},
+            {s:'ylw',t:'Cert. nº6 propuesta — pendiente revisión',m:'Certificación · Nov 2024',p:'cert'},
+            {s:'ylw',t:'3 actas sin firma por constructora',m:'Actas · #010, #011, #012',p:'actas'},
+            {s:'blue',t:'Orden previa pendiente — tabiquería PB',m:'Órdenes · Tabiquería seca',p:'ordenes'},
+          ].map(a=>`
+            <div class="alert-row" onclick="go('${a.p}')">
+              <div class="alert-line" style="background:var(--${a.s})"></div>
+              <div class="alert-body">
+                <div class="alert-txt">${a.t}</div>
+                <div class="alert-meta">${a.m}</div>
+              </div>
+              <span style="color:var(--ghost)">${IC.chevron}</span>
+            </div>`).join('')}
+        </div>
+
+        <div class="card card-clickable" onclick="go('inc')">
+          <div class="card-head">
+            <span class="ch-icon">${IC.inc}</span>
+            <span class="ch-title">Incidencias abiertas</span>
+            <span class="ch-action">Tablero ${IC.chevron}</span>
+          </div>
+          <div class="inc-grid">
+            <div>
+              <div class="inc-col-head"><span style="color:var(--red)">Abiertas</span><span class="inc-n">3</span></div>
+              <div class="inc-item grave"><div class="inc-desc">Armado incorrecto pilar P-12</div><div class="inc-meta">Estructura · 7d</div></div>
+              <div class="inc-item grave"><div class="inc-desc">Falta doc. EPI en obra</div><div class="inc-meta">S&S · hoy</div></div>
+              <div class="inc-item media"><div class="inc-desc">Humedad muro sótano norte</div><div class="inc-meta">Impermeab. · 2d</div></div>
+            </div>
+            <div>
+              <div class="inc-col-head"><span style="color:var(--ylw)">En curso</span><span class="inc-n">3</span></div>
+              <div class="inc-item media"><div class="inc-desc">Replanteo tabiquería PB</div><div class="inc-meta">Tabiquería · 3d</div></div>
+              <div class="inc-item grave"><div class="inc-desc">Rotura tubo saneamiento</div><div class="inc-meta">Instal. · ayer</div></div>
+              <div class="inc-item"><div class="inc-desc">Ventana V3 sin cert. CE</div><div class="inc-meta">Carpintería · 4d</div></div>
+            </div>
+            <div>
+              <div class="inc-col-head"><span style="color:var(--muted)">Resueltas</span><span class="inc-n">2</span></div>
+              <div class="inc-item"><div class="inc-desc">Impermeab. terraza P1</div><div class="inc-meta">Cubiertas · 1sem</div></div>
+              <div class="inc-item"><div class="inc-desc">FT yeso sin aportar</div><div class="inc-meta">Docs · 6d</div></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+      <div class="dash-col">
+
+        <div class="card card-clickable" onclick="go('cert')">
+          <div class="card-head">
+            <span class="ch-icon">${IC.cert}</span>
+            <span class="ch-title">Certificación — Nov 2024</span>
+            <span class="ch-action">Revisar ${IC.chevron}</span>
+          </div>
+          ${[
+            {l:'Contrato total',v:'4.850.000 €',c:'var(--ink)'},
+            {l:'Certificado anterior (54%)',v:'2.619.000 €',c:'var(--blue)'},
+            {l:'Propuesta constructora',v:'428.000 €',c:'var(--ylw)'},
+            {l:'Bloqueado por docs',v:'284.000 €',c:'var(--red)'},
+            {l:'Certificable este mes',v:'144.000 €',c:'var(--grn)'},
+          ].map(r=>`
+            <div class="cert-row">
+              <span class="cert-lbl" style="${r.c!=='var(--ink)'?'color:'+r.c:''}">${r.l}</span>
+              <span class="cert-val" style="color:${r.c}">${r.v}</span>
+            </div>`).join('')}
+        </div>
+
+        <div class="card card-clickable" onclick="go('doc')">
+          <div class="card-head">
+            <span class="ch-icon">${IC.doc}</span>
+            <span class="ch-title">Documentación</span>
+            <span class="ch-action">Ver detalle ${IC.chevron}</span>
+          </div>
+          <div class="doc-grid">
+            <div class="doc-cell"><div class="doc-cell-val" style="color:var(--grn)">34</div><div class="doc-cell-lbl">Validados</div></div>
+            <div class="doc-cell"><div class="doc-cell-val" style="color:var(--ylw)">7</div><div class="doc-cell-lbl">Por validar</div></div>
+            <div class="doc-cell"><div class="doc-cell-val" style="color:var(--red)">16</div><div class="doc-cell-lbl">Sin aportar</div></div>
+            <div class="doc-cell"><div class="doc-cell-val" style="color:var(--ylw)">2</div><div class="doc-cell-lbl">Caducan pronto</div></div>
+          </div>
+          <div class="doc-bar-wrap">
+            <div class="doc-bar">
+              <div style="width:59%;background:var(--grn)"></div>
+              <div style="width:12%;background:var(--ylw)"></div>
+              <div style="width:29%;background:var(--ghost)"></div>
+            </div>
+            <div style="font-size:10px;color:var(--muted);margin-top:5px">82% validada · 3 sistemas bloqueando certificación</div>
+          </div>
+        </div>
+
+        <div class="card card-clickable" onclick="go('actas')">
+          <div class="card-head">
+            <span class="ch-icon">${IC.actas}</span>
+            <span class="ch-title">Actas de visita</span>
+            <span class="ch-action">Ver todas ${IC.chevron}</span>
+          </div>
+          ${[
+            {n:'#012',f:'20/11/2024',t:'Instalaciones, carpintería',e:'Borrador'},
+            {n:'#011',f:'13/11/2024',t:'Estructura, cubierta',e:'Firmada'},
+            {n:'#010',f:'06/11/2024',t:'Tabiquería, yeso',e:'Firmada'},
+          ].map(a=>`
+            <div class="acta-row">
+              <span class="acta-num">${a.n}</span>
+              <div class="acta-info"><div class="acta-fecha">${a.f}</div><div class="acta-temas">${a.t}</div></div>
+              <span class="badge ${a.e==='Borrador'?'b-ylw':'b-grn'}">${a.e}</span>
+            </div>`).join('')}
+        </div>
+
+        <div class="card">
+          <div class="card-head">
+            <span class="ch-icon">${IC.clock}</span>
+            <span class="ch-title">Actividad reciente</span>
+          </div>
+          ${[
+            {c:'var(--blue)',t:'Constructora subió DoP Placa YL Knauf v2',m:'Hace 2 h · Documentación'},
+            {c:'var(--grn)', t:'DEO validó Ensayo EI-60 sistema PYL',m:'Hace 4 h · Documentación'},
+            {c:'var(--red)', t:'Nueva incidencia: EPI sin documentar',m:'Hace 5 h · S&S'},
+            {c:'var(--ylw)', t:'Constructora envió propuesta cert. nº6',m:'Ayer · Certificación'},
+            {c:'var(--blue)',t:'Acta #012 creada — pendiente de firma',m:'Hace 3 días · Gestión'},
+          ].map(a=>`
+            <div class="act-row">
+              <div class="act-dot" style="background:${a.c}"></div>
+              <div class="act-body"><div class="act-txt">${a.t}</div><div class="act-meta">${a.m}</div></div>
+            </div>`).join('')}
+        </div>
+
+      </div>
+    </div>`;
+}
+
+// ── OBRAS PAGE ────────────────────────────────────────────────────────────────
+function renderObrasPage() {
+  const main = document.getElementById('main');
+  main.innerHTML = `
+    <div class="dashboard-scroll">
+      <div class="obras-head">
+        <div>
+          <div class="obras-title">Obras</div>
+          <div class="obras-sub">${OBRAS.length} proyectos · ${OBRAS.filter(o=>o.estado==='ejec').length} en ejecución</div>
+        </div>
+        <button class="btn btn-prim btn-sm" onclick="go('nueva-obra')">${IC.plus} Nueva obra</button>
+      </div>
+      <div class="filter-row">
+        <button class="filt on">Todas (${OBRAS.length})</button>
+        <button class="filt">En ejecución (${OBRAS.filter(o=>o.estado==='ejec').length})</button>
+        <button class="filt">Finalización (${OBRAS.filter(o=>o.estado==='fin').length})</button>
+      </div>
+      <div class="obras-grid">
+        ${OBRAS.map(o=>`
+          <div class="obra-card ${o.estado}" onclick="selectObra('${o.id}')">
+            <div class="oc-head">
+              <div><div class="oc-name">${o.nombre}</div><div class="oc-loc">${o.dir}</div></div>
+              <span class="badge ${SB[o.estado]}">${SL[o.estado]}</span>
+            </div>
+            ${o.avance>0?`<div class="oc-prog">
+              <div class="oc-prog-head"><span>Avance</span><span class="oc-prog-val" style="color:${SC[o.estado]}">${o.avance}%</span></div>
+              <div class="oc-prog-track">
+                <div class="oc-prog-cert" style="width:${o.cert}%;background:${SC[o.estado]}"></div>
+                <div class="oc-prog-avance" style="width:${o.avance}%;background:${SC[o.estado]}"></div>
+              </div>
+            </div>`:''}
+            <div class="oc-meta">
+              <div class="oc-meta-item"><strong>${o.docs}%</strong> docs</div>
+              ${o.inc>0?`<div class="oc-meta-item"><strong>${o.inc}</strong> incidencias</div>`:''}
+              ${o.cert>0?`<div class="oc-meta-item"><strong>${o.cert}%</strong> certificado</div>`:''}
+            </div>
+            ${o.alerts.length?`<div class="oc-alerts">${o.alerts.map(a=>`
+              <div class="oc-alert" style="color:${a.s==='red'?'var(--red)':'var(--ylw)'}">
+                <svg width="9" height="9" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                ${a.t}
+              </div>`).join('')}</div>`:''}
+          </div>`).join('')}
+      </div>
+    </div>`;
+}
+
+// ── PLACEHOLDER ───────────────────────────────────────────────────────────────
+function renderPlaceholderPage(page) {
+  const DEMO = {
+    'nueva-obra':'axis_nueva_obra.html',
+    'actas':'axis_actas.html','ordenes':'axis_ordenes.html','inc':'axis_incidencias.html','calidad':null,
+    'criterios':'axis_certificacion.html',
+    'agentes':null,'bc3':null,'config':null,
+  };
+  const main = document.getElementById('main');
+  const src  = DEMO[page];
+  // Si tiene src directo, cargarlo como iframe
+  if (src) { renderIframe(src, LABELS[page]||page); return; }
+  main.innerHTML = `
+    <div class="dashboard-scroll">
+      <div class="placeholder">
+        <div class="ph-icon">
+          <svg width="40" height="40" fill="none" stroke="currentColor" stroke-width="1" viewBox="0 0 24 24" opacity=".25"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+        </div>
+        <div class="ph-title">${LABELS[page]||page}</div>
+        <div class="ph-sub">Este módulo estará disponible en la siguiente versión.</div>
+      </div>
+    </div>`;
+}
+
+// ── OBRA SWITCHER ─────────────────────────────────────────────────────────────
+function openSw() {
+  document.getElementById('sw-overlay').classList.add('open');
+  document.getElementById('sw-inp').value = '';
+  document.getElementById('sw-inp').focus();
+  renderSwList(OBRAS);
+}
+function closeSw() { document.getElementById('sw-overlay').classList.remove('open') }
+function filterSw(q) { renderSwList(OBRAS.filter(o=>o.nombre.toLowerCase().includes(q.toLowerCase())||o.dir.toLowerCase().includes(q.toLowerCase()))) }
+function renderSwList(list) {
+  document.getElementById('sw-list').innerHTML = list.map(o=>`
+    <div class="sw-item${o.id===activeObraId?' cur':''}" onclick="selectObra('${o.id}')">
+      <div class="sw-dot" style="background:${SC[o.estado]}"></div>
+      <div class="sw-info"><div class="sw-name">${o.nombre}</div><div class="sw-dir">${o.dir}</div></div>
+      <div class="sw-pct">${o.avance>0?o.avance+'%':'—'}</div>
+      ${o.id===activeObraId?`<span class="badge b-blue" style="font-size:9px">activa</span>`:''}
+    </div>`).join('');
+}
+function selectObra(id) {
+  activeObraId = id;
+  const o = OBRAS.find(x=>x.id===id);
+  document.getElementById('tb-obra-name').textContent = o?.nombre||'';
+  closeSw();
+  go('dashboard');
+}
+
+// ── TOAST ─────────────────────────────────────────────────────────────────────
+function toast(msg) {
+  const t = document.getElementById('toast-el');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(t._t); t._t = setTimeout(()=>t.classList.remove('show'),2400);
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+renderNav();
+go('dashboard');
+</script>
+</body>
+</html>

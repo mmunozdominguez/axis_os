@@ -1,0 +1,1164 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AXIS OS — Clasificación de sistemas</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ── TOKENS ─────────────────────────────────────────────── */
+:root {
+  --bg:       #f0f2f5;
+  --surf:     #ffffff;
+  --surf2:    #f8f9fb;
+  --bdr:      #e4e7ec;
+  --bdr2:     #cdd2db;
+  --txt:      #111827;
+  --txt2:     #4b5563;
+  --txt3:     #9ca3af;
+  --cyan:     #0284c7; --cyan-l:#e0f2fe; --cyan-d:#0369a1; --cyan-ring:rgba(2,132,199,.15);
+  --grn:      #059669; --grn-l:#d1fae5;  --grn-d:#047857;
+  --red:      #dc2626; --red-l:#fee2e2;
+  --ylw:      #d97706; --ylw-l:#fef3c7;  --ylw-d:#b45309;
+  --vio:      #7c3aed; --vio-l:#ede9fe;
+  --slat:     #475569;
+  --mono:     'JetBrains Mono',monospace;
+  --r:        6px;
+  --r2:       10px;
+  --sh:       0 1px 3px rgba(0,0,0,.08),0 1px 2px rgba(0,0,0,.05);
+  --sh2:      0 4px 12px rgba(0,0,0,.1),0 1px 4px rgba(0,0,0,.06);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--txt);font-size:13px;line-height:1.5;min-height:100vh;overflow:hidden;display:flex;flex-direction:column}
+
+/* ── TOPBAR ─────────────────────────────────────────────── */
+.topbar{height:50px;background:var(--surf);border-bottom:1px solid var(--bdr);display:flex;align-items:center;padding:0 20px;gap:12px;flex-shrink:0;box-shadow:var(--sh)}
+.logo{font-family:var(--mono);font-size:13px;font-weight:500;color:var(--cyan);letter-spacing:2px}
+.vr{width:1px;height:18px;background:var(--bdr2)}
+.topbar-sub{font-size:12px;color:var(--txt3)}.topbar-sub strong{color:var(--txt2);font-weight:500}
+.topbar-r{margin-left:auto;display:flex;align-items:center;gap:8px}
+.chip{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:500;padding:3px 10px;border-radius:20px;border:1px solid}
+.chip-ia{background:#f0fdf4;color:var(--grn);border-color:#a7f3d0}
+.chip-ia::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--grn);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+.chip-info{background:var(--cyan-l);color:var(--cyan);border-color:#bae6fd}
+
+/* ── LAYOUT ─────────────────────────────────────────────── */
+.app{display:grid;grid-template-columns:280px 1fr 340px;height:calc(100vh - 50px);overflow:hidden}
+
+/* ── PANEL IZQUIERDO: Sistemas ──────────────────────────── */
+.panel{background:var(--surf);border-right:1px solid var(--bdr);display:flex;flex-direction:column;overflow:hidden}
+.panel-head{padding:14px 16px;border-bottom:1px solid var(--bdr);display:flex;align-items:center;gap:8px}
+.panel-head-title{font-size:12px;font-weight:600;flex:1}
+.panel-head-action{font-size:11px;color:var(--cyan);cursor:pointer;font-weight:500;white-space:nowrap}
+.panel-head-action:hover{text-decoration:underline}
+.panel-scroll{flex:1;overflow-y:auto;padding:8px}
+.panel-scroll::-webkit-scrollbar{width:3px}
+.panel-scroll::-webkit-scrollbar-thumb{background:var(--bdr2);border-radius:3px}
+
+/* Sistema card */
+.sis-card{border:1px solid var(--bdr);border-radius:var(--r2);margin-bottom:6px;overflow:hidden;cursor:pointer;transition:all .15s}
+.sis-card:hover{border-color:var(--bdr2);box-shadow:var(--sh)}
+.sis-card.selected{border-color:var(--cyan);box-shadow:0 0 0 3px var(--cyan-ring)}
+.sis-card.confirmed{border-color:var(--grn);background:#fafffe}
+.sis-head{padding:10px 12px;display:flex;align-items:center;gap:8px}
+.sis-id{font-family:var(--mono);font-size:10px;font-weight:500;padding:2px 7px;border-radius:4px;background:var(--cyan-l);color:var(--cyan);border:1px solid #bae6fd;flex-shrink:0}
+.sis-id.custom{background:var(--vio-l);color:var(--vio);border-color:#c4b5fd}
+.sis-nombre{font-size:12px;font-weight:500;flex:1;line-height:1.3}
+.sis-n{font-family:var(--mono);font-size:10px;color:var(--txt3);flex-shrink:0}
+.sis-bar{height:2px;background:var(--bg)}
+.sis-fill{height:100%;transition:width .4s}
+.sis-footer{padding:5px 12px 9px;display:flex;flex-wrap:wrap;gap:3px}
+.sis-pchip{font-family:var(--mono);font-size:9px;background:var(--surf2);border:1px solid var(--bdr);border-radius:3px;padding:1px 5px;color:var(--txt3)}
+.sis-confirmed-badge{font-size:9px;font-weight:600;color:var(--grn);padding:2px 7px;background:var(--grn-l);border-radius:10px;margin-left:auto}
+
+/* Sin asignar */
+.unassigned-section{margin-bottom:6px}
+.unassigned-label{font-size:10px;font-weight:600;color:var(--ylw);text-transform:uppercase;letter-spacing:.5px;padding:8px 12px 4px;display:flex;align-items:center;gap:5px}
+.unassigned-chips{padding:0 12px 8px;display:flex;flex-wrap:wrap;gap:4px}
+.ua-chip{font-family:var(--mono);font-size:10px;background:var(--ylw-l);border:1px solid #fde68a;border-radius:4px;padding:3px 8px;color:var(--ylw-d);cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:4px}
+.ua-chip:hover{background:#fef3c7;box-shadow:var(--sh)}
+.ua-chip-code{font-weight:500}
+.ua-chip-desc{font-size:9px;opacity:.75;max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* ── PANEL CENTRAL: Detalle sistema ─────────────────────── */
+.main-panel{display:flex;flex-direction:column;overflow:hidden;background:var(--bg)}
+.main-scroll{flex:1;overflow-y:auto;padding:16px}
+.main-scroll::-webkit-scrollbar{width:4px}
+.main-scroll::-webkit-scrollbar-thumb{background:var(--bdr2);border-radius:4px}
+
+.empty{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:10px;color:var(--txt3)}
+.empty-icon{font-size:32px;opacity:.2}
+
+/* Sección */
+.section{background:var(--surf);border:1px solid var(--bdr);border-radius:var(--r2);margin-bottom:12px;overflow:hidden;box-shadow:var(--sh)}
+.sec-head{padding:11px 14px;border-bottom:1px solid var(--bdr);background:var(--surf2);display:flex;align-items:center;gap:8px}
+.sec-icon{font-size:13px}
+.sec-title{font-size:12px;font-weight:600;flex:1}
+.sec-badge{font-family:var(--mono);font-size:10px;color:var(--txt3)}
+.sec-body{padding:12px 14px}
+
+/* Header de sistema */
+.sis-detail-header{background:var(--surf);border:1px solid var(--bdr);border-radius:var(--r2);padding:16px;margin-bottom:12px;box-shadow:var(--sh)}
+.sdh-top{display:flex;align-items:flex-start;gap:12px;margin-bottom:10px}
+.sdh-id-nom{display:flex;align-items:center;gap:10px;flex:1}
+.sdh-id{font-family:var(--mono);font-size:12px;font-weight:500;padding:4px 10px;border-radius:var(--r);background:var(--cyan-l);color:var(--cyan);border:1px solid #bae6fd}
+.sdh-id.custom{background:var(--vio-l);color:var(--vio);border-color:#c4b5fd}
+.sdh-nom{font-size:16px;font-weight:700}
+.sdh-nom-input{font-size:15px;font-weight:600;border:1px solid var(--bdr2);border-radius:var(--r);padding:4px 10px;font-family:'Inter',sans-serif;color:var(--txt);outline:none;flex:1}
+.sdh-nom-input:focus{border-color:var(--cyan)}
+.sdh-conf{font-family:var(--mono);font-size:11px;color:var(--txt3);flex-shrink:0}
+.sdh-notas{font-size:11px;color:var(--txt2);background:var(--surf2);border-left:3px solid var(--cyan);padding:8px 12px;border-radius:0 var(--r) var(--r) 0;line-height:1.6;font-style:italic}
+.sdh-actions{display:flex;gap:6px;margin-top:12px}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:var(--r);border:1px solid;font-family:'Inter',sans-serif;font-size:12px;font-weight:500;cursor:pointer;transition:all .15s;white-space:nowrap}
+.btn:hover{transform:translateY(-1px)}
+.btn-primary{background:var(--cyan);color:#fff;border-color:var(--cyan-d)}
+.btn-primary:hover{background:var(--cyan-d)}
+.btn-ghost{background:var(--surf);color:var(--txt2);border-color:var(--bdr2)}
+.btn-ghost:hover{background:var(--surf2);color:var(--txt)}
+.btn-confirm{background:var(--grn);color:#fff;border-color:var(--grn-d)}
+.btn-confirm:hover{background:var(--grn-d)}
+.btn-danger{background:var(--red-l);color:var(--red);border-color:#fca5a5}
+.btn-danger:hover{background:#fee2e2}
+.btn-sm{padding:4px 10px;font-size:11px}
+
+/* Partidas */
+.partidas-drop-zone{min-height:60px;border:2px dashed var(--bdr2);border-radius:var(--r2);padding:8px;display:flex;flex-wrap:wrap;gap:6px;transition:all .15s}
+.partidas-drop-zone.drag-over{border-color:var(--cyan);background:var(--cyan-l)}
+.p-card{background:var(--surf2);border:1px solid var(--bdr);border-radius:var(--r);padding:8px 10px;cursor:grab;transition:all .15s;position:relative}
+.p-card:hover{border-color:var(--bdr2);box-shadow:var(--sh)}
+.p-card.dragging{opacity:.4;cursor:grabbing}
+.p-card-top{display:flex;align-items:flex-start;gap:6px;margin-bottom:4px}
+.p-code{font-family:var(--mono);font-size:9px;padding:1px 5px;border-radius:3px;background:var(--cyan-l);color:var(--cyan);border:1px solid #bae6fd;flex-shrink:0}
+.p-desc{font-size:11px;font-weight:500;line-height:1.3;flex:1}
+.p-unit{font-family:var(--mono);font-size:9px;color:var(--txt3);flex-shrink:0}
+.p-text{font-size:10px;color:var(--txt3);line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.p-card-menu{position:absolute;top:6px;right:6px;display:none}
+.p-card:hover .p-card-menu{display:flex;gap:3px}
+.p-btn{background:var(--surf);border:1px solid var(--bdr);border-radius:3px;width:20px;height:20px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:10px;color:var(--txt3)}
+.p-btn:hover{background:var(--surf2);color:var(--txt)}
+
+/* Materiales */
+.mat-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--bdr)}
+.mat-row:last-child{border-bottom:none}
+.mat-color{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.mat-info{flex:1;min-width:0}
+.mat-nombre{font-size:12px;font-weight:500}
+.mat-meta{display:flex;gap:5px;margin-top:2px;flex-wrap:wrap}
+.mat-tag{font-size:10px;padding:1px 6px;border-radius:3px;border:1px solid}
+.mat-norma{background:var(--surf2);color:var(--txt2);border-color:var(--bdr);font-family:var(--mono)}
+.mat-marca{background:var(--vio-l);color:var(--vio);border-color:#c4b5fd}
+.mat-actions{display:flex;gap:4px;flex-shrink:0}
+.icon-btn{background:none;border:1px solid var(--bdr);border-radius:4px;width:24px;height:24px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:11px;color:var(--txt3);transition:all .15s}
+.icon-btn:hover{background:var(--surf2);color:var(--txt);border-color:var(--bdr2)}
+.icon-btn.danger:hover{background:var(--red-l);color:var(--red);border-color:#fca5a5}
+
+/* Doc rows */
+.doc-row{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:var(--r);border:1px solid;margin-bottom:5px;transition:all .15s}
+.doc-row:last-child{margin-bottom:0}
+.doc-codigo{font-family:var(--mono);font-size:11px;font-weight:600;min-width:60px;flex-shrink:0}
+.doc-nombre{font-size:12px;font-weight:500;flex:1}
+.doc-scope{font-size:10px;padding:1px 6px;border-radius:10px;background:var(--surf2);border:1px solid var(--bdr);color:var(--txt3);flex-shrink:0}
+.doc-oblig{font-size:9px;font-weight:600;text-transform:uppercase;padding:2px 7px;border-radius:10px;flex-shrink:0}
+.doc-del{background:none;border:none;color:var(--txt3);cursor:pointer;font-size:14px;line-height:1;padding:2px 4px;border-radius:3px;flex-shrink:0}
+.doc-del:hover{color:var(--red);background:var(--red-l)}
+
+/* Add doc area */
+.add-doc-area{background:var(--surf2);border:1px dashed var(--bdr2);border-radius:var(--r2);padding:12px;margin-top:10px}
+.add-doc-title{font-size:11px;font-weight:600;color:var(--txt2);margin-bottom:8px}
+.add-doc-row{display:flex;gap:6px;margin-bottom:6px}
+.add-select{flex:1;background:var(--surf);border:1px solid var(--bdr2);border-radius:var(--r);padding:6px 8px;font-family:'Inter',sans-serif;font-size:12px;color:var(--txt);outline:none}
+.add-select:focus{border-color:var(--cyan)}
+.add-input{background:var(--surf);border:1px solid var(--bdr2);border-radius:var(--r);padding:6px 8px;font-family:'Inter',sans-serif;font-size:12px;color:var(--txt);outline:none;flex:1}
+.add-input::placeholder{color:var(--txt3)}
+.add-input:focus{border-color:var(--cyan)}
+.add-divider{text-align:center;font-size:11px;color:var(--txt3);margin:8px 0;position:relative}
+.add-divider::before,.add-divider::after{content:'';position:absolute;top:50%;width:42%;height:1px;background:var(--bdr)}
+.add-divider::before{left:0}.add-divider::after{right:0}
+.toggle-row{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--txt2);cursor:pointer}
+.toggle-row input{accent-color:var(--cyan);width:13px;height:13px;cursor:pointer}
+
+/* ── PANEL DERECHO: Biblioteca materiales ───────────────── */
+.right-panel{background:var(--surf);border-left:1px solid var(--bdr);display:flex;flex-direction:column;overflow:hidden}
+.rp-head{padding:14px 16px;border-bottom:1px solid var(--bdr);display:flex;align-items:center;gap:8px}
+.rp-title{font-size:12px;font-weight:600;flex:1}
+.rp-badge{font-family:var(--mono);font-size:11px;color:var(--txt3)}
+.rp-scroll{flex:1;overflow-y:auto;padding:8px}
+.rp-scroll::-webkit-scrollbar{width:3px}
+.rp-scroll::-webkit-scrollbar-thumb{background:var(--bdr2);border-radius:3px}
+
+.lib-mat{background:var(--surf2);border:1px solid var(--bdr);border-radius:var(--r2);padding:10px 12px;margin-bottom:6px;transition:all .15s;cursor:pointer}
+.lib-mat:hover{border-color:var(--bdr2);box-shadow:var(--sh)}
+.lib-mat.selected-mat{border-color:var(--cyan);background:var(--cyan-l)}
+.lm-top{display:flex;align-items:flex-start;gap:8px;margin-bottom:6px}
+.lm-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:4px}
+.lm-nombre{font-size:12px;font-weight:500;flex:1;line-height:1.3}
+.lm-tags{display:flex;flex-wrap:wrap;gap:3px;margin-bottom:6px}
+.lm-tag{font-size:10px;padding:1px 6px;border-radius:3px;border:1px solid}
+.lm-sistemas{font-size:10px;color:var(--txt3);margin-bottom:6px}
+.lm-sistemas strong{color:var(--slat)}
+.lm-docs{display:flex;flex-direction:column;gap:3px}
+.lm-doc{display:flex;align-items:center;gap:6px;font-size:10px}
+.lm-doc-code{font-family:var(--mono);font-size:9px;font-weight:600;min-width:40px}
+.lm-doc-estado{padding:1px 6px;border-radius:10px;font-size:9px;font-weight:600}
+.lm-doc-cover{font-size:9px;color:var(--txt3);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.estado-pendiente{background:#f1f5f9;color:var(--txt3)}
+.estado-aportado{background:var(--ylw-l);color:var(--ylw-d)}
+.estado-validado{background:var(--grn-l);color:var(--grn-d)}
+
+/* Modo separar */
+.split-bar{background:linear-gradient(135deg,#fef3c7,#fffbeb);border:1.5px solid #fde68a;border-radius:var(--r2);padding:12px 14px;margin-bottom:10px;display:flex;flex-direction:column;gap:10px}
+.split-bar-title{font-size:12px;font-weight:700;color:var(--ylw-d);display:flex;align-items:center;gap:6px}
+.split-bar-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.split-hint{font-size:11px;color:var(--ylw-d);flex:1}
+.p-card.split-mode{cursor:pointer;border:1px dashed var(--bdr2)}
+.p-card.split-mode:hover{border-color:var(--cyan);background:var(--cyan-l)}
+.p-card.split-selected{border:2px solid var(--cyan)!important;background:var(--cyan-l)!important}
+.split-chk{width:15px;height:15px;accent-color:var(--cyan);flex-shrink:0;cursor:pointer}
+/* Merge modal */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:200;display:none;align-items:center;justify-content:center;backdrop-filter:blur(3px)}
+.overlay.open{display:flex}
+.modal{background:var(--surf);border:1px solid var(--bdr);border-radius:var(--r2);width:480px;max-height:80vh;display:flex;flex-direction:column;box-shadow:var(--sh2)}
+.modal-head{padding:16px 18px;border-bottom:1px solid var(--bdr);display:flex;align-items:center;gap:10px}
+.modal-title{font-size:14px;font-weight:700;flex:1}
+.modal-close{background:none;border:none;color:var(--txt3);cursor:pointer;font-size:18px;line-height:1}
+.modal-close:hover{color:var(--txt)}
+.modal-body{padding:16px 18px;overflow-y:auto;flex:1}
+.modal-foot{padding:12px 18px;border-top:1px solid var(--bdr);display:flex;gap:8px;justify-content:flex-end}
+.modal-label{font-size:11px;font-weight:600;color:var(--txt2);margin-bottom:6px;margin-top:12px}
+.modal-label:first-child{margin-top:0}
+.modal-desc{font-size:12px;color:var(--txt3);margin-bottom:10px;line-height:1.5}
+
+/* Menú contexto partida */
+.ctx-menu{position:fixed;background:var(--surf);border:1px solid var(--bdr);border-radius:var(--r);box-shadow:var(--sh2);z-index:300;min-width:200px;display:none}
+.ctx-menu.open{display:block}
+.ctx-item{padding:8px 14px;font-size:12px;cursor:pointer;display:flex;align-items:center;gap:8px;color:var(--txt)}
+.ctx-item:hover{background:var(--surf2)}
+.ctx-divider{height:1px;background:var(--bdr);margin:3px 0}
+.ctx-section{padding:4px 14px 2px;font-size:10px;font-weight:600;color:var(--txt3);text-transform:uppercase;letter-spacing:.5px}
+
+/* Toast */
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--txt);color:#fff;padding:9px 18px;border-radius:var(--r);font-size:13px;font-weight:500;z-index:500;display:none;box-shadow:var(--sh2);animation:toastin .2s ease}
+.toast.show{display:block}
+@keyframes toastin{from{opacity:0;transform:translateX(-50%) translateY(8px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="logo">AXIS OS</div>
+  <div class="vr"></div>
+  <div class="topbar-sub">Clasificación de sistemas · <strong>01.06 Albañilería</strong> · FLEXLIVING 417 LAS ROZAS</div>
+  <div class="topbar-r">
+    <span class="chip chip-ia">Análisis IA completado</span>
+    <span class="chip chip-info">29 partidas</span>
+  </div>
+</header>
+
+<div class="app">
+
+  <!-- ── PANEL IZQ: Sistemas ── -->
+  <div class="panel">
+    <div class="panel-head">
+      <span class="panel-head-title">Sistemas constructivos</span>
+      <span class="panel-head-action" onclick="openNewSistema()">+ Nuevo</span>
+    </div>
+    <div class="panel-scroll" id="sis-list"></div>
+  </div>
+
+  <!-- ── PANEL CENTRAL: Detalle ── -->
+  <div class="main-panel">
+    <div class="main-scroll" id="main-scroll">
+      <div class="empty" id="empty-state">
+        <div class="empty-icon">⬡</div>
+        <div style="font-size:13px;color:var(--txt2)">Selecciona un sistema</div>
+        <div style="font-size:11px;max-width:220px;text-align:center">Puedes mover partidas entre sistemas arrastrándolas</div>
+      </div>
+      <div id="detail-area" style="display:none"></div>
+    </div>
+  </div>
+
+  <!-- ── PANEL DER: Biblioteca materiales ── -->
+  <div class="right-panel">
+    <div class="rp-head">
+      <span class="rp-title">Biblioteca de materiales</span>
+      <span class="rp-badge" id="lib-badge">0 materiales</span>
+    </div>
+    <div class="rp-scroll" id="lib-scroll"></div>
+  </div>
+</div>
+
+<!-- Menú contexto partida -->
+<div class="ctx-menu" id="ctx-menu">
+  <div class="ctx-section">Mover partida a</div>
+  <div id="ctx-sis-list"></div>
+  <div class="ctx-divider"></div>
+  <div class="ctx-item" onclick="moveToUnassigned()">⬡ Sin asignar</div>
+  <div class="ctx-divider"></div>
+  <div class="ctx-item" onclick="openNewSistemaForPartida()">+ Nuevo sistema</div>
+</div>
+
+<!-- Modal: nuevo sistema -->
+<div class="overlay" id="modal-nuevo">
+  <div class="modal">
+    <div class="modal-head">
+      <span class="modal-title">Nuevo sistema constructivo</span>
+      <button class="modal-close" onclick="closeModal('modal-nuevo')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-label">Nombre del sistema</div>
+      <input class="add-input" id="new-sis-nombre" placeholder="Ej: Particiones PYL zonas húmedas" style="width:100%;margin-bottom:10px">
+      <div class="modal-label">Referencia del catálogo (opcional)</div>
+      <select class="add-select" id="new-sis-cat" style="width:100%;margin-bottom:6px">
+        <option value="">— Sin referencia de catálogo —</option>
+        <optgroup label="08 · Particiones verticales">
+          <option value="08.01">08.01 — Tabiquería PYL autoportante</option>
+          <option value="08.02">08.02 — Trasdosados PYL</option>
+          <option value="08.03">08.03 — Particiones cerámicas</option>
+          <option value="08.04">08.04 — Particiones de bloque de hormigón</option>
+        </optgroup>
+        <optgroup label="09 · Particiones horizontales">
+          <option value="09.01">09.01 — Techos continuos PYL</option>
+          <option value="09.02">09.02 — Techos registrables</option>
+        </optgroup>
+        <optgroup label="10 · Revestimientos">
+          <option value="10.01">10.01 — Enfoscados y revocos</option>
+          <option value="10.02">10.02 — Alicatados y chapados</option>
+        </optgroup>
+        <optgroup label="12 · Impermeabilización">
+          <option value="12.04">12.04 — Aislamiento acústico</option>
+        </optgroup>
+        <optgroup label="18 · PCI">
+          <option value="18.01">18.01 — Protección contra incendios</option>
+        </optgroup>
+      </select>
+      <div style="font-size:11px;color:var(--txt3)">La referencia de catálogo sugiere materiales y documentación base.</div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="closeModal('modal-nuevo')">Cancelar</button>
+      <button class="btn btn-primary" onclick="crearNuevoSistema()">Crear sistema</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: merge materiales -->
+<div class="overlay" id="modal-merge">
+  <div class="modal">
+    <div class="modal-head">
+      <span class="modal-title">Agrupar materiales</span>
+      <button class="modal-close" onclick="closeModal('modal-merge')">×</button>
+    </div>
+    <div class="modal-body" id="modal-merge-body"></div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="closeModal('modal-merge')">Cancelar</button>
+      <button class="btn btn-primary" onclick="confirmarMerge()">Agrupar</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ─── DATOS ────────────────────────────────────────────────────────────────────
+
+const PARTIDAS_RAW = [
+  {codigo:"AYA-101",descripcion:"RECIBIDO DE PLATOS DE DUCHA",unidad:"ud",texto:"Recibido de platos de ducha de cualquier medida, con mortero de cemento CEM II/B-P 32,5 N y arena de río tipo M-10."},
+  {codigo:"AYA-102",descripcion:"AYUDAS INSTALACIONES Y PROTECCIONES",unidad:"PA",texto:"Conjunto de AYUDAS DE ALBAÑILERIA para dejar las instalaciones completamente terminadas."},
+  {codigo:"AYA-103",descripcion:"SELLADOS CORTAFUEGOS EI-90",unidad:"PA",texto:"Conjunto de sellados cortafuegos permanente, para pasos de instalaciones, EI-90 en todos aquellos elementos y puntos en que se precise."},
+  {codigo:"AYA-104",descripcion:"SELLADOS CORTAFUEGOS EI-120",unidad:"PA",texto:"Conjunto de sellados cortafuegos permanente, para pasos de instalaciones, EI-120 en todos aquellos elementos y puntos en que se precise."},
+  {codigo:"AYA-105",descripcion:"REFUERZO DM EN PARTICIONES PYL (MOBILIARIO)",unidad:"m",texto:"Suministro y colocación de refuerzo interior de tabiquería PYL mediante panel DM de 19 mm atornillado entre montantes, enrasado con la placa externa."},
+  {codigo:"AYA-107",descripcion:"REFUERZO PYL PARA PUERTAS ABATIBLES",unidad:"ud",texto:"Suministro y colocación de refuerzo interior de tabiquería PYL mediante perfilería STEEL-FRAME de 2 mm de espesor, con canales y montantes del sistema."},
+  {codigo:"AYA-206",descripcion:"BANCADA ACÚSTICA",unidad:"m2",texto:"Formación de bancada acústica continua, de toda la dimensión de la cubierta sobre la que se asienta, dentro del apantallamiento acústico previsto."},
+  {codigo:"EN-101",descripcion:"GUARNECIDO Y ENLUCIDO YESO PARAMENTOS VERTICALES",unidad:"m2",texto:"Suministro y aplicación de guarnecido con yeso negro (Y-12) y enlucido de yeso blanco (Y-25F) maestreado, en paramentos verticales, 15 mm de espesor total."},
+  {codigo:"EN-102",descripcion:"GUARNECIDO Y ENLUCIDO YESO BAJO ESCALERA",unidad:"m2",texto:"Suministro y aplicación de guarnecido con yeso negro (Y-12) y enlucido de yeso blanco (Y-25F) maestreado, en paramentos horizontales, 15 mm de espesor total."},
+  {codigo:"EN-103",descripcion:"ENFOSCADO HIDRÓFUGO MORTERO CEMENTO MAESTREADO",unidad:"m2",texto:"Suministro y aplicación de enfoscado maestreado con mortero hidrófugo y arena de río M-10, en paramentos verticales y guarnecidos, 20 mm de espesor."},
+  {codigo:"FL-401A",descripcion:"FCA. MEGABRICK 11 TRIPLEX — REVESTIDA 1 CARA",unidad:"m2",texto:"Sistema MEGABRICK 11 TRIPLEX de CERANOR, piezas cerámicas huecas machimbradas 705x300x110 mm. Recibido con pasta de montaje."},
+  {codigo:"FL-401B",descripcion:"FCA. MEGABRICK 11 TRIPLEX — REVESTIDA 2 CARAS",unidad:"m2",texto:"Sistema MEGABRICK 11 TRIPLEX de CERANOR, piezas cerámicas huecas machimbradas 705x300x110 mm. Recibido con pasta de montaje, revestida ambas caras."},
+  {codigo:"FL-410A",descripcion:"FCA. SATEBRICK 11,5 — REVESTIDA 1 CARA",unidad:"m2",texto:"Fábrica SATEBRICK ACÚSTICO 11,5 de CERANOR, con DITplus nº660p/21, dimensiones 400x200x115 mm. Pasta de agarre en base cemento. Acabado para revestir a una cara."},
+  {codigo:"FL-410B",descripcion:"FCA. SATEBRICK 11,5 — REVESTIDA 2 CARAS",unidad:"m2",texto:"Fábrica SATEBRICK ACÚSTICO 11,5 de CERANOR, con DITplus nº660p/21, dimensiones 400x200x115 mm. Pasta de agarre en base cemento. Acabado para revestir a dos caras."},
+  {codigo:"PTI-201.1",descripcion:"TRASDOSADO AUTOPORTANTE PYL 48/A(15)",unidad:"m2",texto:"Trasdosado autoportante PYL, Knauf, Pladur o Placo. Estructura acero galvanizado, canales 48 mm, montantes mod. 400/600 mm. Placa tipo A 15mm."},
+  {codigo:"PTI-201.2",descripcion:"TRASDOSADO AUTOPORTANTE PYL 48/H1(15)",unidad:"m2",texto:"Trasdosado autoportante PYL, Knauf, Pladur o Placo. Estructura acero galvanizado, canales 48 mm. Placa tipo H1 (hidrófuga) 15mm."},
+  {codigo:"PTI-211.1",descripcion:"TRASDOSADO AUTOPORTANTE PYL 70/A(15)",unidad:"m2",texto:"Trasdosado autoportante PYL, Knauf, Pladur o Placo. Estructura acero galvanizado, canales 70 mm, montantes mod. 400/600 mm. Placa tipo A 15mm."},
+  {codigo:"PTI-211.2",descripcion:"TRASDOSADO AUTOPORTANTE PYL 70/H1(15)",unidad:"m2",texto:"Trasdosado autoportante PYL, Knauf, Pladur o Placo. Estructura acero galvanizado, canales 70 mm. Placa tipo H1 (hidrófuga) 15mm."},
+  {codigo:"PTI-301.1",descripcion:"TABIQUE SENCILLO PYL A(15)/48/A(15)",unidad:"m2",texto:"Tabique PYL, Knauf, Pladur o Placo. Canales 48mm, montantes mod. 400/600mm. Placa tipo A 15mm ambas caras."},
+  {codigo:"PTI-311.1",descripcion:"TABIQUE SENCILLO PYL A(15)/70/A(15)",unidad:"m2",texto:"Tabique PYL, Knauf, Pladur o Placo. Canales 70mm, montantes mod. 400/600mm. Placa tipo A 15mm ambas caras."},
+  {codigo:"PTI-311.2",descripcion:"TABIQUE SENCILLO PYL A(15)/70/H1(15)",unidad:"m2",texto:"Tabique PYL, Knauf, Pladur o Placo. Canales 70mm. Cara exterior placa A, cara interior placa H1 (hidrófuga) 15mm."},
+  {codigo:"PTI-311.3",descripcion:"TABIQUE SENCILLO PYL H1(15)/70/H1(15)",unidad:"m2",texto:"Tabique PYL, Knauf, Pladur o Placo. Canales 70mm. Ambas caras placa H1 (hidrófuga) 15mm. Para zonas húmedas."},
+  {codigo:"PTI-401",descripcion:"TRASDOSADO MÚLTIPLE PYL EI-60 — 48/2*DF(15)",unidad:"m2",texto:"Trasdosado autoportante PYL con resistencia al fuego EI-60. Knauf, Pladur o Placo. Canales 48mm, dos placas DF (cortafuego) 15mm."},
+  {codigo:"PTI-402",descripcion:"TABIQUE MÚLTIPLE PYL EI-60 — H1/70/2*DF",unidad:"m2",texto:"Tabique PYL con sectorización EI-60. Canales 70mm. Cara: placa H1 15mm. Trasdós: 2 placas DF 15mm (cortafuego)."},
+  {codigo:"PTI-403",descripcion:"TABIQUE MÚLTIPLE PYL EI-60 — H1+A/70/2*DF",unidad:"m2",texto:"Tabique PYL con sectorización EI-60. Canales 70mm. Cara: placa H1+A. Trasdós: 2 placas DF 15mm. Con lana mineral."},
+  {codigo:"PTI-404",descripcion:"TABIQUE MÚLTIPLE PYL EI-60 — 2*A/48/2*DF",unidad:"m2",texto:"Tabique PYL EI-60. Canales 48mm. Cara: 2 placas A 13mm. Trasdós: 2 placas DF 15mm. Con banda acústica perimetral."},
+  {codigo:"PTI-701",descripcion:"TABIQUE MÚLTIPLE PYL — DOBLE HOJA EI-60",unidad:"m2",texto:"Tabique + trasdosado en separación de habitaciones para sectorización EI-60. Doble estructura independiente. 2*A(13)/48/2*DF(15)/48/2*A(13)."},
+  {codigo:"PTI-702",descripcion:"TABIQUE MÚLTIPLE PYL — DOBLE HOJA EI-60 (húmedo)",unidad:"m2",texto:"Tabique + trasdosado en separación de habitaciones para sectorización EI-60. Doble hoja con placa H1 en caras expuestas."},
+  {codigo:"PTI-703",descripcion:"TABIQUE MÚLTIPLE PYL — DOBLE HOJA EI-60 (mixto)",unidad:"m2",texto:"Tabique + trasdosado en separación de habitaciones, sectorización EI-60. Configuración mixta A+H1 según orientación de cada cara."},
+];
+
+const DOC_COLORS = {
+  'FT':   {bg:'#eff6ff',bd:'#bfdbfe',c:'#1d4ed8'},
+  'DoP':  {bg:'#f5f3ff',bd:'#ddd6fe',c:'#6d28d9'},
+  'CE':   {bg:'#ecfdf5',bd:'#a7f3d0',c:'#065f46'},
+  'RF':   {bg:'#fffbeb',bd:'#fde68a',c:'#b45309'},
+  'AC':   {bg:'#ecfeff',bd:'#a5f3fc',c:'#0e7490'},
+  'ENS':  {bg:'#faf5ff',bd:'#e9d5ff',c:'#7c3aed'},
+  'DIT':  {bg:'#fdf2f8',bd:'#fbcfe8',c:'#be185d'},
+};
+function dc(c){return DOC_COLORS[c]||{bg:'#f8fafc',bd:'#e2e8f0',c:'#475569'}}
+
+const MAT_COLORS = ['#0284c7','#7c3aed','#059669','#d97706','#dc2626','#be185d','#0e7490','#6d28d9'];
+
+// ─── ESTADO ───────────────────────────────────────────────────────────────────
+
+// Materiales: biblioteca de la obra (id → material)
+let materials = {
+  'm1': {id:'m1',nombre:'Placa YL tipo A — 15mm',familia:'Yeso laminado',marca:'Knauf / Pladur / Placo',norma:'UNE-EN 520',
+         docs_req:[
+           {tipo:'FT',nombre:'Ficha técnica',nivel:'material',oblig:true,estado:'pendiente',cubre:null},
+           {tipo:'DoP',nombre:'Declaración de Prestaciones',nivel:'material',oblig:true,estado:'pendiente',cubre:null},
+           {tipo:'CE',nombre:'Marcado CE',nivel:'material',oblig:true,estado:'pendiente',cubre:null},
+         ]},
+  'm2': {id:'m2',nombre:'Placa YL tipo H1 — 15mm (hidrófuga)',familia:'Yeso laminado',marca:'Knauf / Pladur / Placo',norma:'UNE-EN 520',
+         docs_req:[
+           {tipo:'FT',nombre:'Ficha técnica',nivel:'material',oblig:true,estado:'pendiente',cubre:null},
+           {tipo:'DoP',nombre:'Declaración de Prestaciones',nivel:'material',oblig:true,estado:'pendiente',cubre:null},
+           {tipo:'CE',nombre:'Marcado CE',nivel:'material',oblig:true,estado:'pendiente',cubre:null},
+         ]},
+  'm3': {id:'m3',nombre:'Placa YL tipo DF — 15mm (cortafuego)',familia:'Yeso laminado',marca:'Knauf / Pladur / Placo',norma:'UNE-EN 520',
+         docs_req:[
+           {tipo:'FT',nombre:'Ficha técnica',nivel:'material',oblig:true,estado:'pendiente',cubre:null},
+           {tipo:'DoP',nombre:'Declaración de Prestaciones',nivel:'material',oblig:true,estado:'pendiente',cubre:null},
+           {tipo:'CE',nombre:'Marcado CE',nivel:'material',oblig:true,estado:'pendiente',cubre:null},
+         ]},
+  'm4': {id:'m4',nombre:'Perfilería metálica galvanizada (canal + montante)',familia:'Perfilería',marca:null,norma:'UNE-EN 14195',
+         docs_req:[
+           {tipo:'FT',nombre:'Ficha técnica',nivel:'material',oblig:true,estado:'pendiente',cubre:null},
+           {tipo:'DoP',nombre:'Declaración de Prestaciones',nivel:'material',oblig:true,estado:'pendiente',cubre:null},
+           {tipo:'CE',nombre:'Marcado CE',nivel:'material',oblig:true,estado:'pendiente',cubre:null},
+         ]},
+  'm5': {id:'m5',nombre:'Lana mineral (aislamiento acústico)',familia:'Aislamiento',marca:null,norma:'UNE-EN 13162',
+         docs_req:[
+           {tipo:'FT',nombre:'Ficha técnica',nivel:'material',oblig:true,estado:'pendiente',cubre:null},
+           {tipo:'DoP',nombre:'Declaración de Prestaciones',nivel:'material',oblig:true,estado:'pendiente',cubre:null},
+           {tipo:'CE',nombre:'Marcado CE',nivel:'material',oblig:true,estado:'pendiente',cubre:null},
+           {tipo:'RF',nombre:'Clasificación reacción al fuego',nivel:'material',oblig:false,estado:'pendiente',cubre:null},
+         ]},
+  'm6': {id:'m6',nombre:'Pasta de juntas y cinta de fibra',familia:'Yeso laminado',marca:null,norma:null,
+         docs_req:[{tipo:'FT',nombre:'Ficha técnica',nivel:'material',oblig:true,estado:'pendiente',cubre:null}]},
+  'm7': {id:'m7',nombre:'Banda acústica perimetral',familia:'Aislamiento',marca:null,norma:null,
+         docs_req:[{tipo:'FT',nombre:'Ficha técnica',nivel:'material',oblig:true,estado:'pendiente',cubre:null}]},
+  'm8': {id:'m8',nombre:'Bloque cerámico MEGABRICK 11 TRIPLEX',familia:'Cerámica',marca:'CERANOR',norma:'UNE-EN 771-1',
+         docs_req:[
+           {tipo:'FT',nombre:'Ficha técnica',nivel:'material',oblig:true,estado:'pendiente',cubre:null},
+           {tipo:'DoP',nombre:'Declaración de Prestaciones',nivel:'material',oblig:true,estado:'pendiente',cubre:null},
+           {tipo:'CE',nombre:'Marcado CE',nivel:'material',oblig:true,estado:'pendiente',cubre:null},
+         ]},
+  'm9': {id:'m9',nombre:'Bloque cerámico SATEBRICK ACÚSTICO 11,5',familia:'Cerámica',marca:'CERANOR',norma:'UNE-EN 771-1',
+         docs_req:[
+           {tipo:'FT',nombre:'Ficha técnica',nivel:'material',oblig:true,estado:'pendiente',cubre:null},
+           {tipo:'DoP',nombre:'Declaración de Prestaciones',nivel:'material',oblig:true,estado:'pendiente',cubre:null},
+           {tipo:'CE',nombre:'Marcado CE',nivel:'material',oblig:true,estado:'pendiente',cubre:null},
+           {tipo:'DIT',nombre:'DITplus CERANOR nº660p/21',nivel:'material',oblig:true,estado:'pendiente',cubre:null},
+         ]},
+  'm10': {id:'m10',nombre:'Yeso negro Y-12 (guarnecido)',familia:'Yesos',marca:null,norma:'UNE-EN 13279',
+          docs_req:[{tipo:'FT',nombre:'Ficha técnica',nivel:'material',oblig:true,estado:'pendiente',cubre:null},{tipo:'CE',nombre:'Marcado CE',nivel:'material',oblig:true,estado:'pendiente',cubre:null}]},
+  'm11': {id:'m11',nombre:'Yeso blanco Y-25F (enlucido)',familia:'Yesos',marca:null,norma:'UNE-EN 13279',
+          docs_req:[{tipo:'FT',nombre:'Ficha técnica',nivel:'material',oblig:true,estado:'pendiente',cubre:null},{tipo:'CE',nombre:'Marcado CE',nivel:'material',oblig:true,estado:'pendiente',cubre:null}]},
+  'm12': {id:'m12',nombre:'Mortero hidrófugo CEM II/B-P 32,5 N M-10',familia:'Morteros',marca:null,norma:'UNE-EN 998-1',
+          docs_req:[{tipo:'FT',nombre:'Ficha técnica',nivel:'material',oblig:true,estado:'pendiente',cubre:null},{tipo:'DoP',nombre:'Declaración de Prestaciones',nivel:'material',oblig:true,estado:'pendiente',cubre:null}]},
+  'm13': {id:'m13',nombre:'Sistema de sellado cortafuegos permanente',familia:'PCI',marca:null,norma:'UNE-EN 1366-3',
+          docs_req:[
+            {tipo:'FT',nombre:'Ficha técnica',nivel:'material',oblig:true,estado:'pendiente',cubre:null},
+            {tipo:'DoP',nombre:'Declaración de Prestaciones',nivel:'material',oblig:true,estado:'pendiente',cubre:null},
+            {tipo:'CE',nombre:'Marcado CE',nivel:'material',oblig:true,estado:'pendiente',cubre:null},
+            {tipo:'ENS',nombre:'Ensayo EI-90/120',nivel:'material',oblig:true,estado:'pendiente',cubre:null},
+          ]},
+  'm14': {id:'m14',nombre:'Bancada acústica (elastómero/lana mineral)',familia:'Aislamiento',marca:null,norma:'UNE-EN ISO 10140',
+          docs_req:[{tipo:'FT',nombre:'Ficha técnica',nivel:'material',oblig:true,estado:'pendiente',cubre:null},{tipo:'AC',nombre:'Ensayo aislamiento a impacto',nivel:'material',oblig:true,estado:'pendiente',cubre:null}]},
+};
+
+// Sistemas
+let sistemas = [
+  {id:'s1',sistema_id:'08.01-02',nombre:'Particiones y trasdosados PYL',origen:'ia',conf:0.97,confirmado:false,
+   partidas:['PTI-201.1','PTI-201.2','PTI-211.1','PTI-211.2','PTI-301.1','PTI-311.1','PTI-311.2','PTI-311.3','PTI-401','PTI-402','PTI-403','PTI-404','PTI-701','PTI-702','PTI-703','AYA-105','AYA-107'],
+   materiales:['m1','m2','m3','m4','m5','m6','m7'],
+   docs_sistema:[
+     {tipo:'ENS',nombre:'Ensayo resistencia al fuego EI-60 del sistema',oblig:true,estado:'pendiente'},
+     {tipo:'AC',nombre:'Certificado acústico del sistema (Rw)',oblig:true,estado:'pendiente'},
+   ],
+   notas:'Tabiques (PTI-3xx/4xx/7xx) y trasdosados (PTI-2xx) PYL. Variantes A/H1/DF. Sistemas dobles PTI-7xx para sectorización EI-60.'},
+  {id:'s2',sistema_id:'08.03',nombre:'Particiones cerámicas',origen:'ia',conf:0.96,confirmado:false,
+   partidas:['FL-401A','FL-401B','FL-410A','FL-410B'],
+   materiales:['m8','m9'],
+   docs_sistema:[
+     {tipo:'AC',nombre:'Certificado acústico del sistema',oblig:true,estado:'pendiente'},
+   ],
+   notas:'Sistema cerámico autoportante gran formato CERANOR. SATEBRICK con DITplus nº660p/21.'},
+  {id:'s3',sistema_id:'10.01',nombre:'Enfoscados y revocos',origen:'ia',conf:0.95,confirmado:false,
+   partidas:['EN-101','EN-102','EN-103'],
+   materiales:['m10','m11','m12'],
+   docs_sistema:[],
+   notas:'Guarnecido + enlucido yeso (EN-101/102). Enfoscado hidrófugo M-10 (EN-103).'},
+  {id:'s4',sistema_id:'18.01',nombre:'Sellados cortafuegos',origen:'ia',conf:0.93,confirmado:false,
+   partidas:['AYA-103','AYA-104'],
+   materiales:['m13'],
+   docs_sistema:[
+     {tipo:'RF',nombre:'Clasificación resistencia al fuego del conjunto',oblig:true,estado:'pendiente'},
+   ],
+   notas:'Sellados EI-90 y EI-120 para pasos de instalaciones en sectorización CTE DB-SI.'},
+  {id:'s5',sistema_id:'12.04',nombre:'Aislamiento acústico',origen:'ia',conf:0.89,confirmado:false,
+   partidas:['AYA-206'],
+   materiales:['m14'],
+   docs_sistema:[],
+   notas:'Bancada acústica continua bajo cubierta. Cumplimiento DB-HR.'},
+];
+
+let unassigned = ['AYA-101','AYA-102'];
+let selectedSisId = null;
+let ctxPartida = null; // partida sobre la que se abre el menú
+let mergeTargetMats = []; // materiales seleccionados para merge
+let newSisForPartida = null; // si se crea sistema desde menú de partida
+
+const TIPOS_DOC_ALL = [
+  {codigo:'FT',nombre:'Ficha técnica'},{codigo:'DoP',nombre:'Declaración de Prestaciones'},
+  {codigo:'CE',nombre:'Marcado CE'},{codigo:'DIT',nombre:'Documento de Idoneidad Técnica'},
+  {codigo:'ETE',nombre:'Evaluación Técnica Europea'},{codigo:'ENS',nombre:'Ensayo de caracterización'},
+  {codigo:'RF',nombre:'Clasificación reacción al fuego'},{codigo:'AC',nombre:'Certificado acústico'},
+  {codigo:'CERT_DOS',nombre:'Certificado de dosificación'},{codigo:'CERT_PLANTA',nombre:'Certificado de planta'},
+  {codigo:'PROT',nombre:'Protocolo de pruebas'},{codigo:'CERT_INST',nombre:'Certificado de instalación'},
+  {codigo:'GAR',nombre:'Certificado de garantía'},{codigo:'MUM',nombre:'Manual uso y mantenimiento'},
+];
+
+// ─── RENDER SIDEBAR ───────────────────────────────────────────────────────────
+
+function renderSidebar() {
+  const list = document.getElementById('sis-list');
+  list.innerHTML = '';
+
+  sistemas.forEach(s => {
+    const conf = Math.round(s.conf * 100);
+    const fill = s.confirmado ? '#059669' : (conf > 90 ? '#0284c7' : conf > 80 ? '#d97706' : '#dc2626');
+    const el = document.createElement('div');
+    el.className = `sis-card${selectedSisId===s.id?' selected':''}${s.confirmado?' confirmed':''}`;
+    el.dataset.sid = s.id;
+    el.innerHTML = `
+      <div class="sis-head">
+        <span class="sis-id${!s.sistema_id?' custom':''}">${s.sistema_id||'—'}</span>
+        <span class="sis-nombre">${s.nombre}</span>
+        <span class="sis-n">${s.partidas.length}p</span>
+      </div>
+      <div class="sis-bar"><div class="sis-fill" style="width:${conf}%;background:${fill}"></div></div>
+      <div class="sis-footer">
+        ${s.partidas.slice(0,6).map(c=>`<span class="sis-pchip">${c}</span>`).join('')}
+        ${s.partidas.length>6?`<span class="sis-pchip">+${s.partidas.length-6}</span>`:''}
+        ${s.confirmado?'<span class="sis-confirmed-badge">✓ Confirmado</span>':''}
+      </div>`;
+    el.onclick = () => selectSistema(s.id);
+    list.appendChild(el);
+  });
+
+  // Sin asignar
+  if (unassigned.length > 0) {
+    const ua = document.createElement('div');
+    ua.className = 'unassigned-section';
+    ua.innerHTML = `
+      <div class="unassigned-label">⚠ Sin asignar (${unassigned.length})</div>
+      <div class="unassigned-chips">
+        ${unassigned.map(c => {
+          const p = PARTIDAS_RAW.find(x=>x.codigo===c);
+          return `<div class="ua-chip" draggable="true" data-codigo="${c}" ondragstart="dragStart(event,'${c}',null)" oncontextmenu="openCtx(event,'${c}',null)">
+            <span class="ua-chip-code">${c}</span>
+            <span class="ua-chip-desc">${p?p.descripcion:''}</span>
+          </div>`;
+        }).join('')}
+      </div>`;
+    list.appendChild(ua);
+  }
+}
+
+// ─── RENDER BIBLIOTECA ────────────────────────────────────────────────────────
+
+function renderLibrary() {
+  const scroll = document.getElementById('lib-scroll');
+  const mids = Object.keys(materials);
+  document.getElementById('lib-badge').textContent = `${mids.length} materiales`;
+  scroll.innerHTML = '';
+
+  // Agrupar por familia
+  const familias = {};
+  mids.forEach(mid => {
+    const m = materials[mid];
+    const f = m.familia || 'Otros';
+    if (!familias[f]) familias[f] = [];
+    familias[f].push(m);
+  });
+
+  // Qué sistemas usan cada material
+  const matSistemas = {};
+  sistemas.forEach(s => s.materiales.forEach(mid => {
+    if (!matSistemas[mid]) matSistemas[mid] = [];
+    matSistemas[mid].push(s.nombre);
+  }));
+
+  Object.entries(familias).forEach(([fam, mats], fi) => {
+    const famDiv = document.createElement('div');
+    famDiv.style.marginBottom = '4px';
+    famDiv.innerHTML = `<div style="font-size:10px;font-weight:600;color:var(--txt3);text-transform:uppercase;letter-spacing:.5px;padding:8px 8px 4px">${fam}</div>`;
+    mats.forEach((m, mi) => {
+      const color = MAT_COLORS[(fi*3+mi) % MAT_COLORS.length];
+      const sistemas_uso = matSistemas[m.id] || [];
+      const card = document.createElement('div');
+      card.className = 'lib-mat';
+      card.dataset.mid = m.id;
+      card.innerHTML = `
+        <div class="lm-top">
+          <div class="lm-dot" style="background:${color}"></div>
+          <div class="lm-nombre">${m.nombre}</div>
+        </div>
+        <div class="lm-tags">
+          ${m.norma?`<span class="lm-tag mat-norma">${m.norma}</span>`:''}
+          ${m.marca?`<span class="lm-tag mat-marca">${m.marca}</span>`:''}
+        </div>
+        ${sistemas_uso.length?`<div class="lm-sistemas">En: <strong>${sistemas_uso.join(', ')}</strong></div>`:'<div class="lm-sistemas" style="color:var(--txt3)">Sin sistema asignado</div>'}
+        <div class="lm-docs">
+          ${m.docs_req.map(d=>{
+            const c = dc(d.tipo);
+            return `<div class="lm-doc">
+              <span class="lm-doc-code" style="color:${c.c}">${d.tipo}</span>
+              <span class="lm-doc-estado estado-${d.estado}">${d.estado==='pendiente'?'Pendiente':d.estado==='aportado'?'Aportado':'Validado'}</span>
+              ${d.cubre?`<span class="lm-doc-cover" title="${d.cubre}">↳ ${d.cubre}</span>`:''}
+            </div>`;
+          }).join('')}
+        </div>`;
+      famDiv.appendChild(card);
+    });
+    scroll.appendChild(famDiv);
+  });
+}
+
+// ─── SELECCIÓN DE SISTEMA ─────────────────────────────────────────────────────
+
+function selectSistema(id) {
+  splitMode = false;
+  splitSelected.clear();
+  selectedSisId = id;
+  renderSidebar();
+  renderDetail();
+}
+
+// ─── RENDER DETALLE ───────────────────────────────────────────────────────────
+
+function renderDetail() {
+  const s = sistemas.find(x=>x.id===selectedSisId);
+  document.getElementById('empty-state').style.display = s ? 'none' : 'flex';
+  const area = document.getElementById('detail-area');
+  area.style.display = s ? 'block' : 'none';
+  if (!s) return;
+
+  const conf = Math.round(s.conf * 100);
+
+  // Materiales del sistema
+  const matSis = s.materiales.map(mid => materials[mid]).filter(Boolean);
+
+  // Partidas del sistema con sus datos
+  const pDatos = s.partidas.map(c => PARTIDAS_RAW.find(p=>p.codigo===c)).filter(Boolean);
+
+  area.innerHTML = `
+    <!-- Header -->
+    <div class="sis-detail-header">
+      <div class="sdh-top">
+        <div class="sdh-id-nom">
+          <span class="sdh-id${!s.sistema_id?' custom':''}">${s.sistema_id||'Personalizado'}</span>
+          <input class="sdh-nom-input" id="sis-nom-input" value="${s.nombre}" onchange="renameSelected(this.value)" style="flex:1">
+        </div>
+        <span class="sdh-conf">IA ${conf}%</span>
+      </div>
+      ${s.notas?`<div class="sdh-notas">${s.notas}</div>`:''}
+      <div class="sdh-actions">
+        <button class="btn btn-confirm btn-sm" onclick="confirmarSistema()">${s.confirmado?'✓ Confirmado':'Confirmar sistema'}</button>
+        <button class="btn btn-ghost btn-sm" onclick="splitSistema()">Separar en dos</button>
+        <button class="btn btn-ghost btn-sm" onclick="openMergeModal()">Fusionar con otro</button>
+      </div>
+    </div>
+
+    <!-- Partidas -->
+    <div class="section">
+      <div class="sec-head">
+        <span class="sec-icon">📐</span>
+        <span class="sec-title">Partidas asignadas</span>
+        <span class="sec-badge">${pDatos.length}${splitMode ? ' · haz clic para seleccionar' : ' · arrastra o clic derecho para mover'}</span>
+      </div>
+      <div class="sec-body">
+        ${splitMode ? `
+        <div class="split-bar">
+          <div class="split-bar-title">✂ Modo separar — selecciona las partidas que irán al nuevo sistema</div>
+          <div class="split-bar-row">
+            <input class="add-input" id="split-nombre" placeholder='Nombre del nuevo sistema (ej: "Trasdosados PYL")' style="flex:2;min-width:180px">
+            <select class="add-select" id="split-cat" style="flex:1;min-width:140px">
+              <option value="">— Sin referencia —</option>
+              <option value="08.01">08.01 Tabiquería PYL</option>
+              <option value="08.02">08.02 Trasdosados PYL</option>
+              <option value="08.03">08.03 Particiones cerámicas</option>
+              <option value="10.01">10.01 Enfoscados</option>
+              <option value="12.04">12.04 Aislamiento acústico</option>
+              <option value="18.01">18.01 PCI / Cortafuegos</option>
+            </select>
+          </div>
+          <div class="split-bar-row">
+            <span class="split-hint" id="split-count">Selecciona las partidas a mover</span>
+            <button class="btn btn-ghost btn-sm" onclick="cancelSplit()">Cancelar</button>
+            <button class="btn btn-confirm btn-sm" id="split-confirm-btn" onclick="confirmarSplit()" disabled>Crear sistema con selección</button>
+          </div>
+        </div>` : ''}
+        <div class="partidas-drop-zone${splitMode ? '' : ''}" id="drop-zone"
+          ondragover="event.preventDefault();this.classList.add('drag-over')"
+          ondragleave="this.classList.remove('drag-over')"
+          ondrop="dropInSistema(event,'${s.id}')">
+          ${pDatos.map(p=>`
+            <div class="p-card${splitMode ? ' split-mode' : ''}${splitMode && splitSelected.has(p.codigo) ? ' split-selected' : ''}"
+              data-codigo="${p.codigo}"
+              ${splitMode
+                ? `onclick="toggleSplitPartida('${p.codigo}')"`
+                : `draggable="true" ondragstart="dragStart(event,'${p.codigo}','${s.id}')" ondragend="document.querySelectorAll('.drag-over').forEach(e=>e.classList.remove('drag-over'))" oncontextmenu="openCtx(event,'${p.codigo}','${s.id}')"`
+              }>
+              ${splitMode
+                ? `<div class="p-card-top"><input type="checkbox" class="split-chk" ${splitSelected.has(p.codigo)?'checked':''} onclick="event.stopPropagation();toggleSplitPartida('${p.codigo}')"><span class="p-code">${p.codigo}</span><span class="p-desc">${p.descripcion}</span><span class="p-unit">${p.unidad}</span></div>`
+                : `<div class="p-card-menu"><div class="p-btn" onclick="openCtx(event,'${p.codigo}','${s.id}')" title="Mover">⇄</div></div>
+                   <div class="p-card-top"><span class="p-code">${p.codigo}</span><span class="p-desc">${p.descripcion}</span><span class="p-unit">${p.unidad}</span></div>`
+              }
+              <div class="p-text">${p.texto}</div>
+            </div>`).join('')}
+        </div>
+      </div>
+    </div>
+
+    <!-- Materiales -->
+    <div class="section">
+      <div class="sec-head">
+        <span class="sec-icon">🧱</span>
+        <span class="sec-title">Materiales del sistema</span>
+        <span class="sec-badge">${matSis.length} materiales · compartidos con la biblioteca de obra</span>
+      </div>
+      <div class="sec-body">
+        ${matSis.map((m,i)=>`
+          <div class="mat-row">
+            <div class="mat-color" style="background:${MAT_COLORS[i%MAT_COLORS.length]}"></div>
+            <div class="mat-info">
+              <div class="mat-nombre">${m.nombre}</div>
+              <div class="mat-meta">
+                ${m.norma?`<span class="mat-tag mat-norma">${m.norma}</span>`:''}
+                ${m.marca?`<span class="mat-tag mat-marca">${m.marca}</span>`:''}
+              </div>
+            </div>
+            <div class="mat-actions">
+              <button class="icon-btn" title="Ver en biblioteca" onclick="highlightMat('${m.id}')">↗</button>
+              <button class="icon-btn danger" title="Quitar del sistema" onclick="removeMatFromSis('${m.id}')">✕</button>
+            </div>
+          </div>`).join('')}
+        <div style="margin-top:8px">
+          <button class="btn btn-ghost btn-sm" onclick="openMergeMatsModal()">Agrupar materiales por documento</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Doc sistema -->
+    <div class="section">
+      <div class="sec-head">
+        <span class="sec-icon">📋</span>
+        <span class="sec-title">Documentación del sistema</span>
+        <span class="sec-badge" style="color:var(--ylw-d)">Aplica al sistema completo, no por material</span>
+      </div>
+      <div class="sec-body">
+        <div id="doc-sis-list">
+          ${renderDocSisHTML(s)}
+        </div>
+        ${addDocAreaHTML('sis')}
+      </div>
+    </div>`;
+}
+
+function renderDocSisHTML(s) {
+  return s.docs_sistema.map((d,di)=>{
+    const c = dc(d.tipo);
+    return `<div class="doc-row" style="background:${c.bg};border-color:${c.bd}">
+      <span class="doc-codigo" style="color:${c.c}">${d.tipo}</span>
+      <span class="doc-nombre" style="color:${c.c}">${d.nombre}</span>
+      <span class="doc-scope">Sistema</span>
+      <span class="doc-oblig" style="background:${c.bd};color:${c.c}">${d.oblig?'Obligatorio':'Opcional'}</span>
+      <button class="doc-del" onclick="removeDocSis(${di})">✕</button>
+    </div>`;
+  }).join('') || '<div style="font-size:12px;color:var(--txt3);padding:4px 0">Sin documentación de sistema añadida.</div>';
+}
+
+function addDocAreaHTML(scope) {
+  return `<div class="add-doc-area">
+    <div class="add-doc-title">Añadir documento</div>
+    <div class="add-doc-row">
+      <select class="add-select" id="add-sel-${scope}">
+        <option value="">— Del catálogo —</option>
+        ${TIPOS_DOC_ALL.map(t=>`<option value="${t.codigo}" data-nombre="${t.nombre}">${t.codigo} — ${t.nombre}</option>`).join('')}
+      </select>
+      <label class="toggle-row"><input type="checkbox" id="add-oblig-${scope}" checked> Obligatorio</label>
+      <button class="btn btn-ghost btn-sm" onclick="addDocFromCatalog('${scope}')">+ Añadir</button>
+    </div>
+    <div class="add-divider">o documento personalizado</div>
+    <div class="add-doc-row">
+      <input class="add-input" id="add-cod-${scope}" placeholder="Código (ej: CERT_OCT)" style="max-width:140px">
+      <input class="add-input" id="add-nom-${scope}" placeholder="Nombre del documento">
+      <button class="btn btn-ghost btn-sm" onclick="addDocCustom('${scope}')">+ Crear</button>
+    </div>
+  </div>`;
+}
+
+// ─── DRAG AND DROP ────────────────────────────────────────────────────────────
+
+let dragCodigo = null;
+let dragFromSis = null;
+
+function dragStart(ev, codigo, sisId) {
+  dragCodigo = codigo;
+  dragFromSis = sisId;
+  ev.dataTransfer.effectAllowed = 'move';
+  setTimeout(()=>ev.target.classList.add('dragging'), 0);
+}
+
+function dropInSistema(ev, targetSisId) {
+  ev.preventDefault();
+  ev.currentTarget.classList.remove('drag-over');
+  if (!dragCodigo || dragFromSis === targetSisId) return;
+  moverPartida(dragCodigo, dragFromSis, targetSisId);
+}
+
+function moverPartida(codigo, desdeSisId, haSisId) {
+  // Quitar de origen
+  if (desdeSisId) {
+    const src = sistemas.find(s=>s.id===desdeSisId);
+    if (src) src.partidas = src.partidas.filter(c=>c!==codigo);
+  } else {
+    unassigned = unassigned.filter(c=>c!==codigo);
+  }
+  // Añadir a destino
+  if (haSisId) {
+    const dst = sistemas.find(s=>s.id===haSisId);
+    if (dst && !dst.partidas.includes(codigo)) dst.partidas.push(codigo);
+  } else {
+    if (!unassigned.includes(codigo)) unassigned.push(codigo);
+  }
+  renderSidebar();
+  renderDetail();
+  renderLibrary();
+  const p = PARTIDAS_RAW.find(x=>x.codigo===codigo);
+  const dst = sistemas.find(s=>s.id===haSisId);
+  showToast(`${codigo} movida a "${dst?dst.nombre:'Sin asignar'}"`);
+}
+
+// ─── MENÚ CONTEXTO ────────────────────────────────────────────────────────────
+
+function openCtx(ev, codigo, sisId) {
+  ev.preventDefault();
+  ev.stopPropagation();
+  ctxPartida = {codigo, sisId};
+  const menu = document.getElementById('ctx-menu');
+  const list = document.getElementById('ctx-sis-list');
+  list.innerHTML = sistemas
+    .filter(s => s.id !== sisId)
+    .map(s => `<div class="ctx-item" onclick="ctxMove('${s.id}')">
+      <span style="font-family:var(--mono);font-size:10px;color:var(--cyan)">${s.sistema_id||'—'}</span>
+      ${s.nombre}</div>`).join('');
+  menu.style.left = Math.min(ev.clientX, window.innerWidth-220)+'px';
+  menu.style.top  = Math.min(ev.clientY, window.innerHeight-200)+'px';
+  menu.classList.add('open');
+}
+
+function ctxMove(toSisId) {
+  if (!ctxPartida) return;
+  moverPartida(ctxPartida.codigo, ctxPartida.sisId, toSisId);
+  closeCtx();
+}
+
+function moveToUnassigned() {
+  if (!ctxPartida) return;
+  moverPartida(ctxPartida.codigo, ctxPartida.sisId, null);
+  closeCtx();
+}
+
+function openNewSistemaForPartida() {
+  newSisForPartida = ctxPartida;
+  closeCtx();
+  openNewSistema();
+}
+
+function closeCtx() {
+  document.getElementById('ctx-menu').classList.remove('open');
+  ctxPartida = null;
+}
+document.addEventListener('click', closeCtx);
+
+// ─── NUEVO SISTEMA ────────────────────────────────────────────────────────────
+
+function openNewSistema() { document.getElementById('modal-nuevo').classList.add('open'); }
+function closeModal(id)   { document.getElementById(id).classList.remove('open'); }
+
+function crearNuevoSistema() {
+  const nombre = document.getElementById('new-sis-nombre').value.trim();
+  const catId  = document.getElementById('new-sis-cat').value;
+  if (!nombre) { showToast('Escribe un nombre'); return; }
+
+  const id = 's' + Date.now();
+  const nuevo = {id, sistema_id:catId||null, nombre, origen:'manual', conf:1, confirmado:false,
+                 partidas:[], materiales:[], docs_sistema:[], notas:''};
+  sistemas.push(nuevo);
+
+  // Si venía de menú de partida, moverla
+  if (newSisForPartida) {
+    moverPartida(newSisForPartida.codigo, newSisForPartida.sisId, id);
+    newSisForPartida = null;
+  }
+
+  closeModal('modal-nuevo');
+  document.getElementById('new-sis-nombre').value = '';
+  document.getElementById('new-sis-cat').value = '';
+  selectSistema(id);
+  showToast(`Sistema "${nombre}" creado`);
+}
+
+// ─── SEPARAR / FUSIONAR ───────────────────────────────────────────────────────
+
+// ─── MODO SEPARAR ─────────────────────────────────────────────────────────────
+// Activar modo selección inline: las partidas se vuelven seleccionables con checkbox
+
+let splitMode = false;
+let splitSelected = new Set();
+
+function splitSistema() {
+  const s = sistemas.find(x=>x.id===selectedSisId);
+  if (!s || s.partidas.length < 2) { showToast('El sistema necesita al menos 2 partidas para separar'); return; }
+  splitMode = true;
+  splitSelected.clear();
+  renderDetail();
+}
+
+function toggleSplitPartida(codigo) {
+  if (splitSelected.has(codigo)) splitSelected.delete(codigo);
+  else splitSelected.add(codigo);
+  // Actualizar visual de la card sin re-render completo
+  const card = document.querySelector(`.p-card[data-codigo="${codigo}"]`);
+  if (card) {
+    card.classList.toggle('split-selected', splitSelected.has(codigo));
+    const chk = card.querySelector('.split-chk');
+    if (chk) chk.checked = splitSelected.has(codigo);
+  }
+  document.getElementById('split-confirm-btn').disabled = splitSelected.size === 0;
+  document.getElementById('split-count').textContent = splitSelected.size > 0
+    ? `${splitSelected.size} partida${splitSelected.size>1?'s':''} seleccionada${splitSelected.size>1?'s':''}`
+    : 'Selecciona las partidas a mover';
+}
+
+function cancelSplit() {
+  splitMode = false;
+  splitSelected.clear();
+  renderDetail();
+}
+
+function confirmarSplit() {
+  if (splitSelected.size === 0) return;
+  const s = sistemas.find(x=>x.id===selectedSisId);
+  const nombre = document.getElementById('split-nombre').value.trim() || s.nombre + ' (separado)';
+  const catId  = document.getElementById('split-cat').value;
+
+  // Crear nuevo sistema con las partidas seleccionadas
+  const id = 's' + Date.now();
+  const nuevo = {
+    id, sistema_id: catId||null, nombre, origen:'manual', conf:1, confirmado:false,
+    partidas: [...splitSelected],
+    materiales: [...s.materiales], // hereda materiales del padre
+    docs_sistema: [],
+    notas: `Separado de "${s.nombre}"`
+  };
+  sistemas.push(nuevo);
+
+  // Quitar partidas del sistema original
+  s.partidas = s.partidas.filter(c => !splitSelected.has(c));
+
+  splitMode = false;
+  splitSelected.clear();
+  showToast(`"${nombre}" creado con ${nuevo.partidas.length} partidas`);
+  renderSidebar();
+  renderDetail(); // refresca el sistema original
+}
+
+function openMergeModal() {
+  const s = sistemas.find(x=>x.id===selectedSisId);
+  const body = document.getElementById('modal-merge-body');
+  body.innerHTML = `
+    <div class="modal-desc">Fusiona "${s.nombre}" con otro sistema existente. Las partidas y materiales se unirán. Elige el sistema de destino:</div>
+    ${sistemas.filter(x=>x.id!==s.id).map(o=>`
+      <div class="doc-row" style="background:var(--surf2);border-color:var(--bdr);cursor:pointer" onclick="confirmarFusion('${o.id}')">
+        <span class="doc-codigo" style="color:var(--cyan)">${o.sistema_id||'—'}</span>
+        <span class="doc-nombre">${o.nombre}</span>
+        <span class="doc-scope">${o.partidas.length}p</span>
+      </div>`).join('')}`;
+  document.getElementById('modal-merge').classList.add('open');
+}
+
+function confirmarFusion(targetId) {
+  const src  = sistemas.find(x=>x.id===selectedSisId);
+  const dst  = sistemas.find(x=>x.id===targetId);
+  if (!src||!dst) return;
+  dst.partidas   = [...new Set([...dst.partidas,   ...src.partidas])];
+  dst.materiales = [...new Set([...dst.materiales, ...src.materiales])];
+  dst.docs_sistema = [...dst.docs_sistema, ...src.docs_sistema];
+  sistemas = sistemas.filter(x=>x.id!==src.id);
+  closeModal('modal-merge');
+  selectSistema(targetId);
+  renderSidebar();
+  showToast(`"${src.nombre}" fusionado con "${dst.nombre}"`);
+}
+
+// ─── AGRUPAR MATERIALES ───────────────────────────────────────────────────────
+
+function openMergeMatsModal() {
+  const s = sistemas.find(x=>x.id===selectedSisId);
+  const mats = s.materiales.map(mid=>materials[mid]).filter(Boolean);
+  mergeTargetMats = [];
+  const body = document.getElementById('modal-merge-body');
+  body.innerHTML = `
+    <div class="modal-desc">Selecciona los materiales que comparten un mismo documento (ej: la FT de Knauf que cubre todas las placas PYL). Al agruparlos, podrás subir un solo documento para todos.</div>
+    <div class="modal-label">Materiales del sistema</div>
+    ${mats.map(m=>`
+      <div class="doc-row" id="mmerge-${m.id}" style="background:var(--surf2);border-color:var(--bdr);cursor:pointer" onclick="toggleMergeMat('${m.id}')">
+        <input type="checkbox" id="chk-${m.id}" style="accent-color:var(--cyan)">
+        <span class="doc-nombre">${m.nombre}</span>
+        ${m.norma?`<span class="doc-scope">${m.norma}</span>`:''}
+      </div>`).join('')}
+    <div class="modal-label">Tipo de documento que comparten</div>
+    <select class="add-select" id="merge-doc-tipo" style="width:100%">
+      ${TIPOS_DOC_ALL.map(t=>`<option value="${t.codigo}">${t.codigo} — ${t.nombre}</option>`).join('')}
+    </select>
+    <div class="modal-label">Descripción del documento agrupado</div>
+    <input class="add-input" id="merge-doc-desc" placeholder='Ej: "FT placas YL Knauf — todas las tipologías"' style="width:100%">`;
+  document.getElementById('modal-merge').classList.add('open');
+}
+
+function toggleMergeMat(mid) {
+  const chk = document.getElementById(`chk-${mid}`);
+  const row = document.getElementById(`mmerge-${mid}`);
+  chk.checked = !chk.checked;
+  if (chk.checked) {
+    mergeTargetMats.push(mid);
+    row.style.borderColor = 'var(--cyan)';
+    row.style.background  = 'var(--cyan-l)';
+  } else {
+    mergeTargetMats = mergeTargetMats.filter(x=>x!==mid);
+    row.style.borderColor = 'var(--bdr)';
+    row.style.background  = 'var(--surf2)';
+  }
+}
+
+function confirmarMerge() {
+  if (mergeTargetMats.length < 2) { showToast('Selecciona al menos 2 materiales'); return; }
+  const tipo = document.getElementById('merge-doc-tipo')?.value;
+  const desc = document.getElementById('merge-doc-desc')?.value.trim();
+  if (!desc) { showToast('Añade una descripción para el documento agrupado'); return; }
+  // Marcar en cada material que ese tipo de doc está cubierto por el documento agrupado
+  mergeTargetMats.forEach(mid => {
+    const m = materials[mid];
+    if (!m) return;
+    const doc = m.docs_req.find(d=>d.tipo===tipo);
+    if (doc) { doc.cubre = desc; doc.estado = 'aportado'; }
+  });
+  closeModal('modal-merge');
+  renderDetail();
+  renderLibrary();
+  showToast(`${mergeTargetMats.length} materiales agrupados bajo "${desc}"`);
+  mergeTargetMats = [];
+}
+
+// ─── DOC SISTEMA ─────────────────────────────────────────────────────────────
+
+function removeDocSis(di) {
+  const s = sistemas.find(x=>x.id===selectedSisId);
+  if (!s) return;
+  s.docs_sistema.splice(di, 1);
+  document.getElementById('doc-sis-list').innerHTML = renderDocSisHTML(s);
+  showToast('Documento eliminado');
+}
+
+function addDocFromCatalog(scope) {
+  const s = sistemas.find(x=>x.id===selectedSisId);
+  if (!s) return;
+  const sel  = document.getElementById(`add-sel-${scope}`);
+  const oblig = document.getElementById(`add-oblig-${scope}`).checked;
+  const codigo = sel.value;
+  const nombre = sel.options[sel.selectedIndex]?.dataset?.nombre || sel.options[sel.selectedIndex]?.text.split(' — ')[1] || codigo;
+  if (!codigo) { showToast('Selecciona un tipo de documento'); return; }
+  if (s.docs_sistema.some(d=>d.tipo===codigo)) { showToast('Ya existe ese documento'); return; }
+  s.docs_sistema.push({tipo:codigo, nombre, oblig, estado:'pendiente'});
+  document.getElementById('doc-sis-list').innerHTML = renderDocSisHTML(s);
+  sel.value = '';
+  showToast(`${codigo} añadido al sistema`);
+}
+
+function addDocCustom(scope) {
+  const s = sistemas.find(x=>x.id===selectedSisId);
+  if (!s) return;
+  const cod = document.getElementById(`add-cod-${scope}`).value.trim().toUpperCase();
+  const nom = document.getElementById(`add-nom-${scope}`).value.trim();
+  if (!cod||!nom) { showToast('Rellena código y nombre'); return; }
+  if (s.docs_sistema.some(d=>d.tipo===cod)) { showToast('Ya existe ese código'); return; }
+  s.docs_sistema.push({tipo:cod, nombre:nom, oblig:true, estado:'pendiente'});
+  document.getElementById('doc-sis-list').innerHTML = renderDocSisHTML(s);
+  document.getElementById(`add-cod-${scope}`).value = '';
+  document.getElementById(`add-nom-${scope}`).value = '';
+  showToast(`${cod} creado`);
+}
+
+// ─── OTRAS ACCIONES ───────────────────────────────────────────────────────────
+
+function renameSelected(nombre) {
+  const s = sistemas.find(x=>x.id===selectedSisId);
+  if (s) { s.nombre = nombre; renderSidebar(); }
+}
+
+function confirmarSistema() {
+  const s = sistemas.find(x=>x.id===selectedSisId);
+  if (!s) return;
+  s.confirmado = !s.confirmado;
+  renderSidebar();
+  renderDetail();
+  showToast(s.confirmado ? `✓ Sistema confirmado` : 'Confirmación retirada');
+}
+
+function removeMatFromSis(mid) {
+  const s = sistemas.find(x=>x.id===selectedSisId);
+  if (!s) return;
+  s.materiales = s.materiales.filter(x=>x!==mid);
+  renderDetail();
+  renderLibrary();
+  showToast('Material desvinculado del sistema');
+}
+
+function highlightMat(mid) {
+  renderLibrary();
+  setTimeout(()=>{
+    const el = document.querySelector(`.lib-mat[data-mid="${mid}"]`);
+    if (el) { el.classList.add('selected-mat'); el.scrollIntoView({behavior:'smooth',block:'center'}); }
+  }, 50);
+}
+
+// ─── TOAST ────────────────────────────────────────────────────────────────────
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(t._timer);
+  t._timer = setTimeout(()=>t.classList.remove('show'), 2000);
+}
+
+// ─── INIT ─────────────────────────────────────────────────────────────────────
+renderSidebar();
+renderLibrary();
+// Seleccionar primer sistema
+selectSistema(sistemas[0].id);
+</script>
+</body>
+</html>

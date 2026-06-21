@@ -1,0 +1,1040 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AXIS OS — Nueva obra</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#f0f2f5;--surf:#fff;--surf2:#f8f9fb;--bdr:#e4e7ec;--bdr2:#cdd2db;
+  --txt:#111827;--txt2:#4b5563;--txt3:#9ca3af;
+  --cyan:#0284c7;--cyan-l:#e0f2fe;--cyan-bd:#bae6fd;--cyan-d:#0369a1;
+  --grn:#059669;--grn-l:#d1fae5;--grn-bd:#6ee7b7;--grn-d:#047857;
+  --ylw:#d97706;--ylw-l:#fef3c7;--ylw-bd:#fde68a;
+  --red:#dc2626;--red-l:#fee2e2;--red-bd:#fca5a5;
+  --vio:#7c3aed;--vio-l:#ede9fe;--vio-bd:#c4b5fd;
+  --ora:#ea580c;--ora-l:#fff7ed;--ora-bd:#fed7aa;
+  --mono:'JetBrains Mono',monospace;
+  --r:7px;--r2:11px;
+  --sh:0 1px 3px rgba(0,0,0,.07),0 1px 2px rgba(0,0,0,.04);
+  --sh2:0 4px 16px rgba(0,0,0,.1),0 2px 4px rgba(0,0,0,.06);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--txt);font-size:13px;line-height:1.5;min-height:100vh;display:flex;flex-direction:column;overflow:hidden}
+
+/* TOPBAR */
+.topbar{height:50px;background:var(--surf);border-bottom:1px solid var(--bdr);display:flex;align-items:center;padding:0 24px;gap:14px;flex-shrink:0;box-shadow:var(--sh);z-index:50}
+.logo{font-family:var(--mono);font-size:13px;font-weight:500;color:var(--cyan);letter-spacing:2px}
+.vr{width:1px;height:18px;background:var(--bdr2)}
+.topbar-title{font-size:13px;font-weight:600;color:var(--txt2)}
+.topbar-r{margin-left:auto;display:flex;align-items:center;gap:8px}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:7px 16px;border-radius:var(--r);border:1px solid;font-family:'Inter',sans-serif;font-size:13px;font-weight:500;cursor:pointer;transition:all .15s;white-space:nowrap}
+.btn:active{transform:scale(.98)}
+.btn-primary{background:var(--cyan);color:#fff;border-color:var(--cyan-d)}
+.btn-primary:hover:not(:disabled){background:var(--cyan-d)}
+.btn-ghost{background:var(--surf);color:var(--txt2);border-color:var(--bdr2)}
+.btn-ghost:hover{background:var(--surf2);color:var(--txt)}
+.btn-grn{background:var(--grn);color:#fff;border-color:var(--grn-d)}
+.btn-grn:hover{background:var(--grn-d)}
+.btn-red{background:var(--red-l);color:var(--red);border-color:var(--red-bd)}
+.btn-red:hover{background:#fecaca}
+.btn-sm{padding:5px 12px;font-size:12px}
+.btn-xs{padding:3px 9px;font-size:11px}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+
+/* STEPPER */
+.stepper-wrap{background:var(--surf);border-bottom:1px solid var(--bdr);padding:0 24px;flex-shrink:0}
+.stepper{display:flex;max-width:900px;margin:0 auto}
+.step{display:flex;align-items:center;gap:9px;padding:13px 16px 13px 0;flex:1;position:relative}
+.step:not(:last-child)::after{content:'';position:absolute;right:0;top:50%;transform:translateY(-50%);width:1px;height:22px;background:var(--bdr)}
+.step-num{width:24px;height:24px;border-radius:50%;border:2px solid var(--bdr2);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--txt3);flex-shrink:0;transition:all .2s}
+.step.active .step-num{border-color:var(--cyan);background:var(--cyan);color:#fff}
+.step.done .step-num{border-color:var(--grn);background:var(--grn);color:#fff}
+.step-n{font-size:11px}
+.step.done .step-n{display:none}
+.step.done .step-num::after{content:'✓'}
+.step-label{font-size:10px;font-weight:600;color:var(--txt3);text-transform:uppercase;letter-spacing:.5px}
+.step.active .step-label{color:var(--cyan)}
+.step.done .step-label{color:var(--grn)}
+.step-sub{font-size:11px;color:var(--txt2);margin-top:1px;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* LAYOUT */
+.page-wrap{flex:1;overflow-y:auto;padding:24px;display:flex;justify-content:center}
+.page-wrap::-webkit-scrollbar{width:4px}
+.page-wrap::-webkit-scrollbar-thumb{background:var(--bdr2);border-radius:4px}
+.page-inner{width:100%;max-width:860px;display:flex;flex-direction:column;gap:16px}
+
+/* CARDS */
+.card{background:var(--surf);border:1px solid var(--bdr);border-radius:var(--r2);box-shadow:var(--sh);overflow:hidden}
+.card-head{padding:14px 18px;border-bottom:1px solid var(--bdr);background:var(--surf2);display:flex;align-items:center;gap:10px}
+.card-icon{font-size:15px;flex-shrink:0}
+.card-title{font-size:13px;font-weight:700;flex:1}
+.card-sub{font-size:11px;color:var(--txt3)}
+.card-body{padding:18px}
+
+/* FORM */
+.fg{display:flex;flex-direction:column;gap:5px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.g4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px}
+.span2{grid-column:span 2}
+.span3{grid-column:1/-1}
+.label{font-size:11px;font-weight:600;color:var(--txt2);display:flex;align-items:center;gap:4px}
+.req{color:var(--red)}
+.inp,.sel,.ta{background:var(--surf2);border:1px solid var(--bdr2);border-radius:var(--r);padding:7px 10px;font-family:'Inter',sans-serif;font-size:13px;color:var(--txt);outline:none;width:100%;transition:border-color .15s}
+.inp:focus,.sel:focus,.ta:focus{border-color:var(--cyan);background:var(--surf)}
+.inp::placeholder{color:var(--txt3)}
+.ta{resize:vertical;min-height:64px}
+.sel{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%239ca3af' stroke-width='2.5'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 9px center;padding-right:28px}
+.hint{font-size:10px;color:var(--txt3);margin-top:2px}
+
+/* STEP VIEWS */
+.sv{display:none;animation:fi .2s ease;flex-direction:column;gap:14px}
+.sv.active{display:flex}
+@keyframes fi{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── STEP 2: AGENTES ── */
+.empresa-card{border:1px solid var(--bdr);border-radius:var(--r2);overflow:hidden;margin-bottom:8px;transition:border-color .15s}
+.empresa-card.selected{border-color:var(--cyan);box-shadow:0 0 0 3px rgba(2,132,199,.1)}
+.emp-head{padding:11px 14px;display:flex;align-items:center;gap:10px;cursor:pointer;transition:background .15s}
+.emp-head:hover{background:var(--surf2)}
+.emp-icon{width:32px;height:32px;border-radius:var(--r);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.emp-info{flex:1;min-width:0}
+.emp-nombre{font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.emp-cif{font-size:11px;color:var(--txt3);font-family:var(--mono)}
+.emp-roles{display:flex;gap:4px;flex-wrap:wrap}
+.role-pill{font-size:10px;font-weight:600;padding:2px 8px;border-radius:10px;border:1px solid}
+.role-DO  {background:#eff6ff;color:#1d4ed8;border-color:#bfdbfe}
+.role-DEO {background:var(--cyan-l);color:var(--cyan);border-color:var(--cyan-bd)}
+.role-CSS {background:var(--ora-l);color:var(--ora);border-color:var(--ora-bd)}
+.role-CON {background:var(--grn-l);color:var(--grn-d);border-color:var(--grn-bd)}
+.role-PRO {background:var(--vio-l);color:var(--vio);border-color:var(--vio-bd)}
+.role-LAB {background:#f0fdf4;color:#166534;border-color:#bbf7d0}
+.role-OCT {background:#fdf4ff;color:#7e22ce;border-color:#e9d5ff}
+.emp-toggle{font-size:10px;color:var(--txt3);transition:transform .2s;flex-shrink:0}
+.emp-toggle.open{transform:rotate(90deg)}
+.emp-body{display:none;border-top:1px solid var(--bdr);padding:14px}
+.emp-body.open{display:block}
+.agente-row{display:flex;align-items:flex-start;gap:8px;padding:10px 12px;background:var(--surf2);border:1px solid var(--bdr);border-radius:var(--r);margin-bottom:6px}
+.agente-avatar{width:30px;height:30px;border-radius:50%;background:var(--cyan-l);border:1px solid var(--cyan-bd);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--cyan);flex-shrink:0}
+.agente-info{flex:1;min-width:0}
+.agente-nombre{font-size:12px;font-weight:600}
+.agente-contact{font-size:11px;color:var(--txt3)}
+.agente-roles-edit{display:flex;flex-wrap:wrap;gap:4px;margin-top:5px}
+.role-toggle{font-size:10px;font-weight:600;padding:2px 9px;border-radius:10px;border:1px solid;cursor:pointer;transition:all .15s;user-select:none}
+.role-toggle.off{background:var(--surf);color:var(--txt3);border-color:var(--bdr2)}
+.role-toggle.off:hover{border-color:var(--bdr2);background:var(--surf2)}
+.colegiado-field{display:none;margin-top:6px}
+.colegiado-field.show{display:flex;gap:6px}
+
+/* ── STEP 3: BC3 ── */
+.bc3-item{border:1px solid var(--bdr);border-radius:var(--r2);overflow:hidden;margin-bottom:8px;transition:all .15s}
+.bc3-item.active-bc3{border-color:var(--grn-bd)}
+.bc3-item.inactive-bc3{border-color:var(--bdr);opacity:.65}
+.bc3-header{padding:11px 14px;display:flex;align-items:center;gap:10px;background:var(--surf2)}
+.bc3-file-icon{font-size:18px;flex-shrink:0}
+.bc3-file-info{flex:1;min-width:0}
+.bc3-file-name{font-family:var(--mono);font-size:11px;font-weight:500;color:var(--txt2)}
+.bc3-file-meta{font-size:10px;color:var(--txt3);margin-top:1px}
+.bc3-disc-sel{background:var(--surf);border:1px solid var(--bdr2);border-radius:var(--r);padding:4px 8px;font-family:'Inter',sans-serif;font-size:11px;color:var(--txt);outline:none;cursor:pointer;flex-shrink:0}
+.bc3-disc-sel:focus{border-color:var(--cyan)}
+.bc3-toggle{display:flex;align-items:center;gap:5px;flex-shrink:0}
+.toggle-sw{position:relative;width:36px;height:20px;flex-shrink:0}
+.toggle-sw input{opacity:0;width:0;height:0;position:absolute}
+.toggle-track{position:absolute;inset:0;background:var(--bdr2);border-radius:20px;cursor:pointer;transition:background .2s}
+.toggle-sw input:checked+.toggle-track{background:var(--grn)}
+.toggle-track::after{content:'';position:absolute;width:14px;height:14px;border-radius:50%;background:#fff;top:3px;left:3px;transition:transform .2s;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+.toggle-sw input:checked+.toggle-track::after{transform:translateX(16px)}
+.bc3-toggle-lbl{font-size:10px;font-weight:600;color:var(--txt3);min-width:32px}
+.bc3-preview-body{padding:12px 14px;border-top:1px solid var(--bdr)}
+.bc3-stats-row{display:flex;gap:12px;margin-bottom:10px;flex-wrap:wrap}
+.bc3-stat{font-size:11px;color:var(--txt3)}
+.bc3-stat strong{color:var(--txt2);font-weight:600}
+.caps-mini{display:flex;flex-wrap:wrap;gap:4px}
+.cap-pill{font-size:10px;padding:2px 8px;border-radius:4px;background:var(--surf2);border:1px solid var(--bdr);color:var(--txt2)}
+.cap-pill span{font-family:var(--mono);color:var(--cyan);margin-right:4px;font-size:9px}
+
+.drop-zone{border:2px dashed var(--bdr2);border-radius:var(--r2);padding:24px 20px;text-align:center;cursor:pointer;transition:all .2s}
+.drop-zone:hover,.drop-zone.drag{border-color:var(--cyan);background:var(--cyan-l)}
+.dz-icon{font-size:28px;margin-bottom:8px;opacity:.4}
+.dz-txt{font-size:13px;font-weight:500;color:var(--txt2)}
+.dz-sub{font-size:11px;color:var(--txt3);margin-top:3px}
+.dz-formats{display:flex;gap:6px;justify-content:center;margin-top:8px}
+.fmt-badge{font-family:var(--mono);font-size:10px;padding:2px 7px;border-radius:3px;background:var(--surf2);border:1px solid var(--bdr);color:var(--txt3)}
+
+/* ── STEP 4: ANÁLISIS ── */
+.prog-wrap{margin-bottom:16px}
+.prog-track{background:var(--bdr);border-radius:20px;height:7px;overflow:hidden}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(--cyan),var(--grn));border-radius:20px;transition:width .3s ease}
+.prog-labels{display:flex;justify-content:space-between;margin-top:5px;font-size:11px;color:var(--txt3)}
+.batch-log{background:#0f172a;border-radius:var(--r2);padding:12px;height:220px;overflow-y:auto;font-family:var(--mono);font-size:11px;line-height:1.8}
+.batch-log::-webkit-scrollbar{width:3px}
+.batch-log::-webkit-scrollbar-thumb{background:#334155;border-radius:3px}
+.ll{display:flex;align-items:center;gap:8px}
+.ld{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.ld.done{background:#34d399}
+.ld.run{background:#60a5fa;animation:blink 1s infinite}
+.ld.pend{background:#1e293b}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.lt{color:#94a3b8;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lt.done{color:#6ee7b7}
+.lt.run{color:#93c5fd}
+.lc{color:#334155;font-size:10px;flex-shrink:0}
+.analysis-meta{display:flex;justify-content:space-between;margin-top:10px;font-size:11px;color:var(--txt3)}
+
+/* ── STEP 5: RESULTADO ── */
+.res-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px}
+.res-stat{background:var(--surf2);border:1px solid var(--bdr);border-radius:var(--r);padding:12px;text-align:center}
+.res-val{font-family:var(--mono);font-size:22px;font-weight:500;line-height:1}
+.res-lbl{font-size:9px;color:var(--txt3);text-transform:uppercase;letter-spacing:.5px;margin-top:4px}
+.sis-list{display:flex;flex-direction:column;gap:5px}
+.sis-row{display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--surf2);border:1px solid var(--bdr);border-radius:var(--r)}
+.sis-row-id{font-family:var(--mono);font-size:10px;font-weight:500;padding:2px 6px;border-radius:3px;background:var(--cyan-l);color:var(--cyan);border:1px solid var(--cyan-bd);min-width:48px;text-align:center;flex-shrink:0}
+.sis-row-nom{font-size:12px;font-weight:500;flex:1}
+.sis-row-disc{font-size:10px;padding:1px 7px;border-radius:10px;background:var(--surf);border:1px solid var(--bdr);color:var(--txt3);flex-shrink:0}
+.sis-row-meta{font-family:var(--mono);font-size:10px;color:var(--txt3);min-width:72px;text-align:right;flex-shrink:0}
+.conf-bar{width:44px;height:4px;background:var(--bdr);border-radius:2px;overflow:hidden;flex-shrink:0}
+.conf-fill{height:100%;border-radius:2px}
+.notice-box{background:var(--ylw-l);border:1px solid var(--ylw-bd);border-radius:var(--r);padding:10px 14px;font-size:12px;color:var(--ylw);display:flex;align-items:center;gap:8px;margin-bottom:14px}
+
+/* NEXT STEPS */
+.next-item{display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--surf2);border:1px solid var(--bdr);border-radius:var(--r);margin-bottom:6px}
+.next-icon{font-size:18px;flex-shrink:0}
+.next-info{flex:1}
+.next-titulo{font-size:12px;font-weight:600}
+.next-sub{font-size:11px;color:var(--txt3)}
+.next-tag{font-size:10px;color:var(--txt3);flex-shrink:0}
+
+/* FOOTER */
+.step-footer{background:var(--surf);border-top:1px solid var(--bdr);padding:12px 24px;display:flex;align-items:center;gap:10px;flex-shrink:0}
+.footer-info{flex:1;font-size:12px;color:var(--txt3)}
+.footer-info strong{color:var(--txt2)}
+
+/* MODAL */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;display:none;align-items:center;justify-content:center;backdrop-filter:blur(3px)}
+.overlay.open{display:flex}
+.modal{background:var(--surf);border:1px solid var(--bdr);border-radius:var(--r2);width:520px;max-height:85vh;display:flex;flex-direction:column;box-shadow:var(--sh2)}
+.modal-head{padding:15px 18px;border-bottom:1px solid var(--bdr);display:flex;align-items:center;gap:10px}
+.modal-title{font-size:14px;font-weight:700;flex:1}
+.modal-close{background:none;border:none;color:var(--txt3);cursor:pointer;font-size:18px;line-height:1;padding:2px}
+.modal-close:hover{color:var(--txt)}
+.modal-body{padding:18px;overflow-y:auto;flex:1;display:flex;flex-direction:column;gap:12px}
+.modal-foot{padding:12px 18px;border-top:1px solid var(--bdr);display:flex;gap:8px;justify-content:flex-end}
+.sep{height:1px;background:var(--bdr);margin:4px 0}
+.sep-label{font-size:10px;font-weight:600;color:var(--txt3);text-transform:uppercase;letter-spacing:.5px;margin:8px 0 6px}
+.roles-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.role-card{border:1px solid var(--bdr);border-radius:var(--r);padding:9px 11px;cursor:pointer;transition:all .15s}
+.role-card:hover{border-color:var(--bdr2)}
+.role-card.sel{border-color:var(--cyan);background:var(--cyan-l)}
+.role-card-top{display:flex;align-items:center;gap:7px;margin-bottom:3px}
+.role-card-check{width:16px;height:16px;border-radius:50%;border:2px solid var(--bdr2);flex-shrink:0;transition:all .15s;display:flex;align-items:center;justify-content:center}
+.role-card.sel .role-card-check{border-color:var(--cyan);background:var(--cyan)}
+.role-card.sel .role-card-check::after{content:'✓';font-size:9px;color:#fff;font-weight:700}
+.role-card-nombre{font-size:12px;font-weight:600}
+.role-card-desc{font-size:10px;color:var(--txt3);line-height:1.4}
+.colegiado-section{background:var(--surf2);border:1px solid var(--bdr);border-radius:var(--r);padding:10px 12px;display:none}
+.colegiado-section.show{display:block}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="logo">AXIS OS</div>
+  <div class="vr"></div>
+  <div class="topbar-title">Nueva obra</div>
+  <div class="topbar-r">
+    <button class="btn btn-ghost btn-sm">Cancelar</button>
+  </div>
+</header>
+
+<div class="stepper-wrap">
+  <div class="stepper">
+    <div class="step active" data-step="1"><div class="step-num"><span class="step-n">1</span></div><div><div class="step-label">Datos básicos</div><div class="step-sub">Nombre y ubicación</div></div></div>
+    <div class="step" data-step="2"><div class="step-num"><span class="step-n">2</span></div><div><div class="step-label">Agentes</div><div class="step-sub">Empresas y roles</div></div></div>
+    <div class="step" data-step="3"><div class="step-num"><span class="step-n">3</span></div><div><div class="step-label">BC3</div><div class="step-sub">Importar presupuesto</div></div></div>
+    <div class="step" data-step="4"><div class="step-num"><span class="step-n">4</span></div><div><div class="step-label">Análisis IA</div><div class="step-sub">Sistemas y materiales</div></div></div>
+    <div class="step" data-step="5"><div class="step-num"><span class="step-n">5</span></div><div><div class="step-label">Resultado</div><div class="step-sub">Previsualización</div></div></div>
+  </div>
+</div>
+
+<div class="page-wrap">
+<div class="page-inner">
+
+<!-- ─── STEP 1 ─── -->
+<div class="sv active" id="sv-1">
+  <div class="card">
+    <div class="card-head"><span class="card-icon">🏗️</span><div><div class="card-title">Identificación de la obra</div><div class="card-sub">Datos básicos del proyecto</div></div></div>
+    <div class="card-body">
+      <div class="g2" style="gap:12px">
+        <div class="fg span2"><label class="label">Nombre de la obra <span class="req">*</span></label><input class="inp" id="f-nombre" placeholder="Ej: Residencial Las Acacias" oninput="chk()"></div>
+        <div class="fg"><label class="label">Referencia / expediente</label><input class="inp" id="f-ref" placeholder="2025-ARQ-042"></div>
+        <div class="fg"><label class="label">Uso principal <span class="req">*</span></label>
+          <select class="sel" id="f-uso" onchange="chk()">
+            <option value="">— Selecciona —</option>
+            <option>Residencial plurifamiliar</option>
+            <option>Residencial unifamiliar</option>
+            <option>Oficinas</option>
+            <option>Hotelero</option>
+            <option>Industrial</option>
+            <option>Rehabilitación</option>
+            <option>Uso mixto</option>
+          </select>
+        </div>
+        <div class="fg"><label class="label">Promotor</label><input class="inp" id="f-promotor" placeholder="Empresa o persona promotora"></div>
+        <div class="fg"><label class="label">Fecha de inicio</label><input class="inp" type="date" id="f-inicio"></div>
+        <div class="fg"><label class="label">Fecha de fin prevista</label><input class="inp" type="date" id="f-fin"></div>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-head"><span class="card-icon">📍</span><div><div class="card-title">Ubicación</div><div class="card-sub">Dirección completa de la obra</div></div></div>
+    <div class="card-body">
+      <div class="g2" style="gap:12px">
+        <div class="fg span2"><label class="label">Calle y número <span class="req">*</span></label><input class="inp" id="f-calle" placeholder="Calle Mayor, 14" oninput="chk()"></div>
+        <div class="fg"><label class="label">Localidad <span class="req">*</span></label><input class="inp" id="f-localidad" placeholder="Las Rozas de Madrid" oninput="chk()"></div>
+        <div class="fg"><label class="label">Código postal</label><input class="inp" id="f-cp" placeholder="28230" maxlength="5"></div>
+        <div class="fg"><label class="label">Provincia</label><input class="inp" id="f-provincia" placeholder="Madrid"></div>
+        <div class="fg"><label class="label">Comunidad Autónoma</label>
+          <select class="sel" id="f-ccaa">
+            <option value="madrid">Comunidad de Madrid</option>
+            <option value="cataluna">Cataluña</option>
+            <option value="valencia">Comunitat Valenciana</option>
+            <option value="andalucia">Andalucía</option>
+            <option value="pais_vasco">País Vasco</option>
+            <option value="galicia">Galicia</option>
+            <option value="canarias">Canarias</option>
+            <option value="otras">Otras</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── STEP 2 ─── -->
+<div class="sv" id="sv-2">
+  <div class="card">
+    <div class="card-head">
+      <span class="card-icon">🏢</span>
+      <div><div class="card-title">Empresas y agentes</div><div class="card-sub">Crea las empresas participantes y asigna personas con sus roles en la obra</div></div>
+      <button class="btn btn-ghost btn-sm" onclick="openModalEmpresa()">+ Empresa</button>
+    </div>
+    <div class="card-body" id="empresas-list">
+      <div style="text-align:center;padding:24px 0;color:var(--txt3);font-size:12px">
+        <div style="font-size:24px;margin-bottom:8px;opacity:.3">🏢</div>
+        Añade la primera empresa participante en la obra<br>
+        <span style="font-size:11px">Constructor, promotor, estudios colaboradores...</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── STEP 3 ─── -->
+<div class="sv" id="sv-3">
+  <div class="card">
+    <div class="card-head">
+      <span class="card-icon">📄</span>
+      <div><div class="card-title">Importar BC3</div><div class="card-sub">Sube los archivos de presupuesto y asigna su disciplina. Puedes añadir versiones posteriores.</div></div>
+    </div>
+    <div class="card-body">
+      <div id="bc3-list" style="margin-bottom:12px"></div>
+      <div class="drop-zone" id="main-dz"
+        ondragover="event.preventDefault();this.classList.add('drag')"
+        ondragleave="this.classList.remove('drag')"
+        ondrop="handleDropBC3(event)"
+        onclick="document.getElementById('fi-main').click()">
+        <input type="file" id="fi-main" accept=".BC3,.bc3,.Presto,.presto" multiple style="display:none" onchange="handleFilesBC3(this)">
+        <div class="dz-icon">📂</div>
+        <div class="dz-txt">Arrastra archivos BC3 o haz clic para seleccionar</div>
+        <div class="dz-sub">Puedes subir varios archivos a la vez</div>
+        <div class="dz-formats">
+          <span class="fmt-badge">.BC3</span>
+          <span class="fmt-badge">.Presto</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── STEP 4 ─── -->
+<div class="sv" id="sv-4">
+  <div class="card">
+    <div class="card-head"><span class="card-icon">⬡</span><div><div class="card-title">Análisis inteligente</div><div class="card-sub">Identificando sistemas constructivos, materiales y documentación requerida</div></div></div>
+    <div class="card-body">
+      <div class="prog-wrap">
+        <div class="prog-track"><div class="prog-fill" id="prog-fill" style="width:0%"></div></div>
+        <div class="prog-labels"><span id="prog-txt">Iniciando...</span><span id="prog-pct">0 / 52 batches</span></div>
+      </div>
+      <div class="batch-log" id="batch-log"></div>
+      <div class="analysis-meta">
+        <span id="cost-lbl">Tokens: 0 · Coste: 0.000 €</span>
+        <span id="eta-lbl"></span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── STEP 5 ─── -->
+<div class="sv" id="sv-5">
+  <div class="notice-box">⚠ Esta es una previsualización del análisis. Los datos son orientativos hasta confirmar la clasificación en el paso siguiente.</div>
+  <div class="card">
+    <div class="card-head"><span class="card-icon">✓</span><div><div class="card-title">Resultado del análisis IA</div><div class="card-sub">Previsualización · FLEXLIVING 417 LAS ROZAS</div></div></div>
+    <div class="card-body">
+      <div class="res-grid" id="res-stats"></div>
+      <div style="font-size:11px;font-weight:600;color:var(--txt2);margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px">Sistemas identificados</div>
+      <div class="sis-list" id="sis-list"></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-head"><span class="card-icon">→</span><div><div class="card-title">Próximos pasos</div></div></div>
+    <div class="card-body">
+      <div class="next-item"><div class="next-icon">🔍</div><div class="next-info"><div class="next-titulo">Revisar y confirmar clasificación</div><div class="next-sub">Ajusta sistemas, mueve partidas, edita materiales y documentación</div></div><span class="next-tag">Recomendado</span></div>
+      <div class="next-item"><div class="next-icon">📋</div><div class="next-info"><div class="next-titulo">Gestión documental</div><div class="next-sub">Sube y valida la documentación técnica por sistema y material</div></div><span class="next-tag">Cuando tengas docs</span></div>
+      <div class="next-item"><div class="next-icon">💰</div><div class="next-info"><div class="next-titulo">Certificación</div><div class="next-sub">Disponible cuando la documentación esté validada</div></div><span class="next-tag" style="color:var(--red)">Bloqueado</span></div>
+    </div>
+  </div>
+</div>
+
+</div>
+</div>
+
+<div class="step-footer">
+  <div class="footer-info" id="footer-info">Completa los campos obligatorios</div>
+  <button class="btn btn-ghost btn-sm" id="btn-back" onclick="back()" style="display:none">← Atrás</button>
+  <button class="btn btn-primary" id="btn-next" onclick="next()" disabled>Continuar →</button>
+</div>
+
+<!-- MODAL EMPRESA -->
+<div class="overlay" id="modal-empresa">
+  <div class="modal">
+    <div class="modal-head"><span class="modal-title" id="modal-emp-title">Nueva empresa</span><button class="modal-close" onclick="closeModal('modal-empresa')">×</button></div>
+    <div class="modal-body">
+      <div class="g2">
+        <div class="fg span2"><label class="label">Razón social <span class="req">*</span></label><input class="inp" id="me-nombre" placeholder="Empresa Constructora S.L."></div>
+        <div class="fg"><label class="label">CIF / NIF</label><input class="inp" id="me-cif" placeholder="B12345678"></div>
+        <div class="fg"><label class="label">Teléfono</label><input class="inp" id="me-tel" placeholder="+34 600 000 000"></div>
+        <div class="fg span2"><label class="label">Email</label><input class="inp" id="me-email" placeholder="contacto@empresa.com"></div>
+      </div>
+      <div class="sep"></div>
+      <div class="sep-label">Personas / agentes de esta empresa</div>
+      <div id="agentes-modal-list"></div>
+      <button class="btn btn-ghost btn-sm" onclick="addAgenteModal()" style="width:100%;justify-content:center">+ Añadir persona</button>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost btn-sm" onclick="closeModal('modal-empresa')">Cancelar</button>
+      <button class="btn btn-primary btn-sm" onclick="guardarEmpresa()">Guardar empresa</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL AGENTE -->
+<div class="overlay" id="modal-agente">
+  <div class="modal">
+    <div class="modal-head"><span class="modal-title">Añadir persona</span><button class="modal-close" onclick="closeModal('modal-agente')">×</button></div>
+    <div class="modal-body">
+      <div class="g2">
+        <div class="fg span2"><label class="label">Nombre completo <span class="req">*</span></label><input class="inp" id="ma-nombre" placeholder="Nombre y apellidos"></div>
+        <div class="fg"><label class="label">Email <span class="req">*</span></label><input class="inp" id="ma-email" placeholder="persona@empresa.com"><div class="hint">Será su acceso a la plataforma</div></div>
+        <div class="fg"><label class="label">Teléfono</label><input class="inp" id="ma-tel" placeholder="+34 600 000 000"></div>
+      </div>
+      <div class="sep"></div>
+      <div class="sep-label">Roles en esta obra</div>
+
+      <!-- Roles con entidad legal -->
+      <div style="font-size:10px;font-weight:700;color:var(--txt3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px;display:flex;align-items:center;gap:6px">
+        <span>Con habilitación legal</span>
+        <span style="font-weight:400;color:var(--txt3);text-transform:none;letter-spacing:0">· Requieren nº de colegiado</span>
+      </div>
+      <div class="roles-grid" style="margin-bottom:12px">
+        <div class="role-card" data-role="DO" onclick="toggleRoleCard(this)">
+          <div class="role-card-top"><div class="role-card-check"></div><span class="role-card-nombre">Director de Obra (DO)</span></div>
+          <div class="role-card-desc">Dirección facultativa del proyecto</div>
+        </div>
+        <div class="role-card" data-role="DEO" onclick="toggleRoleCard(this)">
+          <div class="role-card-top"><div class="role-card-check"></div><span class="role-card-nombre">Director Ejec. Obra (DEO)</span></div>
+          <div class="role-card-desc">Dirección de ejecución de obras</div>
+        </div>
+        <div class="role-card" data-role="CSS" onclick="toggleRoleCard(this)">
+          <div class="role-card-top"><div class="role-card-check"></div><span class="role-card-nombre">Coord. Seg. y Salud (CSS)</span></div>
+          <div class="role-card-desc">Coordinación de seguridad en ejecución</div>
+        </div>
+      </div>
+
+      <!-- Roles operativos estándar -->
+      <div style="font-size:10px;font-weight:700;color:var(--txt3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px">Dirección y gestión</div>
+      <div class="roles-grid" style="margin-bottom:10px">
+        <div class="role-card" data-role="PM" onclick="toggleRoleCard(this)">
+          <div class="role-card-top"><div class="role-card-check"></div><span class="role-card-nombre">Project Manager</span></div>
+          <div class="role-card-desc">Gestión y coordinación del proyecto</div>
+        </div>
+        <div class="role-card" data-role="ASDO" onclick="toggleRoleCard(this)">
+          <div class="role-card-top"><div class="role-card-check"></div><span class="role-card-nombre">Asistente DO</span></div>
+          <div class="role-card-desc">Apoyo a la dirección facultativa</div>
+        </div>
+        <div class="role-card" data-role="ASDEO" onclick="toggleRoleCard(this)">
+          <div class="role-card-top"><div class="role-card-check"></div><span class="role-card-nombre">Asistente DEO</span></div>
+          <div class="role-card-desc">Apoyo a la dirección de ejecución</div>
+        </div>
+        <div class="role-card" data-role="PRO" onclick="toggleRoleCard(this)">
+          <div class="role-card-top"><div class="role-card-check"></div><span class="role-card-nombre">Promotor</span></div>
+          <div class="role-card-desc">Representante del promotor</div>
+        </div>
+      </div>
+
+      <div style="font-size:10px;font-weight:700;color:var(--txt3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px">Producción (constructora)</div>
+      <div class="roles-grid" style="margin-bottom:10px">
+        <div class="role-card" data-role="JO" onclick="toggleRoleCard(this)">
+          <div class="role-card-top"><div class="role-card-check"></div><span class="role-card-nombre">Jefe de obra</span></div>
+          <div class="role-card-desc">Responsable técnico en obra</div>
+        </div>
+        <div class="role-card" data-role="JG" onclick="toggleRoleCard(this)">
+          <div class="role-card-top"><div class="role-card-check"></div><span class="role-card-nombre">Jefe de grupo</span></div>
+          <div class="role-card-desc">Responsable de área o lote</div>
+        </div>
+        <div class="role-card" data-role="JP" onclick="toggleRoleCard(this)">
+          <div class="role-card-top"><div class="role-card-check"></div><span class="role-card-nombre">Jefe de producción</span></div>
+          <div class="role-card-desc">Planificación y control de producción</div>
+        </div>
+        <div class="role-card" data-role="ASO" onclick="toggleRoleCard(this)">
+          <div class="role-card-top"><div class="role-card-check"></div><span class="role-card-nombre">Asistente de obra</span></div>
+          <div class="role-card-desc">Apoyo técnico en producción</div>
+        </div>
+      </div>
+
+      <div style="font-size:10px;font-weight:700;color:var(--txt3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px">Control y consultoría</div>
+      <div class="roles-grid" style="margin-bottom:10px">
+        <div class="role-card" data-role="OCT" onclick="toggleRoleCard(this)">
+          <div class="role-card-top"><div class="role-card-check"></div><span class="role-card-nombre">OCT</span></div>
+          <div class="role-card-desc">Organismo de Control Técnico</div>
+        </div>
+        <div class="role-card" data-role="ECLU" onclick="toggleRoleCard(this)">
+          <div class="role-card-top"><div class="role-card-check"></div><span class="role-card-nombre">ECLU</span></div>
+          <div class="role-card-desc">Entidad de Control de Calidad Urbanística</div>
+        </div>
+        <div class="role-card" data-role="LAB" onclick="toggleRoleCard(this)">
+          <div class="role-card-top"><div class="role-card-check"></div><span class="role-card-nombre">Laboratorio</span></div>
+          <div class="role-card-desc">Ensayos y control de materiales</div>
+        </div>
+        <div class="role-card" data-role="CON" onclick="toggleRoleCard(this)">
+          <div class="role-card-top"><div class="role-card-check"></div><span class="role-card-nombre">Consultor</span></div>
+          <div class="role-card-desc">Asesoría técnica especializada</div>
+        </div>
+        <div class="role-card" data-role="TEC" onclick="toggleRoleCard(this)">
+          <div class="role-card-top"><div class="role-card-check"></div><span class="role-card-nombre">Técnico colaborador</span></div>
+          <div class="role-card-desc">Estructuras, MEP, fachada, paisajismo...</div>
+        </div>
+      </div>
+
+      <!-- Roles personalizados -->
+      <div id="custom-roles-slots" style="display:flex;flex-direction:column;gap:6px;margin-bottom:8px"></div>
+      <div style="display:flex;gap:6px;align-items:center;margin-bottom:12px">
+        <input class="inp" id="custom-role-input" placeholder="Nombre del rol personalizado..." style="flex:1" onkeydown="if(event.key==='Enter')addCustomRole()">
+        <button class="btn btn-ghost btn-sm" onclick="addCustomRole()">+ Rol personalizado</button>
+      </div>
+
+      <div class="colegiado-section" id="colegiado-section">
+        <div class="sep-label" style="margin-top:0">Datos de colegiación (DO / DEO / CSS)</div>
+        <div class="g3">
+          <div class="fg"><label class="label">Titulación</label>
+            <select class="sel" id="ma-titulo">
+              <option value="arq_tec">Arquitecto/a Técnico/a</option>
+              <option value="arq">Arquitecto/a</option>
+              <option value="ing_edif">Ing. de Edificación</option>
+              <option value="ing">Ingeniero/a</option>
+            </select>
+          </div>
+          <div class="fg"><label class="label">Colegio</label><input class="inp" id="ma-colegio" placeholder="COAATM"></div>
+          <div class="fg"><label class="label">Nº colegiado</label><input class="inp" id="ma-num-col" placeholder="12345"></div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost btn-sm" onclick="closeModal('modal-agente')">Cancelar</button>
+      <button class="btn btn-primary btn-sm" onclick="guardarAgente()">Añadir persona</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const BC3_PREVIEW  = {"proyecto": "FLEXLIVING 417 LAS ROZAS 260608", "capitulos": [{"codigo": "01", "nombre": "ARQUITECTURA"}, {"codigo": "02", "nombre": "ESTRUCTURAS"}, {"codigo": "03", "nombre": "INSTALACIONES"}, {"codigo": "04", "nombre": "PAISAJISMO"}, {"codigo": "05", "nombre": "CONTROL DE CALIDAD"}, {"codigo": "06", "nombre": "GESTIÓN DE RESIDUOS"}, {"codigo": "07", "nombre": "SEGURIDAD Y SALUD"}, {"codigo": "08", "nombre": "GASTROBAR"}], "total_partidas": 1927, "con_texto": 1306, "pct_texto": 67.8};
+const BATCHES_PLAN = [{"id": "01.01_0", "sub": "01.01", "nombre": "MOVIMIENTO DE TIERRAS Y DEMOLICIONES", "n": 5, "estado": "pendiente"}, {"id": "01.02_0", "sub": "01.02", "nombre": "DRENAJES E IMPERMEABILIZACION", "n": 7, "estado": "pendiente"}, {"id": "01.03_0", "sub": "01.03", "nombre": "CUBIERTAS", "n": 26, "estado": "pendiente"}, {"id": "01.04_0", "sub": "01.04", "nombre": "AISLAMIENTOS Y HERMETICIDAD AL AIRE", "n": 8, "estado": "pendiente"}, {"id": "01.05_0", "sub": "01.05", "nombre": "FACHADA (1/2)", "n": 40, "estado": "pendiente"}, {"id": "01.05_1", "sub": "01.05", "nombre": "FACHADA (2/2)", "n": 11, "estado": "pendiente"}, {"id": "01.06_0", "sub": "01.06", "nombre": "ALBAÑILERÍA", "n": 29, "estado": "pendiente"}, {"id": "01.07_0", "sub": "01.07", "nombre": "ACABADOS (1/2)", "n": 40, "estado": "pendiente"}, {"id": "01.07_1", "sub": "01.07", "nombre": "ACABADOS (2/2)", "n": 7, "estado": "pendiente"}, {"id": "01.08_0", "sub": "01.08", "nombre": "CERRAJERÍA", "n": 17, "estado": "pendiente"}, {"id": "01.09_0", "sub": "01.09", "nombre": "CARPINTERÍA", "n": 30, "estado": "pendiente"}, {"id": "01.10_0", "sub": "01.10", "nombre": "APARATOS SANITARIOS Y GRIFERÍA", "n": 27, "estado": "pendiente"}, {"id": "01.11_0", "sub": "01.11", "nombre": "EQUIPAMIENTOS", "n": 21, "estado": "pendiente"}, {"id": "01.12_0", "sub": "01.12", "nombre": "ASCENSORES", "n": 3, "estado": "pendiente"}, {"id": "01.13_0", "sub": "01.13", "nombre": "URBANIZACIÓN / EXTERIORES", "n": 28, "estado": "pendiente"}, {"id": "02.01_0", "sub": "02.01", "nombre": "MOVIMIENTO DE TIERRAS", "n": 5, "estado": "pendiente"}, {"id": "02.02_0", "sub": "02.02", "nombre": "CIMENTACIONES", "n": 11, "estado": "pendiente"}, {"id": "02.03_0", "sub": "02.03", "nombre": "ESTRUCTURA", "n": 9, "estado": "pendiente"}, {"id": "02.04_0", "sub": "02.04", "nombre": "ESTRUCTURA METÁLICA", "n": 1, "estado": "pendiente"}, {"id": "03.01_0", "sub": "03.01", "nombre": "INSTALACION DE SANEAMIENTO (1/2)", "n": 40, "estado": "pendiente"}, {"id": "03.01_1", "sub": "03.01", "nombre": "INSTALACION DE SANEAMIENTO (2/2)", "n": 28, "estado": "pendiente"}, {"id": "03.02_0", "sub": "03.02", "nombre": "FONTANERIA (1/2)", "n": 40, "estado": "pendiente"}, {"id": "03.02_1", "sub": "03.02", "nombre": "FONTANERIA (2/2)", "n": 37, "estado": "pendiente"}, {"id": "03.03_0", "sub": "03.03", "nombre": "CLIMATIZACIÓN Y VENTILACIÓN (1/4)", "n": 40, "estado": "pendiente"}, {"id": "03.03_1", "sub": "03.03", "nombre": "CLIMATIZACIÓN Y VENTILACIÓN (2/4)", "n": 40, "estado": "pendiente"}, {"id": "03.03_2", "sub": "03.03", "nombre": "CLIMATIZACIÓN Y VENTILACIÓN (3/4)", "n": 40, "estado": "pendiente"}, {"id": "03.03_3", "sub": "03.03", "nombre": "CLIMATIZACIÓN Y VENTILACIÓN (4/4)", "n": 34, "estado": "pendiente"}, {"id": "03.04_0", "sub": "03.04", "nombre": "PROTECCION CONTRA INCENDIOS (1/2)", "n": 40, "estado": "pendiente"}, {"id": "03.04_1", "sub": "03.04", "nombre": "PROTECCION CONTRA INCENDIOS (2/2)", "n": 13, "estado": "pendiente"}, {"id": "03.05_0", "sub": "03.05", "nombre": "PISCINAS (1/2)", "n": 40, "estado": "pendiente"}, {"id": "03.05_1", "sub": "03.05", "nombre": "PISCINAS (2/2)", "n": 16, "estado": "pendiente"}, {"id": "03.06_0", "sub": "03.06", "nombre": "ELECTRICIDAD Y ALUMBRADO (1/8)", "n": 40, "estado": "pendiente"}, {"id": "03.06_1", "sub": "03.06", "nombre": "ELECTRICIDAD Y ALUMBRADO (2/8)", "n": 40, "estado": "pendiente"}, {"id": "03.06_2", "sub": "03.06", "nombre": "ELECTRICIDAD Y ALUMBRADO (3/8)", "n": 40, "estado": "pendiente"}, {"id": "03.06_3", "sub": "03.06", "nombre": "ELECTRICIDAD Y ALUMBRADO (4/8)", "n": 40, "estado": "pendiente"}, {"id": "03.06_4", "sub": "03.06", "nombre": "ELECTRICIDAD Y ALUMBRADO (5/8)", "n": 40, "estado": "pendiente"}, {"id": "03.06_5", "sub": "03.06", "nombre": "ELECTRICIDAD Y ALUMBRADO (6/8)", "n": 40, "estado": "pendiente"}, {"id": "03.06_6", "sub": "03.06", "nombre": "ELECTRICIDAD Y ALUMBRADO (7/8)", "n": 40, "estado": "pendiente"}, {"id": "03.06_7", "sub": "03.06", "nombre": "ELECTRICIDAD Y ALUMBRADO (8/8)", "n": 5, "estado": "pendiente"}, {"id": "03.07_0", "sub": "03.07", "nombre": "TELECOMUNICACIONES (1/2)", "n": 40, "estado": "pendiente"}, {"id": "03.07_1", "sub": "03.07", "nombre": "TELECOMUNICACIONES (2/2)", "n": 11, "estado": "pendiente"}, {"id": "03.08_0", "sub": "03.08", "nombre": "EDIFICIO EXENTO (1/4)", "n": 40, "estado": "pendiente"}, {"id": "03.08_1", "sub": "03.08", "nombre": "EDIFICIO EXENTO (2/4)", "n": 40, "estado": "pendiente"}, {"id": "03.08_2", "sub": "03.08", "nombre": "EDIFICIO EXENTO (3/4)", "n": 40, "estado": "pendiente"}, {"id": "03.08_3", "sub": "03.08", "nombre": "EDIFICIO EXENTO (4/4)", "n": 3, "estado": "pendiente"}, {"id": "04.00_0", "sub": "04.00", "nombre": "NOTA BREEAM Y FITWELL", "n": 1, "estado": "pendiente"}, {"id": "08.01_0", "sub": "08.01", "nombre": "ARQUITECTURA", "n": 19, "estado": "pendiente"}, {"id": "08.02_0", "sub": "08.02", "nombre": "ESTRUCTURAS", "n": 1, "estado": "pendiente"}, {"id": "PSO_0", "sub": "PSO", "nombre": "OBRA CIVIL", "n": 27, "estado": "pendiente"}, {"id": "PSP_0", "sub": "PSP", "nombre": "PLANTACIONES (1/2)", "n": 40, "estado": "pendiente"}, {"id": "PSP_1", "sub": "PSP", "nombre": "PLANTACIONES (2/2)", "n": 14, "estado": "pendiente"}, {"id": "PSR_0", "sub": "PSR", "nombre": "RIEGO", "n": 12, "estado": "pendiente"}];
+const RESULTADO_IA = {"sistemas": [{"id": "s1", "sistema_id": "08.01", "nombre": "Tabiquería PYL autoportante", "n_partidas": 10, "n_materiales": 7, "disciplina": "Arquitectura", "conf": 0.97}, {"id": "s2", "sistema_id": "08.02", "nombre": "Trasdosados PYL", "n_partidas": 5, "n_materiales": 5, "disciplina": "Arquitectura", "conf": 0.97}, {"id": "s3", "sistema_id": "08.03", "nombre": "Particiones cerámicas", "n_partidas": 4, "n_materiales": 3, "disciplina": "Arquitectura", "conf": 0.96}, {"id": "s4", "sistema_id": "10.01", "nombre": "Enfoscados y revocos", "n_partidas": 3, "n_materiales": 3, "disciplina": "Arquitectura", "conf": 0.95}, {"id": "s5", "sistema_id": "18.01", "nombre": "Sellados cortafuegos", "n_partidas": 2, "n_materiales": 1, "disciplina": "Arquitectura", "conf": 0.93}, {"id": "s6", "sistema_id": "05.01", "nombre": "Hormigón armado in situ", "n_partidas": 12, "n_materiales": 3, "disciplina": "Estructuras", "conf": 0.98}, {"id": "s7", "sistema_id": "05.02", "nombre": "Forjados de hormigón", "n_partidas": 8, "n_materiales": 3, "disciplina": "Estructuras", "conf": 0.97}, {"id": "s8", "sistema_id": "04.02", "nombre": "Zapatas y vigas de atado", "n_partidas": 5, "n_materiales": 3, "disciplina": "Estructuras", "conf": 0.98}, {"id": "s9", "sistema_id": "13.02", "nombre": "Red de distribución de agua", "n_partidas": 24, "n_materiales": 4, "disciplina": "MEP", "conf": 0.94}, {"id": "s10", "sistema_id": "14.01", "nombre": "Bajantes y ventilaciones", "n_partidas": 18, "n_materiales": 3, "disciplina": "MEP", "conf": 0.95}, {"id": "s11", "sistema_id": "15.01", "nombre": "Producción frío/calor", "n_partidas": 32, "n_materiales": 5, "disciplina": "MEP", "conf": 0.93}, {"id": "s12", "sistema_id": "16.02", "nombre": "Cuadros eléctricos", "n_partidas": 28, "n_materiales": 3, "disciplina": "MEP", "conf": 0.94}, {"id": "s13", "sistema_id": "16.03", "nombre": "Red de distribución eléctrica", "n_partidas": 45, "n_materiales": 4, "disciplina": "MEP", "conf": 0.95}, {"id": "s14", "sistema_id": "18.02", "nombre": "Extinción manual", "n_partidas": 12, "n_materiales": 2, "disciplina": "MEP", "conf": 0.92}, {"id": "s15", "sistema_id": "21.03", "nombre": "Jardinería y riego", "n_partidas": 38, "n_materiales": 6, "disciplina": "Paisajismo", "conf": 0.91}], "total_partidas_clasificadas": 246, "total_partidas": 1306, "sin_asignar": 60, "total_materiales": 48};
+
+// ── ESTADO ────────────────────────────────────────────────────────────────────
+let step = 1;
+let empresas = [];
+let bc3Files = [];
+let analysisComplete = false;
+let pendingEmpresaId = null; // empresa a la que se añade el agente
+let pendingAgentes = [];     // agentes temporales dentro del modal empresa
+
+// ── STEPPER ───────────────────────────────────────────────────────────────────
+function goTo(s) {
+  document.querySelectorAll('.sv').forEach(v=>v.classList.remove('active'));
+  document.getElementById(`sv-${s}`).classList.add('active');
+  document.querySelectorAll('.step').forEach(el=>{
+    const n = parseInt(el.dataset.step);
+    el.classList.toggle('active', n===s);
+    el.classList.toggle('done', n<s);
+  });
+  document.getElementById('btn-back').style.display = s>1?'':'none';
+  step = s;
+  chk();
+  document.querySelector('.page-wrap').scrollTop = 0;
+  if (s===4) startAnalysis();
+  if (s===5) renderResultado();
+}
+function next() { if(step<5) goTo(step+1); }
+function back() { if(step>1) goTo(step-1); }
+
+function chk() {
+  const btn = document.getElementById('btn-next');
+  const info = document.getElementById('footer-info');
+  let ok=false, msg='';
+
+  if (step===1) {
+    const n=document.getElementById('f-nombre').value.trim();
+    const u=document.getElementById('f-uso').value;
+    const c=document.getElementById('f-calle').value.trim();
+    const l=document.getElementById('f-localidad').value.trim();
+    ok = n&&u&&c&&l;
+    msg = ok ? `<strong>${n}</strong> · ${l}` : 'Completa nombre, uso, calle y localidad';
+  } else if (step===2) {
+    const conRoles=['DO','DEO','CON'];
+    const tieneRol = r => empresas.some(e=>e.agentes.some(a=>a.roles.includes(r)));
+    const tieneDO = tieneRol('DO'), tieneDEO = tieneRol('DEO'), tieneCON = tieneRol('CON');
+    ok = empresas.length>0;
+    if (!ok) msg='Añade al menos una empresa para continuar';
+    else msg = `${empresas.length} empresa${empresas.length>1?'s':''} · `+
+      [tieneDO?'<strong>DO ✓</strong>':'<span style="color:var(--red)">DO falta</span>',
+       tieneDEO?'<strong>DEO ✓</strong>':'<span style="color:var(--red)">DEO falta</span>',
+       tieneCON?'<strong>Constructor ✓</strong>':'Constructor pendiente'].join(' · ');
+  } else if (step===3) {
+    const activos = bc3Files.filter(f=>f.active&&f.disciplina);
+    ok = activos.length>0;
+    msg = ok ? `${activos.length} BC3 activo${activos.length>1?'s':''}` : 'Importa al menos un BC3 y asígnale disciplina';
+  } else if (step===4) {
+    ok = analysisComplete;
+    msg = ok ? 'Análisis completado' : 'Espera a que termine el análisis';
+    btn.textContent = ok ? 'Ver resultado →' : 'Analizando...';
+  } else if (step===5) {
+    ok = true;
+    msg = 'Previsualización del análisis IA';
+    btn.textContent = 'Ir a clasificación →';
+  }
+  if (step!==4&&step!==5) btn.textContent='Continuar →';
+  btn.disabled = !ok;
+  document.getElementById('footer-info').innerHTML = msg;
+}
+
+// ── STEP 2: EMPRESAS Y AGENTES ────────────────────────────────────────────────
+const ROLE_META = {
+  // Habilitación legal
+  DO:    {label:'Director de Obra',         cls:'role-DO',   colegiado:true},
+  DEO:   {label:'Director Ejec. Obra',      cls:'role-DEO',  colegiado:true},
+  CSS:   {label:'Coord. Seg. y Salud',      cls:'role-CSS',  colegiado:true},
+  // Dirección y gestión
+  PM:    {label:'Project Manager',          cls:'role-CON',  colegiado:false},
+  ASDO:  {label:'Asistente DO',             cls:'role-DEO',  colegiado:false},
+  ASDEO: {label:'Asistente DEO',            cls:'role-DEO',  colegiado:false},
+  PRO:   {label:'Promotor',                 cls:'role-PRO',  colegiado:false},
+  // Producción
+  JO:    {label:'Jefe de obra',             cls:'role-CON',  colegiado:false},
+  JG:    {label:'Jefe de grupo',            cls:'role-CON',  colegiado:false},
+  JP:    {label:'Jefe de producción',       cls:'role-CON',  colegiado:false},
+  ASO:   {label:'Asistente de obra',        cls:'role-CON',  colegiado:false},
+  // Control y consultoría
+  OCT:   {label:'OCT',                      cls:'role-LAB',  colegiado:false},
+  ECLU:  {label:'ECLU',                     cls:'role-LAB',  colegiado:false},
+  LAB:   {label:'Laboratorio',              cls:'role-LAB',  colegiado:false},
+  CON:   {label:'Consultor',                cls:'role-OCT',  colegiado:false},
+  TEC:   {label:'Técnico colaborador',      cls:'role-PRO',  colegiado:false},
+};
+
+function openModalEmpresa(empId=null) {
+  pendingAgentes = [];
+  pendingEmpresaId = empId;
+  // Reset
+  ['me-nombre','me-cif','me-tel','me-email'].forEach(id=>document.getElementById(id).value='');
+  if (empId) {
+    const e = empresas.find(x=>x.id===empId);
+    if (e) {
+      document.getElementById('me-nombre').value = e.nombre||'';
+      document.getElementById('me-cif').value = e.cif||'';
+      document.getElementById('me-tel').value = e.tel||'';
+      document.getElementById('me-email').value = e.email||'';
+      pendingAgentes = e.agentes.map(a=>({...a, roles:[...a.roles]}));
+    }
+    document.getElementById('modal-emp-title').textContent = 'Editar empresa';
+  } else {
+    document.getElementById('modal-emp-title').textContent = 'Nueva empresa';
+  }
+  renderAgentesModal();
+  document.getElementById('modal-empresa').classList.add('open');
+}
+
+function renderAgentesModal() {
+  const list = document.getElementById('agentes-modal-list');
+  if (!pendingAgentes.length) { list.innerHTML=''; return; }
+  list.innerHTML = pendingAgentes.map((a,i)=>`
+    <div class="agente-row" style="margin-bottom:6px">
+      <div class="agente-avatar">${(a.nombre||'?')[0].toUpperCase()}</div>
+      <div class="agente-info">
+        <div class="agente-nombre">${a.nombre}</div>
+        <div class="agente-contact">${a.email}${a.tel?' · '+a.tel:''}</div>
+        <div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:5px">
+          ${a.roles.map(r=>`<span class="role-pill ${ROLE_META[r]?.cls||''}">${ROLE_META[r]?.label||r}</span>`).join('')}
+        </div>
+      </div>
+      <div style="display:flex;gap:4px;flex-shrink:0">
+        <button class="btn btn-ghost btn-xs" onclick="editAgente(${i})">Editar</button>
+        <button class="btn btn-red btn-xs" onclick="removeAgente(${i})">✕</button>
+      </div>
+    </div>`).join('');
+}
+
+function addAgenteModal() {
+  pendingEmpresaId = pendingEmpresaId; // mantener
+  openModalAgente();
+}
+
+function editAgente(idx) {
+  const a = pendingAgentes[idx];
+  document.getElementById('ma-nombre').value = a.nombre||'';
+  document.getElementById('ma-email').value  = a.email||'';
+  document.getElementById('ma-tel').value    = a.tel||'';
+  document.getElementById('ma-titulo').value = a.titulo||'arq_tec';
+  document.getElementById('ma-colegio').value= a.colegio||'';
+  document.getElementById('ma-num-col').value= a.numCol||'';
+  // Roles
+  document.querySelectorAll('.role-card').forEach(c=>{
+    c.classList.toggle('sel', a.roles.includes(c.dataset.role));
+  });
+  updateColegiadoSection();
+  document.getElementById('modal-agente').dataset.editIdx = idx;
+  document.getElementById('modal-agente').classList.add('open');
+}
+
+function removeAgente(idx) {
+  pendingAgentes.splice(idx,1);
+  renderAgentesModal();
+}
+
+function openModalAgente() {
+  ['ma-nombre','ma-email','ma-tel','ma-colegio','ma-num-col'].forEach(id=>document.getElementById(id).value='');
+  document.querySelectorAll('.role-card').forEach(c=>c.classList.remove('sel'));
+  document.getElementById('colegiado-section').classList.remove('show');
+  delete document.getElementById('modal-agente').dataset.editIdx;
+  document.getElementById('modal-agente').classList.add('open');
+}
+
+// Roles personalizados acumulados en el modal
+let customRoles = [];
+
+function addCustomRole() {
+  const inp = document.getElementById('custom-role-input');
+  const nombre = inp.value.trim();
+  if (!nombre) return;
+  const key = 'CUSTOM_' + nombre.toUpperCase().replace(/\s+/g,'_');
+  if (customRoles.find(r=>r.key===key)) { showToast('Ese rol ya existe'); return; }
+  customRoles.push({key, label: nombre});
+  inp.value = '';
+  renderCustomRoleSlots();
+}
+
+function renderCustomRoleSlots() {
+  const container = document.getElementById('custom-roles-slots');
+  if (!customRoles.length) { container.innerHTML=''; return; }
+  container.innerHTML = `
+    <div style="font-size:10px;font-weight:700;color:var(--txt3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px;margin-top:4px">Roles personalizados</div>
+    <div class="roles-grid">
+      ${customRoles.map(r=>`
+        <div class="role-card" data-role="${r.key}" onclick="toggleRoleCard(this)" style="position:relative">
+          <div class="role-card-top"><div class="role-card-check"></div><span class="role-card-nombre">${r.label}</span></div>
+          <div class="role-card-desc">Rol personalizado</div>
+          <button onclick="event.stopPropagation();removeCustomRole('${r.key}')" style="position:absolute;top:6px;right:6px;background:none;border:none;color:var(--txt3);cursor:pointer;font-size:12px;line-height:1;padding:1px 3px" title="Eliminar rol">✕</button>
+        </div>`).join('')}
+    </div>`;
+}
+
+function removeCustomRole(key) {
+  customRoles = customRoles.filter(r=>r.key!==key);
+  renderCustomRoleSlots();
+}
+
+function toggleRoleCard(el) {
+  el.classList.toggle('sel');
+  updateColegiadoSection();
+}
+
+function updateColegiadoSection() {
+  const roles = [...document.querySelectorAll('.role-card.sel')].map(c=>c.dataset.role);
+  const needsColegiado = roles.some(r=>ROLE_META[r]?.colegiado);
+  const sec = document.getElementById('colegiado-section');
+  sec.classList.toggle('show', needsColegiado);
+}
+
+function guardarAgente() {
+  const nombre = document.getElementById('ma-nombre').value.trim();
+  const email  = document.getElementById('ma-email').value.trim();
+  if (!nombre||!email) { showToast('Nombre y email son obligatorios'); return; }
+
+  const roles = [...document.querySelectorAll('.role-card.sel')].map(c=>c.dataset.role);
+  if (!roles.length) { showToast('Asigna al menos un rol'); return; }
+
+  // Registrar roles personalizados en ROLE_META para que se muestren bien
+  customRoles.forEach(r=>{
+    if (!ROLE_META[r.key]) ROLE_META[r.key]={label:r.label, cls:'role-PRO', colegiado:false};
+  });
+
+  const agente = {
+    id:      'a'+Date.now(),
+    nombre,  email,
+    tel:     document.getElementById('ma-tel').value.trim(),
+    titulo:  document.getElementById('ma-titulo').value,
+    colegio: document.getElementById('ma-colegio').value.trim(),
+    numCol:  document.getElementById('ma-num-col').value.trim(),
+    roles,
+  };
+  const modal = document.getElementById('modal-agente');
+  const editIdx = modal.dataset.editIdx;
+  if (editIdx !== undefined) pendingAgentes[parseInt(editIdx)] = agente;
+  else pendingAgentes.push(agente);
+  renderAgentesModal();
+  // Reset roles y personalizados
+  document.querySelectorAll('.role-card.sel').forEach(c=>c.classList.remove('sel'));
+  document.getElementById('colegiado-section').classList.remove('show');
+  customRoles = [];
+  renderCustomRoleSlots();
+  closeModal('modal-agente');
+}
+
+function guardarEmpresa() {
+  const nombre = document.getElementById('me-nombre').value.trim();
+  if (!nombre) { showToast('El nombre de la empresa es obligatorio'); return; }
+  const empresa = {
+    id: pendingEmpresaId || ('e'+Date.now()),
+    nombre,
+    cif:   document.getElementById('me-cif').value.trim(),
+    tel:   document.getElementById('me-tel').value.trim(),
+    email: document.getElementById('me-email').value.trim(),
+    agentes: pendingAgentes,
+  };
+  if (pendingEmpresaId) {
+    const idx = empresas.findIndex(e=>e.id===pendingEmpresaId);
+    if (idx>=0) empresas[idx]=empresa;
+  } else {
+    empresas.push(empresa);
+  }
+  closeModal('modal-empresa');
+  renderEmpresas();
+  chk();
+}
+
+function removeEmpresa(id) {
+  empresas = empresas.filter(e=>e.id!==id);
+  renderEmpresas(); chk();
+}
+
+function renderEmpresas() {
+  const list = document.getElementById('empresas-list');
+  if (!empresas.length) {
+    list.innerHTML=`<div style="text-align:center;padding:24px 0;color:var(--txt3);font-size:12px"><div style="font-size:24px;margin-bottom:8px;opacity:.3">🏢</div>Añade la primera empresa participante en la obra</div>`;
+    return;
+  }
+  list.innerHTML = empresas.map(e=>{
+    const allRoles = [...new Set(e.agentes.flatMap(a=>a.roles))];
+    const rolesPills = allRoles.map(r=>`<span class="role-pill ${ROLE_META[r]?.cls||''}">${ROLE_META[r]?.label||r}</span>`).join('');
+    return `<div class="empresa-card">
+      <div class="emp-head" onclick="toggleEmpCard('${e.id}')">
+        <div class="emp-icon" style="background:var(--cyan-l);color:var(--cyan)">${e.nombre[0].toUpperCase()}</div>
+        <div class="emp-info">
+          <div class="emp-nombre">${e.nombre}</div>
+          <div class="emp-cif">${e.cif||'Sin CIF'} · ${e.agentes.length} persona${e.agentes.length!==1?'s':''}</div>
+        </div>
+        <div class="emp-roles">${rolesPills}</div>
+        <span class="emp-toggle" id="et-${e.id}">▶</span>
+      </div>
+      <div class="emp-body" id="eb-${e.id}">
+        ${e.agentes.map(a=>`
+          <div class="agente-row">
+            <div class="agente-avatar">${(a.nombre||'?')[0].toUpperCase()}</div>
+            <div class="agente-info">
+              <div class="agente-nombre">${a.nombre}</div>
+              <div class="agente-contact">${a.email}${a.tel?' · '+a.tel:''}</div>
+              ${a.colegio?`<div class="agente-contact">${a.titulo||''} · ${a.colegio} nº${a.numCol}</div>`:''}
+              <div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:5px">
+                ${a.roles.map(r=>`<span class="role-pill ${ROLE_META[r]?.cls||''}">${ROLE_META[r]?.label||r}</span>`).join('')}
+              </div>
+            </div>
+          </div>`).join('')}
+        <div style="display:flex;gap:6px;margin-top:10px">
+          <button class="btn btn-ghost btn-sm" onclick="openModalEmpresa('${e.id}')">✎ Editar empresa</button>
+          <button class="btn btn-red btn-sm" onclick="removeEmpresa('${e.id}')">✕ Eliminar</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function toggleEmpCard(id) {
+  const body = document.getElementById(`eb-${id}`);
+  const tog  = document.getElementById(`et-${id}`);
+  const open = body.classList.toggle('open');
+  tog.classList.toggle('open', open);
+}
+
+// ── STEP 3: BC3 ───────────────────────────────────────────────────────────────
+const DISCIPLINAS = ['Arquitectura','Estructuras','MEP / Instalaciones','Fachada','Paisajismo','Otra'];
+
+function handleDropBC3(ev) {
+  ev.preventDefault();
+  document.getElementById('main-dz').classList.remove('drag');
+  [...ev.dataTransfer.files].forEach(f=>addBC3File(f));
+}
+function handleFilesBC3(input) { [...input.files].forEach(f=>addBC3File(f)); }
+
+function addBC3File(file) {
+  const id = 'bc3-'+Date.now()+'-'+Math.random().toString(36).slice(2,6);
+  bc3Files.push({id, nombre:file.name, size:file.size, disciplina:'', version:'v1', active:true});
+  renderBC3List();
+  chk();
+  showToast(`"${file.name}" importado`);
+}
+
+function renderBC3List() {
+  const list = document.getElementById('bc3-list');
+  if (!bc3Files.length) { list.innerHTML=''; return; }
+  list.innerHTML = bc3Files.map(f=>`
+    <div class="bc3-item ${f.active?'active-bc3':'inactive-bc3'}" id="bc3i-${f.id}">
+      <div class="bc3-header">
+        <span class="bc3-file-icon">${f.active?'📄':'📄'}</span>
+        <div class="bc3-file-info">
+          <div class="bc3-file-name">${f.nombre}</div>
+          <div class="bc3-file-meta">${(f.size/1024).toFixed(0)} KB · ${f.version}</div>
+        </div>
+        <select class="bc3-disc-sel" onchange="setDisc('${f.id}',this.value)" title="Asignar disciplina">
+          <option value="">— Disciplina —</option>
+          ${DISCIPLINAS.map(d=>`<option value="${d}" ${f.disciplina===d?'selected':''}>${d}</option>`).join('')}
+        </select>
+        <div class="bc3-toggle">
+          <label class="toggle-sw" title="${f.active?'Activo (incluido en análisis)':'Inactivo (excluido del análisis)'}">
+            <input type="checkbox" ${f.active?'checked':''} onchange="toggleBC3('${f.id}',this.checked)">
+            <div class="toggle-track"></div>
+          </label>
+          <span class="bc3-toggle-lbl" style="color:${f.active?'var(--grn)':'var(--txt3)'}">${f.active?'Activo':'Inact.'}</span>
+        </div>
+        <button class="btn btn-red btn-xs" onclick="removeBC3File('${f.id}')">✕</button>
+      </div>
+      ${f.disciplina&&f.active?`
+      <div class="bc3-preview-body">
+        <div class="bc3-stats-row">
+          <span class="bc3-stat"><strong>${BC3_PREVIEW.total_partidas.toLocaleString()}</strong> partidas</span>
+          <span class="bc3-stat"><strong>${BC3_PREVIEW.con_texto.toLocaleString()}</strong> con texto técnico</span>
+          <span class="bc3-stat"><strong>${BC3_PREVIEW.capitulos.length}</strong> capítulos</span>
+        </div>
+        <div class="caps-mini">
+          ${BC3_PREVIEW.capitulos.map(c=>`<span class="cap-pill"><span>${c.codigo}</span>${c.nombre}</span>`).join('')}
+        </div>
+      </div>`:''}
+    </div>`).join('');
+}
+
+function setDisc(id, val) {
+  const f = bc3Files.find(x=>x.id===id);
+  if (f) f.disciplina = val;
+  renderBC3List(); chk();
+}
+function toggleBC3(id, val) {
+  const f = bc3Files.find(x=>x.id===id);
+  if (f) f.active = val;
+  renderBC3List(); chk();
+}
+function removeBC3File(id) {
+  bc3Files = bc3Files.filter(x=>x.id!==id);
+  renderBC3List(); chk();
+}
+
+// ── STEP 4: ANÁLISIS ──────────────────────────────────────────────────────────
+function startAnalysis() {
+  analysisComplete = false;
+  const log = document.getElementById('batch-log');
+  log.innerHTML = '';
+  const total = BATCHES_PLAN.length;
+  let tokensAcc = 0;
+  const t0 = Date.now();
+
+  BATCHES_PLAN.forEach((b,i)=>{
+    const ll = document.createElement('div');
+    ll.className='ll'; ll.id=`ll-${i}`;
+    ll.innerHTML=`<div class="ld pend"></div><span class="lt">${b.nombre}</span><span class="lc">${b.n}p</span>`;
+    log.appendChild(ll);
+  });
+
+  function proc(i) {
+    if (i>=total) {
+      analysisComplete=true;
+      document.getElementById('prog-txt').textContent='✓ Análisis completado';
+      document.getElementById('prog-pct').textContent=`${total} / ${total}`;
+      document.getElementById('prog-fill').style.width='100%';
+      chk(); return;
+    }
+    const b = BATCHES_PLAN[i];
+    const ll = document.getElementById(`ll-${i}`);
+    if(ll){ ll.querySelector('.ld').className='ld run'; ll.querySelector('.lt').className='lt run'; ll.scrollIntoView({block:'nearest'}); }
+    document.getElementById('prog-txt').textContent=`Analizando: ${b.nombre}`;
+    document.getElementById('prog-pct').textContent=`${i} / ${total}`;
+    document.getElementById('prog-fill').style.width=`${(i/total*100).toFixed(1)}%`;
+
+    setTimeout(()=>{
+      const tok = b.n*175;
+      tokensAcc+=tok;
+      const eur = tokensAcc*(3.5/1e6)*0.93;
+      if(ll){ ll.querySelector('.ld').className='ld done'; ll.querySelector('.lt').className='lt done'; ll.querySelector('.lc').textContent=`${b.n}p · ${tok.toLocaleString()}tok`; }
+      document.getElementById('cost-lbl').textContent=`Tokens: ${tokensAcc.toLocaleString()} · Coste: ${eur.toFixed(3)} €`;
+      const elapsed=(Date.now()-t0)/1000, rem=(elapsed/(i+1))*(total-i-1);
+      document.getElementById('eta-lbl').textContent=`ETA: ~${Math.max(0,Math.ceil(rem))}s`;
+      proc(i+1);
+    }, 60+b.n*6+Math.random()*120);
+  }
+  proc(0);
+}
+
+// ── STEP 5: RESULTADO ─────────────────────────────────────────────────────────
+function renderResultado() {
+  const r = RESULTADO_IA;
+  document.getElementById('res-stats').innerHTML=`
+    <div class="res-stat"><div class="res-val" style="color:var(--cyan)">${r.sistemas.length}</div><div class="res-lbl">Sistemas</div></div>
+    <div class="res-stat"><div class="res-val" style="color:var(--grn)">${r.total_partidas_clasificadas}</div><div class="res-lbl">Clasificadas</div></div>
+    <div class="res-stat"><div class="res-val" style="color:var(--ylw)">${r.sin_asignar}</div><div class="res-lbl">Sin asignar</div></div>
+    <div class="res-stat"><div class="res-val" style="color:var(--vio)">${r.total_materiales}</div><div class="res-lbl">Materiales</div></div>`;
+  document.getElementById('sis-list').innerHTML=r.sistemas.map(s=>`
+    <div class="sis-row">
+      <span class="sis-row-id">${s.sistema_id}</span>
+      <span class="sis-row-nom">${s.nombre}</span>
+      <span class="sis-row-disc">${s.disciplina}</span>
+      <span class="sis-row-meta">${s.n_partidas}p · ${s.n_materiales}mat</span>
+      <div class="conf-bar"><div class="conf-fill" style="width:${Math.round(s.conf*100)}%;background:${s.conf>0.95?'var(--grn)':s.conf>0.9?'var(--cyan)':'var(--ylw)'}"></div></div>
+    </div>`).join('');
+}
+
+// ── UTILS ─────────────────────────────────────────────────────────────────────
+function closeModal(id){ document.getElementById(id).classList.remove('open'); }
+function showToast(msg){
+  let t=document.getElementById('_toast');
+  if(!t){t=document.createElement('div');t.id='_toast';t.style.cssText='position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#1e293b;color:#fff;padding:9px 18px;border-radius:8px;font-size:13px;font-weight:500;z-index:600;box-shadow:0 4px 16px rgba(0,0,0,.25);display:none';document.body.appendChild(t);}
+  t.textContent=msg;t.style.display='block';
+  clearTimeout(t._t);t._t=setTimeout(()=>t.style.display='none',2200);
+}
+
+document.addEventListener('click',e=>{
+  if(e.target.classList.contains('overlay')) e.target.classList.remove('open');
+});
+
+chk();
+</script>
+</body>
+</html>

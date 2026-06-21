@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AXIS OS — Medición de partida</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#f0f2f5;--surf:#fff;--surf2:#f8f9fb;--bdr:#e4e7ec;--bdr2:#cdd2db;
+  --txt:#111827;--txt2:#4b5563;--txt3:#9ca3af;
+  --cyan:#0284c7;--cyan-l:#e0f2fe;--cyan-bd:#bae6fd;--cyan-d:#0369a1;
+  --grn:#059669;--grn-l:#d1fae5;--grn-bd:#6ee7b7;--grn-d:#047857;
+  --ylw:#d97706;--ylw-l:#fef3c7;--ylw-bd:#fde68a;--ylw-d:#b45309;
+  --red:#dc2626;--red-l:#fee2e2;--red-bd:#fca5a5;
+  --vio:#7c3aed;--vio-l:#ede9fe;--vio-bd:#c4b5fd;
+  --mono:'JetBrains Mono',monospace;
+  --r:7px;--r2:10px;
+  --sh:0 1px 3px rgba(0,0,0,.07),0 1px 2px rgba(0,0,0,.04);
+  --sh2:0 4px 16px rgba(0,0,0,.1);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--txt);font-size:13px;line-height:1.5;height:100vh;display:flex;flex-direction:column;overflow:hidden}
+
+/* TOPBAR */
+.topbar{height:50px;background:var(--surf);border-bottom:1px solid var(--bdr);display:flex;align-items:center;padding:0 20px;gap:12px;flex-shrink:0;box-shadow:var(--sh)}
+.logo{font-family:var(--mono);font-size:13px;font-weight:500;color:var(--cyan);letter-spacing:2px}
+.vr{width:1px;height:18px;background:var(--bdr2)}
+.topbar-info{font-size:12px;color:var(--txt3)}.topbar-info strong{color:var(--txt2);font-weight:600}
+.topbar-r{margin-left:auto;display:flex;gap:8px;align-items:center}
+.btn{display:inline-flex;align-items:center;gap:5px;padding:6px 13px;border-radius:var(--r);border:1px solid;font-family:'Inter',sans-serif;font-size:12px;font-weight:500;cursor:pointer;transition:all .15s;white-space:nowrap}
+.btn-primary{background:var(--cyan);color:#fff;border-color:var(--cyan-d)}.btn-primary:hover{background:var(--cyan-d)}
+.btn-ghost{background:var(--surf);color:var(--txt2);border-color:var(--bdr2)}.btn-ghost:hover{background:var(--surf2)}
+.btn-grn{background:var(--grn);color:#fff;border-color:var(--grn-d)}.btn-grn:hover{background:var(--grn-d)}
+.btn-sm{padding:4px 10px;font-size:11px}.btn-xs{padding:2px 8px;font-size:10px}
+
+/* ROL SW */
+.rol-sw{display:flex;background:var(--surf2);border:1px solid var(--bdr);border-radius:var(--r);padding:2px;gap:2px}
+.rol-btn{padding:3px 12px;border-radius:5px;font-size:11px;font-weight:500;cursor:pointer;border:none;background:none;color:var(--txt3);transition:all .15s}
+.rol-btn.on{background:var(--surf);color:var(--cyan);box-shadow:var(--sh)}
+
+/* LAYOUT */
+.app{flex:1;display:flex;overflow:hidden}
+
+/* SIDEBAR: lista de partidas */
+.sidebar{width:240px;background:var(--surf);border-right:1px solid var(--bdr);display:flex;flex-direction:column;overflow:hidden;flex-shrink:0}
+.sb-head{padding:11px 14px;border-bottom:1px solid var(--bdr);background:var(--surf2)}
+.sb-title{font-size:11px;font-weight:700;color:var(--txt2);text-transform:uppercase;letter-spacing:.5px}
+.sb-list{flex:1;overflow-y:auto;padding:6px}
+.p-btn{width:100%;border:1px solid var(--bdr);border-radius:var(--r);padding:9px 11px;text-align:left;cursor:pointer;background:var(--surf);margin-bottom:4px;transition:all .15s;display:flex;flex-direction:column;gap:4px}
+.p-btn:hover{border-color:var(--bdr2);box-shadow:var(--sh)}
+.p-btn.active{border-color:var(--cyan);background:var(--cyan-l)}
+.pb-top{display:flex;align-items:center;gap:6px}
+.pb-cod{font-family:var(--mono);font-size:10px;color:var(--cyan);font-weight:500}
+.p-btn.active .pb-cod{color:var(--cyan-d)}
+.pb-nom{font-size:11px;font-weight:600;flex:1;line-height:1.3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pb-imp{font-family:var(--mono);font-size:10px;color:var(--txt3)}
+.pb-bloq{font-size:9px;color:var(--red);background:var(--red-l);border:1px solid var(--red-bd);border-radius:10px;padding:1px 6px;align-self:flex-start}
+
+/* MAIN */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+
+/* PARTIDA HEADER */
+.part-header{background:var(--surf);border-bottom:1px solid var(--bdr);padding:12px 20px;flex-shrink:0}
+.ph-top{display:flex;align-items:flex-start;gap:12px;margin-bottom:10px}
+.ph-cod{font-family:var(--mono);font-size:12px;font-weight:500;padding:3px 10px;border-radius:var(--r);background:var(--cyan-l);color:var(--cyan);border:1px solid var(--cyan-bd);flex-shrink:0}
+.ph-desc{font-size:15px;font-weight:700;flex:1;line-height:1.3}
+.ph-bloq{background:var(--red-l);border:1px solid var(--red-bd);border-radius:var(--r);padding:6px 12px;font-size:11px;color:var(--red);display:flex;align-items:center;gap:8px}
+
+/* KPIs de la partida */
+.part-kpis{display:flex;gap:10px;align-items:stretch;flex-wrap:wrap}
+.pk{background:var(--surf2);border:1px solid var(--bdr);border-radius:var(--r);padding:8px 12px;display:flex;flex-direction:column;gap:2px;min-width:110px}
+.pk-lbl{font-size:9px;font-weight:700;color:var(--txt3);text-transform:uppercase;letter-spacing:.5px}
+.pk-val{font-family:var(--mono);font-size:14px;font-weight:600;line-height:1}
+.pk-sub{font-size:10px;color:var(--txt3)}
+.pk-sep{width:1px;background:var(--bdr);align-self:stretch}
+
+/* MODO selector */
+.modo-bar{background:var(--surf);border-bottom:1px solid var(--bdr);padding:0 20px;display:flex;align-items:center;gap:12px;flex-shrink:0}
+.modo-tab{padding:9px 0;font-size:12px;font-weight:500;color:var(--txt3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s;white-space:nowrap}
+.modo-tab:hover{color:var(--txt2)}
+.modo-tab.active{color:var(--cyan);border-bottom-color:var(--cyan)}
+.modo-sep{flex:1}
+.filter-chips{display:flex;gap:6px;align-items:center;padding:6px 0}
+.fchip{font-size:11px;font-weight:500;padding:3px 10px;border-radius:12px;border:1px solid var(--bdr2);cursor:pointer;transition:all .15s;background:var(--surf);color:var(--txt3);white-space:nowrap}
+.fchip:hover{border-color:var(--cyan-bd);color:var(--cyan)}
+.fchip.on{background:var(--cyan-l);color:var(--cyan);border-color:var(--cyan-bd)}
+.filter-label{font-size:10px;font-weight:600;color:var(--txt3);text-transform:uppercase;letter-spacing:.5px}
+
+/* VISTAS */
+.view{display:none;flex:1;overflow:hidden;flex-direction:column}
+.view.active{display:flex}
+
+/* ── VISTA % ── */
+.pct-view{flex:1;display:flex;align-items:center;justify-content:center;padding:30px}
+.pct-card{background:var(--surf);border:1px solid var(--bdr);border-radius:var(--r2);padding:28px;width:480px;box-shadow:var(--sh)}
+.pct-card-title{font-size:13px;font-weight:600;color:var(--txt2);margin-bottom:16px}
+.pct-slider-wrap{display:flex;align-items:center;gap:14px;margin-bottom:16px}
+.pct-slider{flex:1;-webkit-appearance:none;height:6px;border-radius:3px;background:var(--bdr);outline:none;cursor:pointer}
+.pct-slider::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;background:var(--cyan);cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,.2)}
+.pct-big{font-family:var(--mono);font-size:42px;font-weight:700;color:var(--cyan);min-width:80px;text-align:right}
+.pct-rows{display:flex;flex-direction:column;gap:6px}
+.pct-row{display:flex;justify-content:space-between;font-size:12px;padding:6px 0;border-bottom:1px solid var(--bdr)}
+.pct-row:last-child{border-bottom:none;font-weight:700;font-size:14px}
+.pct-row .v{font-family:var(--mono);font-weight:600}
+
+/* ── VISTA CANTIDAD ── */
+.cant-view{flex:1;display:flex;align-items:center;justify-content:center;padding:30px}
+.cant-card{background:var(--surf);border:1px solid var(--bdr);border-radius:var(--r2);padding:28px;width:480px;box-shadow:var(--sh)}
+.cant-input-big{background:var(--surf2);border:2px solid var(--bdr2);border-radius:var(--r);padding:10px 14px;font-family:var(--mono);font-size:28px;font-weight:700;color:var(--txt);outline:none;width:100%;text-align:right;transition:border-color .15s}
+.cant-input-big:focus{border-color:var(--cyan);background:var(--surf)}
+.cant-unit{font-size:13px;color:var(--txt3);text-align:right;margin-top:4px}
+.cant-max{font-size:11px;color:var(--txt3);text-align:right}
+.cant-warn{font-size:11px;color:var(--red);display:none}
+.ant-bar{height:6px;background:var(--bdr);border-radius:3px;overflow:hidden;margin:12px 0}
+.ant-fill{height:100%;border-radius:3px;transition:width .3s}
+
+/* ── VISTA LÍNEAS ── */
+.lineas-view{flex:1;overflow:hidden;display:flex;flex-direction:column}
+.lineas-scroll{flex:1;overflow-y:auto;padding:0}
+.lineas-scroll::-webkit-scrollbar{width:4px}
+.lineas-scroll::-webkit-scrollbar-thumb{background:var(--bdr2);border-radius:4px}
+
+/* Grupo planta */
+.grupo-header{padding:8px 20px;background:var(--surf2);border-bottom:1px solid var(--bdr);border-top:1px solid var(--bdr);display:flex;align-items:center;gap:10px;cursor:pointer;user-select:none;position:sticky;top:0;z-index:2}
+.grupo-tog{font-size:9px;color:var(--txt3);transition:transform .2s}
+.grupo-tog.open{transform:rotate(90deg)}
+.grupo-planta{font-size:11px;font-weight:700;color:var(--txt2)}
+.grupo-zona{font-size:10px;color:var(--txt3)}
+.grupo-stats{margin-left:auto;display:flex;gap:10px;font-family:var(--mono);font-size:10px;color:var(--txt3)}
+.grupo-sel-btn{font-size:10px;color:var(--cyan);cursor:pointer;font-weight:500;border:1px solid var(--cyan-bd);background:var(--cyan-l);border-radius:10px;padding:1px 8px}
+.grupo-sel-btn:hover{background:var(--cyan-bd)}
+.grupo-body{display:none}
+.grupo-body.open{display:block}
+
+/* Tabla mediciones */
+.med-table{width:100%;border-collapse:collapse}
+.med-table th{font-size:10px;font-weight:600;color:var(--txt3);text-transform:uppercase;letter-spacing:.4px;padding:6px 12px;text-align:left;border-bottom:1px solid var(--bdr);background:var(--surf);white-space:nowrap}
+.med-table th.r{text-align:right}
+.med-table td{padding:6px 12px;border-bottom:1px solid var(--bdr);vertical-align:middle;font-size:12px}
+.med-table tr:last-child td{border-bottom:none}
+.med-table tr:hover td{background:#fafbfc}
+.med-table tr.has-cert td{background:#f0fdf9}
+.med-comentario{max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px;color:var(--txt2)}
+.med-formula{font-family:var(--mono);font-size:10px;color:var(--txt3)}
+.med-sub{font-family:var(--mono);font-size:12px;font-weight:500;text-align:right}
+.med-input{background:var(--surf2);border:1px solid var(--bdr2);border-radius:4px;padding:3px 6px;font-family:var(--mono);font-size:11px;color:var(--txt);outline:none;width:68px;text-align:right}
+.med-input:focus{border-color:var(--cyan);background:var(--surf)}
+.med-input.full{border-color:var(--grn-bd);background:var(--grn-l)}
+.med-input.over{border-color:var(--red-bd);background:var(--red-l)}
+.med-pct{font-family:var(--mono);font-size:10px;color:var(--txt3);min-width:32px;text-align:right}
+.med-check{width:15px;height:15px;accent-color:var(--grn);cursor:pointer}
+.med-ifc{font-family:var(--mono);font-size:9px;color:var(--vio);background:var(--vio-l);border:1px solid var(--vio-bd);border-radius:3px;padding:1px 5px}
+
+/* Totales barra */
+.totales-bar{background:var(--surf);border-top:1px solid var(--bdr);padding:10px 20px;display:flex;align-items:center;gap:16px;flex-shrink:0}
+.tb-item{display:flex;flex-direction:column;gap:1px}
+.tb-lbl{font-size:9px;font-weight:700;color:var(--txt3);text-transform:uppercase;letter-spacing:.5px}
+.tb-val{font-family:var(--mono);font-size:14px;font-weight:600;line-height:1}
+.tb-sep{width:1px;height:28px;background:var(--bdr)}
+
+/* Toast */
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#1e293b;color:#fff;padding:9px 18px;border-radius:var(--r);font-size:13px;font-weight:500;z-index:500;display:none;box-shadow:var(--sh2)}
+.toast.show{display:block;animation:tin .2s}
+@keyframes tin{from{opacity:0;transform:translateX(-50%) translateY(8px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="logo">AXIS OS</div>
+  <div class="vr"></div>
+  <div class="topbar-info">Certificación nº 6 · <strong>Noviembre 2024</strong> · 01.06 Albañilería</div>
+  <div class="topbar-r">
+    <div class="rol-sw">
+      <button class="rol-btn on" onclick="setRol('con',this)">Constructora</button>
+      <button class="rol-btn" onclick="setRol('deo',this)">DEO</button>
+    </div>
+    <button class="btn btn-ghost btn-sm" onclick="showToast('Volviendo a certificación...')">← Volver</button>
+    <button class="btn btn-grn btn-sm" onclick="guardarPartida()">Guardar partida</button>
+  </div>
+</header>
+
+<div class="app">
+  <!-- SIDEBAR: partidas del subcap -->
+  <div class="sidebar">
+    <div class="sb-head"><div class="sb-title">Partidas — 01.06</div></div>
+    <div class="sb-list" id="sb-list"></div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main" id="main">
+    <div id="part-header-wrap"></div>
+    <!-- MODO BAR -->
+    <div class="modo-bar" id="modo-bar" style="display:none">
+      <div class="modo-tab active" id="tab-pct"    onclick="setModo('pct')">Por porcentaje</div>
+      <div class="modo-tab"        id="tab-cant"   onclick="setModo('cant')">Por cantidad</div>
+      <div class="modo-tab"        id="tab-lineas" onclick="setModo('lineas')">Por línea de medición <span id="lineas-count" style="font-size:10px;color:var(--txt3)"></span></div>
+      <div class="modo-sep"></div>
+      <!-- Filtros planta/zona (visibles en modo lineas) -->
+      <div id="filter-area" style="display:none;align-items:center;gap:8px">
+        <span class="filter-label">Planta</span>
+        <div id="filter-plantas" style="display:flex;gap:4px"></div>
+        <div style="width:1px;height:16px;background:var(--bdr)"></div>
+        <span class="filter-label">Vivienda</span>
+        <div id="filter-zonas" style="display:flex;gap:4px"></div>
+      </div>
+    </div>
+    <!-- VISTAS -->
+    <div id="view-pct"    class="view active"><div class="pct-view"  id="pct-content"></div></div>
+    <div id="view-cant"   class="view"><div class="cant-view" id="cant-content"></div></div>
+    <div id="view-lineas" class="view"><div class="lineas-view" id="lineas-content" style="display:flex;flex-direction:column;overflow:hidden;flex:1"></div></div>
+    <!-- TOTALES -->
+    <div class="totales-bar" id="totales-bar" style="display:none"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const PARTIDAS = [{"codigo": "PTI-301.1", "descripcion": "PTI-301.1 TABIQUE SENCILLO PYL - A(15)/48/A(15)", "unidad": "m2", "precio": 241.025, "total_med": 8206.55, "importe_contrato": 1977983.71, "cert_anterior_pct": 35, "cert_anterior_imp": 692294, "bloqueado": true, "bloqueo_motivo": "DoP perfilería pendiente · CE placa H1 pendiente", "plantas": ["Planta 0", "Planta 1", "Planta 2", "Sótano 1"], "zonas": ["Viv. 12", "Viv. 34", "Viv. 56", "Viv. 78"], "mediciones": [{"id": 0, "comentario": "PL00 78 -  - PTI-301 TABIQUE SENCILLO PYL - A(15)/48/A(15) O", "n": 1.0, "a": 2.65, "b": null, "c": null, "subtotal": 2.65, "planta": "Planta 0", "zona": "Viv. 78", "ifc_guid": null, "cert_cant": 0.0, "prop_cant": 0.0}, {"id": 1, "comentario": "PL00 78 -  - PTI-301 TABIQUE SENCILLO PYL - A(15)/48/A(15) O", "n": 1.0, "a": 1.68, "b": null, "c": null, "subtotal": 1.68, "planta": "Planta 0", "zona": "Viv. 78", "ifc_guid": null, "cert_cant": 0.0, "prop_cant": 0.0}, {"id": 2, "comentario": "PL01 78 -  - PTI-301 TABIQUE SENCILLO PYL - A(15)/48/A(15) O", "n": 1.0, "a": 2.65, "b": null, "c": null, "subtotal": 2.65, "planta": "Planta 1", "zona": "Viv. 78", "ifc_guid": null, "cert_cant": 0.0, "prop_cant": 0.0}, {"id": 3, "comentario": "PL01 78 -  - PTI-301 TABIQUE SENCILLO PYL - A(15)/48/A(15) O", "n": 1.0, "a": 1.68, "b": null, "c": null, "subtotal": 1.68, "planta": "Planta 1", "zona": "Viv. 78", "ifc_guid": null, "cert_cant": 0.0, "prop_cant": 0.0}, {"id": 4, "comentario": "PL02 78 -  - PTI-301 TABIQUE SENCILLO PYL - A(15)/48/A(15) O", "n": 1.0, "a": 2.65, "b": null, "c": null, "subtotal": 2.65, "planta": "Planta 2", "zona": "Viv. 78", "ifc_guid": null, "cert_cant": 0.0, "prop_cant": 0.0}, {"id": 5, "comentario": "PL02 78 -  - PTI-301 TABIQUE SENCILLO PYL - A(15)/48/A(15) O", "n": 1.0, "a": 1.68, "b": null, "c": null, "subtotal": 1.68, "planta": "Planta 2", "zona": "Viv. 78", "ifc_guid": null, "cert_cant": 0.0, "prop_cant": 0.0}, {"id": 6, "comentario": "PL00 12 -  - PTI-301 TABIQUE SENCILLO PYL - A(15)/48/A(15) O", "n": 1.0, "a": 2.65, "b": null, "c": null, "subtotal": 2.65, "planta": "Planta 0", "zona": "Viv. 12", "ifc_guid": null, "cert_cant": 0.0, "prop_cant": 0.0}, {"id": 7, "comentario": "PL00 12 -  - PTI-301 TABIQUE SENCILLO PYL - A(15)/48/A(15) O", "n": 1.0, "a": 1.68, "b": null, "c": null, "subtotal": 1.68, "planta": "Planta 0", "zona": "Viv. 12", "ifc_guid": null, "cert_cant": 0.0, "prop_cant": 0.0}, {"id": 8, "comentario": "PL02 12 -  - PTI-301 TABIQUE SENCILLO PYL - A(15)/48/A(15) O", "n": 1.0, "a": 2.65, "b": null, "c": null, "subtotal": 2.65, "planta": "Planta 2", "zona": "Viv. 12", "ifc_guid": null, "cert_cant": 0.0, "prop_cant": 0.0}, {"id": 9, "comentario": "PL02 12 -  - PTI-301 TABIQUE SENCILLO PYL - A(15)/48/A(15) O", "n": 1.0, "a": 1.68, "b": null, "c": null, "subtotal": 1.68, "planta": "Planta 2", "zona": "Viv. 12", "ifc_guid": null, "cert_cant": 0.0, "prop_cant": 0.0}, {"id": 10, "comentario": "PL01 12 -  - PTI-301 TABIQUE SENCILLO PYL - A(15)/48/A(15) O", "n": 1.0, "a": 2.65, "b": null, "c": null, "subtotal": 2.65, "planta": "Planta 1", "zona": "Viv. 12", "ifc_guid": null, "cert_cant": 0.0, "prop_cant": 0.0}, {"id": 11, "comentario": "PL01 12 -  - PTI-301 TABIQUE SENCILLO PYL - A(15)/48/A(15) O", "n": 1.0, "a": 1.68, "b": null, "c": null, "subtotal": 1.68, "planta": "Planta 1", "zona": "Viv. 12", "ifc_guid": null, "cert_cant": 0.0, "prop_cant": 0.0}, {"id": 12, "comentario": "PL00 56 -  - PTI-301 TABIQUE SENCILLO PYL - A(15)/48/A(15) O", "n": 1.0, "a": 2.65, "b": null, "c": null, "subtotal": 2.65, "planta": "Planta 0", "zona": "Viv. 56", "ifc_guid": null, "cert_cant": 0.0, "prop_cant": 0.0}, {"id": 13, "comentario": "PL00 56 -  - PTI-301 TABIQUE SENCILLO PYL - A(15)/48/A(15) O", "n": 1.0, "a": 1.68, "b": null, "c": null, "subtotal": 1.68, "planta": "Planta 0", "zona": "Viv. 56", "ifc_guid": null, "cert_cant": 0.0, "prop_cant": 0.0}, {"id": 14, "comentario": "PL01 56 -  - PTI-301 TABIQUE SENCILLO PYL - A(15)/48/A(15) O", "n": 1.0, "a": 2.65, "b": null, "c": null, "subtotal": 2.65, "planta": "Planta 1", "zona": "Viv. 56", "ifc_guid": null, "cert_cant": 0.0, "prop_cant": 0.0}, {"id": 15, "comentario": "PL01 56 -  - PTI-301 TABIQUE SENCILLO PYL - A(15)/48/A(15) O", "n": 1.0, "a": 1.68, "b": null, "c": null, "subtotal": 1.68, "planta": "Planta 1", "zona": "Viv. 56", "ifc_guid": null, "cert_cant": 0.0, "prop_cant": 0.0}, {"id": 16, "comentario": "PL02 56 -  - PTI-301 TABIQUE SENCILLO PYL - A(15)/48/A(15) O", "n": 1.0, "a": 2.65, "b": null, "c": null, "subtotal": 2.65, "planta": "Planta 2", "zona": "Viv. 56", "ifc_guid": null, "cert_cant": 0.0, "prop_cant": 0.0}, {"id": 17, "comentario": "PL02 56 -  - PTI-301 TABIQUE SENCILLO PYL - A(15)/48/A(15) O", "n": 1.0, "a": 1.68, "b": null, "c": null, "subtotal": 1.68, "planta": "Planta 2", "zona": "Viv. 56", "ifc_guid": null, "cert_cant": 0.0, "prop_cant": 0.0}, {"id": 18, "comentario": "PL02 12 -  - PTI-301 TABIQUE SENCILLO PYL - A(15)/48/A(15) O", "n": 1.0, "a": 12.12, "b": null, "c": null, "subtotal": 12.12, "planta": "Planta 2", "zona": "Viv. 12", "ifc_guid": null, "cert_cant": 0.0, "prop_cant": 0.0}, {"id": 19, "comentario": "PL02 12 -  - PTI-301 TABIQUE SENCILLO PYL - A(15)/48/A(15) O", "n": 1.0, "a": 13.54, "b": null, "c": null, "subtotal": 13.54, "planta": "Planta 2", "zona": "Viv. 12", "ifc_guid": null, "cert_cant": 0.0, "prop_cant": 0.0}, {"id": 20, "comentario": "PL02 12 -  - PTI-301 TABIQUE SENCILLO PYL - A(15)/48/A(15) O", "n": 1.0, "a": 1.35, "b": null, "c": null, "subtotal": 1.35, "planta": "Planta 2", "zona": "Viv. 12", "ifc_guid": null, "cert_cant": 0.0, "prop_cant": 0.0}, {"id": 21, "comentario": "PL01 78 -  - PTI-301 TABIQUE SENCILLO PYL - A(15)/48/A(15) O", "n": 1.0, "a": 12.12, "b": null, "c": null, "subtotal": 12.12, "planta": "Planta 1", "zona": "Viv. 78", "ifc_guid": null, "cert_cant": 0.0, "prop_cant": 0.0}, {"id": 22, "comentario": "PL01 78 -  - PTI-301 TABIQUE SENCILLO PYL - A(15)/48/A(15) O", "n": 1.0, "a": 13.54, "b": null, "c": null, "subtotal": 13.54, "planta": "Planta 1", "zona": "Viv. 78", "ifc_guid": null, "cert_cant": 0.0, "prop_cant": 0.0}, {"id": 23, "comentario": "PL01 78 -  - PTI-301 TABIQUE SENCILLO PYL - A(15)/48/A(15) O", "n": 1.0, "a": 1.35, "b": null, "c": null, "subtotal": 1.35, "planta": "Planta 1", "zona": "Viv. 78", "ifc_guid": null, "cert_cant": 0.0, "prop_cant": 0.0}, {"id": 24, "comentario": "PL01 78 -  - PTI-301 TABIQUE SENCILLO PYL - A(15)/48/A(15) O", "n": 1.0, "a": 12.12, "b": null, "c": null, "subtotal": 12.12, "planta": "Planta 1", "zona": "Viv. 78", "ifc_guid": null, "cert_cant": 0.0, "prop_cant": 0.0}, {"id": 25, "comentario": "PL01 78 -  - PTI-301 TABIQUE SENCILLO PYL - A(15)/48/A(15) O", "n": 1.0, "a": 13.54, "b": null, "c": null, "subtotal": 13.54, "planta": "Planta 1", "zona": "Viv. 78", "ifc_guid": null, "cert_cant": 0.0, "prop_cant": 0.0}, {"id": 26, "comentario": "PL01 78 -  - PTI-301 TABIQUE SENCILLO PYL - A(15)/48/A(15) O", "n": 1.0, "a": 1.35, "b": null, "c": null, "subtotal": 1.35, "planta": "Planta 1", "zona": "Viv. 78", "ifc_guid": null, "cert_cant": 0.0, "prop_cant": 0.0}, {"id": 27, "comentario": "PL01 34 -  - PTI-301 TABIQUE SENCILLO PYL - A(15)/48/A(15) O", "n": 1.0, "a": 12.12, "b": null, "c": null, "subtotal": 12.12, "planta": "Planta 1", "zona": "Viv. 34", "ifc_guid": null, "cert_cant": 0.0, "prop_cant": 0.0}, {"id": 28, "comentario": "PL01 34 -  - PTI-301 TABIQUE SENCILLO PYL - A(15)/48/A(15) O", "n": 1.0, "a": 13.54, "b": null, "c": null, "subtotal": 13.54, "planta": "Planta 1", "zona": "Viv. 34", "ifc_guid": null, "cert_cant": 0.0, "prop_cant": 0.0}, {"id": 29, "comentario": "PL01 34 -  - PTI-301 TABIQUE SENCILLO PYL - A(15)/48/A(15) O", "n": 1.0, "a": 1.35, "b": null, "c": null, "subtotal": 1.35, "planta": "Planta 1", "zona": "Viv. 34", "ifc_guid": null, "cert_cant": 0.0, "prop_cant": 0.0}, {"id": 30, "comentario": "PL01 34 -  - PTI-301 TABIQUE SENCILLO PYL - A(15)/48/A(15) O", "n": 1.0, "a": 12.12, "b": null, "c": null, "subtotal": 12.12, "planta": "Planta 1", "zona": "Viv. 34", "ifc_guid": null, "cert_cant": 0.0, "prop_cant": 0.0}, {"id": 31, "comentario": "PL01 34 -  - PTI-301 TABIQUE SENCILLO PYL - A(15)/48/A(15) O", "n": 1.0, "a": 13.54, "b": null, "c": null, "subtotal": 13.54, "planta": "Planta 1", "zona": "Viv. 34", "ifc_guid": null, "cert_cant": 0.0, "prop_cant": 0.0}, {"id": 32, "comentario": "PL01 34 -  - PTI-301 TABIQUE SENCILLO PYL - A(15)/48/A(15) O", "n": 1.0, "a": 1.35, "b": null, "c": null, "subtotal": 1.35, "planta": "Planta 1", "zona": "Viv. 34", "ifc_guid": null, "cert_cant": 0.0, "prop_cant": 0.0}, {"id": 33, "comentario": "PL02 34 -  - PTI-301 TABIQUE SENCILLO PYL - A(15)/48/A(15) O", "n": 1.0, "a": 12.12, "b": null, "c": null, "subtotal": 12.12, "planta": "Planta 2", "zona": "Viv. 34", "ifc_guid": null, "cert_cant": 0.0, "prop_cant": 0.0}, {"id": 34, "comentario": "PL02 34 -  - PTI-301 TABIQUE SENCILLO PYL - A(15)/48/A(15) O", "n": 1.0, "a": 13.54, "b": null, "c": null, "subtotal": 13.54, "planta": "Planta 2", "zona": "Viv. 34", "ifc_guid": null, "cert_cant": 0.0, "prop_cant": 0.0}, {"id": 35, "comentario": "PL02 34 -  - PTI-301 TABIQUE SENCILLO PYL - A(15)/48/A(15) O", "n": 1.0, "a": 1.35, "b": null, "c": null, "subtotal": 1.35, "planta": "Planta 2", "zona": "Viv. 34", "ifc_guid": null, "cert_cant": 0.0, "prop_cant": 0.0}, {"id": 36, "comentario": "PL02 34 -  - PTI-301 TABIQUE SENCILLO PYL - A(15)/48/A(15) O", "n": 1.0, "a": 12.12, "b": null, "c": null, "subtotal": 12.12, "planta": "Planta 2", "zona": "Viv. 34", "ifc_guid": null, "cert_cant": 0.0, "prop_cant": 0.0}, {"id": 37, "comentario": "PL02 34 -  - PTI-301 TABIQUE SENCILLO PYL - A(15)/48/A(15) O", "n": 1.0, "a": 13.54, "b": null, "c": null, "subtotal": 13.54, "planta": "Planta 2", "zona": "Viv. 34", "ifc_guid": null, "cert_cant": 0.0, "prop_cant": 0.0}, {"id": 38, "comentario": "PL02 34 -  - PTI-301 TABIQUE SENCILLO PYL - A(15)/48/A(15) O", "n": 1.0, "a": 1.35, "b": null, "c": null, "subtotal": 1.35, "planta": "Planta 2", "zona": "Viv. 34", "ifc_guid": null, "cert_cant": 0.0, "prop_cant": 0.0}, {"id": 39, "comentario": "PL01 56 -  - PTI-301 TABIQUE SENCILLO PYL - A(15)/48/A(15) O", "n": 1.0, "a": 12.12, "b": null, "c": null, "subtotal": 12.12, "planta": "Planta 1", "zona": "Viv. 56", "ifc_guid": null, "cert_cant": 0.0, "prop_cant": 0.0}, {"id": 40, "comentario": "PL01 56 -  - PTI-301 TABIQUE SENCILLO PYL - A(15)/48/A(15) O", "n": 1.0, "a": 13.54, "b": null, "c": null, "subtotal": 13.54, "planta": "Planta 1", "zona": "Viv. 56", "ifc_guid": null, "cert_cant": 0.0, "prop_cant": 0.0}, {"id": 41, "comentario": "PL01 56 -  - PTI-301 TABIQUE SENCILLO PYL - A(15)/48/A(15) O", "n": 1.0, "a": 1.35, "b": null, "c": null, "subtotal": 1.35, "planta": "Planta 1", "zona": "Viv. 56", "ifc_guid": null, "cert_cant": 0.0, "prop_cant": 0.0}, {"id": 42, "comentario": "PL01 56 -  - PTI-301 TABIQUE SENCILLO PYL - A(15)/48/A(15) O", "n": 1.0, "a": 12.12, "b": null, "c": null, "subtotal": 12.12, "planta": "Planta 1", "zona": "Viv. 56", "ifc_guid": null, "cert_cant": 0.0, "prop_cant": 0.0}, {"id": 43, "comentario": "PL01 56 -  - PTI-301 TABIQUE SENCILLO PYL - A(15)/48/A(15) O", "n": 1.0, "a": 13.54, "b": null, "c": null, "subtotal": 13.54, "planta": "Planta 1", "zona": "Viv. 56", "ifc_guid": null, "cert_cant": 0.0, "prop_cant": 0.0}, {"id": 44, "comentario": "PL01 56 -  - PTI-301 TABIQUE SENCILLO PYL - A(15)/48/A(15) O", "n": 1.0, "a": 1.35, "b": null, "c": null, "subtotal": 1.35, "planta": "Planta 1", "zona": "Viv. 56", "ifc_guid": null, "cert_cant": 0.0, "prop_cant": 0.0}, {"id": 45, "comentario": "PL01 56 -  - PTI-301 TABIQUE SENCILLO PYL - A(15)/48/A(15) O", "n": 1.0, "a": 12.12, "b": null, "c": null, "subtotal": 12.12, "planta": "Planta 1", "zona": "Viv. 56", "ifc_guid": null, "cert_cant": 0.0, "prop_cant": 0.0}, {"id": 46, "comentario": "PL01 56 -  - PTI-301 TABIQUE SENCILLO PYL - A(15)/48/A(15) O", "n": 1.0, "a": 13.54, "b": null, "c": null, "subtotal": 13.54, "planta": "Planta 1", "zona": "Viv. 56", "ifc_guid": null, "cert_cant": 0.0, "prop_cant": 0.0}, {"id": 47, "comentario": "PL01 56 -  - PTI-301 TABIQUE SENCILLO PYL - A(15)/48/A(15) O", "n": 1.0, "a": 1.35, "b": null, "c": null, "subtotal": 1.35, "planta": "Planta 1", "zona": "Viv. 56", "ifc_guid": null, "cert_cant": 0.0, "prop_cant": 0.0}, {"id": 48, "comentario": "PL01 56 -  - PTI-301 TABIQUE SENCILLO PYL - A(15)/48/A(15) O", "n": 1.0, "a": 12.12, "b": null, "c": null, "subtotal": 12.12, "planta": "Planta 1", "zona": "Viv. 56", "ifc_guid": null, "cert_cant": 0.0, "prop_cant": 0.0}, {"id": 49, "comentario": "PL01 56 -  - PTI-301 TABIQUE SENCILLO PYL - A(15)/48/A(15) O", "n": 1.0, "a": 13.54, "b": null, "c": null, "subtotal": 13.54, "planta": "Planta 1", "zona": "Viv. 56", "ifc_guid": null, "cert_cant": 0.0, "prop_cant": 0.0}, {"id": 50, "comentario": "PL01 56 -  - PTI-301 TABIQUE SENCILLO PYL - A(15)/48/A(15) O", "n": 1.0, "a": 1.35, "b": null, "c": null, "subtotal": 1.35, "planta": "Planta 1", "zona": "Viv. 56", "ifc_guid": null, "cert_cant": 0.0, "prop_cant": 0.0}, {"id": 51, "comentario": "PL00 78 -  - PTI-301 TABIQUE SENCILLO PYL - A(15)/48/A(15) O", "n": 1.0, "a": 12.12, "b": null, "c": null, "subtotal": 12.12, "planta": "Planta 0", "zona": "Viv. 78", "ifc_guid": null, "cert_cant": 0.0, "prop_cant": 0.0}, {"id": 52, "comentario": "PL00 78 -  - PTI-301 TABIQUE SENCILLO PYL - A(15)/48/A(15) O", "n": 1.0, "a": 13.54, "b": null, "c": null, "subtotal": 13.54, "planta": "Planta 0", "zona": "Viv. 78", "ifc_guid": null, "cert_cant": 0.0, "prop_cant": 0.0}, {"id": 53, "comentario": "PL00 78 -  - PTI-301 TABIQUE SENCILLO PYL - A(15)/48/A(15) O", "n": 1.0, "a": 1.35, "b": null, "c": null, "subtotal": 1.35, "planta": "Planta 0", "zona": "Viv. 78", "ifc_guid": null, "cert_cant": 0.0, "prop_cant": 0.0}, {"id": 54, "comentario": "PL00 78 -  - PTI-301 TABIQUE SENCILLO PYL - A(15)/48/A(15) O", "n": 1.0, "a": 12.12, "b": null, "c": null, "subtotal": 12.12, "planta": "Planta 0", "zona": "Viv. 78", "ifc_guid": null, "cert_cant": 0.0, "prop_cant": 0.0}, {"id": 55, "comentario": "PL00 78 -  - PTI-301 TABIQUE SENCILLO PYL - A(15)/48/A(15) O", "n": 1.0, "a": 13.54, "b": null, "c": null, "subtotal": 13.54, "planta": "Planta 0", "zona": "Viv. 78", "ifc_guid": null, "cert_cant": 0.0, "prop_cant": 0.0}, {"id": 56, "comentario": "PL00 78 -  - PTI-301 TABIQUE SENCILLO PYL - A(15)/48/A(15) O", "n": 1.0, "a": 1.35, "b": null, "c": null, "subtotal": 1.35, "planta": "Planta 0", "zona": "Viv. 78", "ifc_guid": null, "cert_cant": 0.0, "prop_cant": 0.0}, {"id": 57, "comentario": "PL00 78 -  - PTI-301 TABIQUE SENCILLO PYL - A(15)/48/A(15) O", "n": 1.0, "a": 12.12, "b": null, "c": null, "subtotal": 12.12, "planta": "Planta 0", "zona": "Viv. 78", "ifc_guid": null, "cert_cant": 0.0, "prop_cant": 0.0}, {"id": 58, "comentario": "PL00 78 -  - PTI-301 TABIQUE SENCILLO PYL - A(15)/48/A(15) O", "n": 1.0, "a": 13.54, "b": null, "c": null, "subtotal": 13.54, "planta": "Planta 0", "zona": "Viv. 78", "ifc_guid": null, "cert_cant": 0.0, "prop_cant": 0.0}, {"id": 59, "comentario": "PL00 78 -  - PTI-301 TABIQUE SENCILLO PYL - A(15)/48/A(15) O", "n": 1.0, "a": 1.35, "b": null, "c": null, "subtotal": 1.35, "planta": "Planta 0", "zona": "Viv. 78", "ifc_guid": null, "cert_cant": 0.0, "prop_cant": 0.0}, {"id": 60, "comentario": "PL00 78 -  - PTI-301 TABIQUE SENCILLO PYL - A(15)/48/A(15) O", "n": 1.0, "a": 12.12, "b": null, "c": null, "subtotal": 12.12, "planta": "Planta 0", "zona": "Viv. 78", "ifc_guid": null, "cert_cant": 0.0, "prop_cant": 0.0}, {"id": 61, "comentario": "PL00 78 -  - PTI-301 TABIQUE SENCILLO PYL - A(15)/48/A(15) O", "n": 1.0, "a": 13.54, "b": null, "c": null, "subtotal": 13.54, "planta": "Planta 0", "zona": "Viv. 78", "ifc_guid": null, "cert_cant": 0.0, "prop_cant": 0.0}, {"id": 62, "comentario": "PL00 78 -  - PTI-301 TABIQUE SENCILLO PYL - A(15)/48/A(15) O", "n": 1.0, "a": 1.35, "b": null, "c": null, "subtotal": 1.35, "planta": "Planta 0", "zona": "Viv. 78", "ifc_guid": null, "cert_cant": 0.0, "prop_cant": 0.0}, {"id": 63, "comentario": "PL00 78 -  - PTI-301 TABIQUE SENCILLO PYL - A(15)/48/A(15) O", "n": 1.0, "a": 12.12, "b": null, "c": null, "subtotal": 12.12, "planta": "Planta 0", "zona": "Viv. 78", "ifc_guid": null, "cert_cant": 0.0, "prop_cant": 0.0}, {"id": 64, "comentario": "PL00 78 -  - PTI-301 TABIQUE SENCILLO PYL - A(15)/48/A(15) O", "n": 1.0, "a": 13.54, "b": null, "c": null, "subtotal": 13.54, "planta": "Planta 0", "zona": "Viv. 78", "ifc_guid": null, "cert_cant": 0.0, "prop_cant": 0.0}, {"id": 65, "comentario": "PL00 78 -  - PTI-301 TABIQUE SENCILLO PYL - A(15)/48/A(15) O", "n": 1.0, "a": 1.35, "b": null, "c": null, "subtotal": 1.35, "planta": "Planta 0", "zona": "Viv. 78", "ifc_guid": null, "cert_cant": 0.0, "prop_cant": 0.0}, {"id": 66, "comentario": "PL00 56 -  - PTI-301 TABIQUE SENCILLO PYL - A(15)/48/A(15) O", "n": 1.0, "a": 12.12, "b": null, "c": null, "subtotal": 12.12, "planta": "Planta 0", "zona": "Viv. 56", "ifc_guid": null, "cert_cant": 0.0, "prop_cant": 0.0}, {"id": 67, "comentario": "PL00 56 -  - PTI-301 TABIQUE SENCILLO PYL - A(15)/48/A(15) O", "n": 1.0, "a": 13.54, "b": null, "c": null, "subtotal": 13.54, "planta": "Planta 0", "zona": "Viv. 56", "ifc_guid": null, "cert_cant": 0.0, "prop_cant": 0.0}, {"id": 68, "comentario": "PL00 56 -  - PTI-301 TABIQUE SENCILLO PYL - A(15)/48/A(15) O", "n": 1.0, "a": 1.35, "b": null, "c": null, "subtotal": 1.35, "planta": "Planta 0", "zona": "Viv. 56", "ifc_guid": null, "cert_cant": 0.0, "prop_cant": 0.0}, {"id": 69, "comentario": "PL00 56 -  - PTI-301 TABIQUE SENCILLO PYL - A(15)/48/A(15) O", "n": 1.0, "a": 12.12, "b": null, "c": null, "subtotal": 12.12, "planta": "Planta 0", "zona": "Viv. 56", "ifc_guid": null, "cert_cant": 0.0, "prop_cant": 0.0}, {"id": 70, "comentario": "PL00 56 -  - PTI-301 TABIQUE SENCILLO PYL - A(15)/48/A(15) O", "n": 1.0, "a": 13.54, "b": null, "c": null, "subtotal": 13.54, "planta": "Planta 0", "zona": "Viv. 56", "ifc_guid": null, "cert_cant": 0.0, "prop_cant": 0.0}, {"id": 71, "comentario": "PL00 56 -  - PTI-301 TABIQUE SENCILLO PYL - A(15)/48/A(15) O", "n": 1.0, "a": 1.35, "b": null, "c": null, "subtotal": 1.35, "planta": "Planta 0", "zona": "Viv. 56", "ifc_guid": null, "cert_cant": 0.0, "prop_cant": 0.0}, {"id": 72, "comentario": "PL00 78 -  - PTI-301 TABIQUE SENCILLO PYL - A(15)/48/A(15) O", "n": 1.0, "a": 12.12, "b": null, "c": null, "subtotal": 12.12, "planta": "Planta 0", "zona": "Viv. 78", "ifc_guid": null, "cert_cant": 0.0, "prop_cant": 0.0}, {"id": 73, "comentario": "PL00 78 -  - PTI-301 TABIQUE SENCILLO PYL - A(15)/48/A(15) O", "n": 1.0, "a": 13.54, "b": null, "c": null, "subtotal": 13.54, "planta": "Planta 0", "zona": "Viv. 78", "ifc_guid": null, "cert_cant": 0.0, "prop_cant": 0.0}, {"id": 74, "comentario": "PL00 78 -  - PTI-301 TABIQUE SENCILLO PYL - A(15)/48/A(15) O", "n": 1.0, "a": 1.35, "b": null, "c": null, "subtotal": 1.35, "planta": "Planta 0", "zona": "Viv. 78", "ifc_guid": null, "cert_cant": 0.0, "prop_cant": 0.0}, {"id": 75, "comentario": "PL01 56 -  - PTI-301 TABIQUE SENCILLO PYL - A(15)/48/A(15) O", "n": 1.0, "a": 12.12, "b": null, "c": null, "subtotal": 12.12, "planta": "Planta 1", "zona": "Viv. 56", "ifc_guid": null, "cert_cant": 0.0, "prop_cant": 0.0}, {"id": 76, "comentario": "PL01 56 -  - PTI-301 TABIQUE SENCILLO PYL - A(15)/48/A(15) O", "n": 1.0, "a": 13.54, "b": null, "c": null, "subtotal": 13.54, "planta": "Planta 1", "zona": "Viv. 56", "ifc_guid": null, "cert_cant": 0.0, "prop_cant": 0.0}, {"id": 77, "comentario": "PL01 56 -  - PTI-301 TABIQUE SENCILLO PYL - A(15)/48/A(15) O", "n": 1.0, "a": 1.35, "b": null, "c": null, "subtotal": 1.35, "planta": "Planta 1", "zona": "Viv. 56", "ifc_guid": null, "cert_cant": 0.0, "prop_cant": 0.0}, {"id": 78, "comentario": "PL01 56 -  - PTI-301 TABIQUE SENCILLO PYL - A(15)/48/A(15) O", "n": 1.0, "a": 12.12, "b": null, "c": null, "subtotal": 12.12, "planta": "Planta 1", "zona": "Viv. 56", "ifc_guid": null, "cert_cant": 0.0, "prop_cant": 0.0}, {"id": 79, "comentario": "PL01 56 -  - PTI-301 TABIQUE SENCILLO PYL - A(15)/48/A(15) O", "n": 1.0, "a": 13.54, "b": null, "c": null, "subtotal": 13.54, "planta": "Planta 1", "zona": "Viv. 56", "ifc_guid": null, "cert_cant": 0.0, "prop_cant": 0.0}], "total_lineas": 1985}, {"codigo": "PTI-311.1", "descripcion": "PTI-311.1 TABIQUE SENCILLO PYL - A(15)/70/A(15)", "unidad": "m2", "precio": 280.426, "total_med": 220.09, "importe_contrato": 61718.96, "cert_anterior_pct": 40, "cert_anterior_imp": 24688, "bloqueado": true, "bloqueo_motivo": "DoP perfilería pendiente", "plantas": ["Planta 0", "Planta 1", "Planta 2", "Sótano 1"], "zonas": ["Viv. 12", "Viv. 34", "Viv. 56", "Viv. 78"], "mediciones": [{"id": 0, "comentario": " PL00 78 - - PTI-311.1 TABIQUE SENCILLO PYL - A(15)/70/A(15)", "n": 1.0, "a": 0.83, "b": null, "c": null, "subtotal": 0.83, "planta": "Planta 0", "zona": "Viv. 78", "ifc_guid": null, "cert_cant": 0.0, "prop_cant": 0.0}, {"id": 1, "comentario": " PL00 78 - - PTI-311.1 TABIQUE SENCILLO PYL - A(15)/70/A(15)", "n": 1.0, "a": 3.42, "b": null, "c": null, "subtotal": 3.42, "planta": "Planta 0", "zona": "Viv. 78", "ifc_guid": null, "cert_cant": 0.0, "prop_cant": 0.0}, {"id": 2, "comentario": " PL00 78 - - PTI-311.1 TABIQUE SENCILLO PYL - A(15)/70/A(15)", "n": 1.0, "a": 12.17, "b": null, "c": null, "subtotal": 12.17, "planta": "Planta 0", "zona": "Viv. 78", "ifc_guid": null, "cert_cant": 0.0, "prop_cant": 0.0}, {"id": 3, "comentario": " PL01 78 - - PTI-311.1 TABIQUE SENCILLO PYL - A(15)/70/A(15)", "n": 1.0, "a": 0.83, "b": null, "c": null, "subtotal": 0.83, "planta": "Planta 1", "zona": "Viv. 78", "ifc_guid": null, "cert_cant": 0.0, "prop_cant": 0.0}, {"id": 4, "comentario": " PL01 78 - - PTI-311.1 TABIQUE SENCILLO PYL - A(15)/70/A(15)", "n": 1.0, "a": 3.42, "b": null, "c": null, "subtotal": 3.42, "planta": "Planta 1", "zona": "Viv. 78", "ifc_guid": null, "cert_cant": 0.0, "prop_cant": 0.0}, {"id": 5, "comentario": " PL01 78 - - PTI-311.1 TABIQUE SENCILLO PYL - A(15)/70/A(15)", "n": 1.0, "a": 12.17, "b": null, "c": null, "subtotal": 12.17, "planta": "Planta 1", "zona": "Viv. 78", "ifc_guid": null, "cert_cant": 0.0, "prop_cant": 0.0}, {"id": 6, "comentario": " PL02 78 - - PTI-311.1 TABIQUE SENCILLO PYL - A(15)/70/A(15)", "n": 1.0, "a": 0.83, "b": null, "c": null, "subtotal": 0.83, "planta": "Planta 2", "zona": "Viv. 78", "ifc_guid": null, "cert_cant": 0.0, "prop_cant": 0.0}, {"id": 7, "comentario": " PL02 78 - - PTI-311.1 TABIQUE SENCILLO PYL - A(15)/70/A(15)", "n": 1.0, "a": 3.42, "b": null, "c": null, "subtotal": 3.42, "planta": "Planta 2", "zona": "Viv. 78", "ifc_guid": null, "cert_cant": 0.0, "prop_cant": 0.0}, {"id": 8, "comentario": " PL02 78 - - PTI-311.1 TABIQUE SENCILLO PYL - A(15)/70/A(15)", "n": 1.0, "a": 12.17, "b": null, "c": null, "subtotal": 12.17, "planta": "Planta 2", "zona": "Viv. 78", "ifc_guid": null, "cert_cant": 0.0, "prop_cant": 0.0}, {"id": 9, "comentario": " PL00 12 - - PTI-311.1 TABIQUE SENCILLO PYL - A(15)/70/A(15)", "n": 1.0, "a": 0.83, "b": null, "c": null, "subtotal": 0.83, "planta": "Planta 0", "zona": "Viv. 12", "ifc_guid": null, "cert_cant": 0.0, "prop_cant": 0.0}, {"id": 10, "comentario": " PL00 12 - - PTI-311.1 TABIQUE SENCILLO PYL - A(15)/70/A(15)", "n": 1.0, "a": 3.42, "b": null, "c": null, "subtotal": 3.42, "planta": "Planta 0", "zona": "Viv. 12", "ifc_guid": null, "cert_cant": 0.0, "prop_cant": 0.0}, {"id": 11, "comentario": " PL00 12 - - PTI-311.1 TABIQUE SENCILLO PYL - A(15)/70/A(15)", "n": 1.0, "a": 12.17, "b": null, "c": null, "subtotal": 12.17, "planta": "Planta 0", "zona": "Viv. 12", "ifc_guid": null, "cert_cant": 0.0, "prop_cant": 0.0}, {"id": 12, "comentario": " PL02 12 - - PTI-311.1 TABIQUE SENCILLO PYL - A(15)/70/A(15)", "n": 1.0, "a": 0.83, "b": null, "c": null, "subtotal": 0.83, "planta": "Planta 2", "zona": "Viv. 12", "ifc_guid": null, "cert_cant": 0.0, "prop_cant": 0.0}, {"id": 13, "comentario": " PL02 12 - - PTI-311.1 TABIQUE SENCILLO PYL - A(15)/70/A(15)", "n": 1.0, "a": 3.42, "b": null, "c": null, "subtotal": 3.42, "planta": "Planta 2", "zona": "Viv. 12", "ifc_guid": null, "cert_cant": 0.0, "prop_cant": 0.0}, {"id": 14, "comentario": " PL02 12 - - PTI-311.1 TABIQUE SENCILLO PYL - A(15)/70/A(15)", "n": 1.0, "a": 12.17, "b": null, "c": null, "subtotal": 12.17, "planta": "Planta 2", "zona": "Viv. 12", "ifc_guid": null, "cert_cant": 0.0, "prop_cant": 0.0}, {"id": 15, "comentario": " PL01 12 - - PTI-311.1 TABIQUE SENCILLO PYL - A(15)/70/A(15)", "n": 1.0, "a": 0.83, "b": null, "c": null, "subtotal": 0.83, "planta": "Planta 1", "zona": "Viv. 12", "ifc_guid": null, "cert_cant": 0.0, "prop_cant": 0.0}, {"id": 16, "comentario": " PL01 12 - - PTI-311.1 TABIQUE SENCILLO PYL - A(15)/70/A(15)", "n": 1.0, "a": 3.42, "b": null, "c": null, "subtotal": 3.42, "planta": "Planta 1", "zona": "Viv. 12", "ifc_guid": null, "cert_cant": 0.0, "prop_cant": 0.0}, {"id": 17, "comentario": " PL01 12 - - PTI-311.1 TABIQUE SENCILLO PYL - A(15)/70/A(15)", "n": 1.0, "a": 12.17, "b": null, "c": null, "subtotal": 12.17, "planta": "Planta 1", "zona": "Viv. 12", "ifc_guid": null, "cert_cant": 0.0, "prop_cant": 0.0}, {"id": 18, "comentario": " PL00 56 - - PTI-311.1 TABIQUE SENCILLO PYL - A(15)/70/A(15)", "n": 1.0, "a": 0.83, "b": null, "c": null, "subtotal": 0.83, "planta": "Planta 0", "zona": "Viv. 56", "ifc_guid": null, "cert_cant": 0.0, "prop_cant": 0.0}, {"id": 19, "comentario": " PL00 56 - - PTI-311.1 TABIQUE SENCILLO PYL - A(15)/70/A(15)", "n": 1.0, "a": 3.42, "b": null, "c": null, "subtotal": 3.42, "planta": "Planta 0", "zona": "Viv. 56", "ifc_guid": null, "cert_cant": 0.0, "prop_cant": 0.0}, {"id": 20, "comentario": " PL00 56 - - PTI-311.1 TABIQUE SENCILLO PYL - A(15)/70/A(15)", "n": 1.0, "a": 12.17, "b": null, "c": null, "subtotal": 12.17, "planta": "Planta 0", "zona": "Viv. 56", "ifc_guid": null, "cert_cant": 0.0, "prop_cant": 0.0}, {"id": 21, "comentario": " PL01 56 - - PTI-311.1 TABIQUE SENCILLO PYL - A(15)/70/A(15)", "n": 1.0, "a": 0.83, "b": null, "c": null, "subtotal": 0.83, "planta": "Planta 1", "zona": "Viv. 56", "ifc_guid": null, "cert_cant": 0.0, "prop_cant": 0.0}, {"id": 22, "comentario": " PL01 56 - - PTI-311.1 TABIQUE SENCILLO PYL - A(15)/70/A(15)", "n": 1.0, "a": 3.42, "b": null, "c": null, "subtotal": 3.42, "planta": "Planta 1", "zona": "Viv. 56", "ifc_guid": null, "cert_cant": 0.0, "prop_cant": 0.0}, {"id": 23, "comentario": " PL01 56 - - PTI-311.1 TABIQUE SENCILLO PYL - A(15)/70/A(15)", "n": 1.0, "a": 12.17, "b": null, "c": null, "subtotal": 12.17, "planta": "Planta 1", "zona": "Viv. 56", "ifc_guid": null, "cert_cant": 0.0, "prop_cant": 0.0}, {"id": 24, "comentario": " PL02 56 - - PTI-311.1 TABIQUE SENCILLO PYL - A(15)/70/A(15)", "n": 1.0, "a": 0.83, "b": null, "c": null, "subtotal": 0.83, "planta": "Planta 2", "zona": "Viv. 56", "ifc_guid": null, "cert_cant": 0.0, "prop_cant": 0.0}, {"id": 25, "comentario": " PL02 56 - - PTI-311.1 TABIQUE SENCILLO PYL - A(15)/70/A(15)", "n": 1.0, "a": 3.42, "b": null, "c": null, "subtotal": 3.42, "planta": "Planta 2", "zona": "Viv. 56", "ifc_guid": null, "cert_cant": 0.0, "prop_cant": 0.0}, {"id": 26, "comentario": " PL02 56 - - PTI-311.1 TABIQUE SENCILLO PYL - A(15)/70/A(15)", "n": 1.0, "a": 12.17, "b": null, "c": null, "subtotal": 12.17, "planta": "Planta 2", "zona": "Viv. 56", "ifc_guid": null, "cert_cant": 0.0, "prop_cant": 0.0}, {"id": 27, "comentario": " PL02 12 - - PTI-311.1 TABIQUE SENCILLO PYL - A(15)/70/A(15)", "n": 1.0, "a": 0.83, "b": null, "c": null, "subtotal": 0.83, "planta": "Planta 2", "zona": "Viv. 12", "ifc_guid": null, "cert_cant": 0.0, "prop_cant": 0.0}, {"id": 28, "comentario": " PL02 12 - - PTI-311.1 TABIQUE SENCILLO PYL - A(15)/70/A(15)", "n": 1.0, "a": 3.42, "b": null, "c": null, "subtotal": 3.42, "planta": "Planta 2", "zona": "Viv. 12", "ifc_guid": null, "cert_cant": 0.0, "prop_cant": 0.0}, {"id": 29, "comentario": " PL02 12 - - PTI-311.1 TABIQUE SENCILLO PYL - A(15)/70/A(15)", "n": 1.0, "a": 12.17, "b": null, "c": null, "subtotal": 12.17, "planta": "Planta 2", "zona": "Viv. 12", "ifc_guid": null, "cert_cant": 0.0, "prop_cant": 0.0}, {"id": 30, "comentario": " PL00 12 - - PTI-311.1 TABIQUE SENCILLO PYL - A(15)/70/A(15)", "n": 1.0, "a": 0.83, "b": null, "c": null, "subtotal": 0.83, "planta": "Planta 0", "zona": "Viv. 12", "ifc_guid": null, "cert_cant": 0.0, "prop_cant": 0.0}, {"id": 31, "comentario": " PL00 12 - - PTI-311.1 TABIQUE SENCILLO PYL - A(15)/70/A(15)", "n": 1.0, "a": 3.42, "b": null, "c": null, "subtotal": 3.42, "planta": "Planta 0", "zona": "Viv. 12", "ifc_guid": null, "cert_cant": 0.0, "prop_cant": 0.0}, {"id": 32, "comentario": " PL00 12 - - PTI-311.1 TABIQUE SENCILLO PYL - A(15)/70/A(15)", "n": 1.0, "a": 12.17, "b": null, "c": null, "subtotal": 12.17, "planta": "Planta 0", "zona": "Viv. 12", "ifc_guid": null, "cert_cant": 0.0, "prop_cant": 0.0}, {"id": 33, "comentario": " PL00 12 - - PTI-311.1 TABIQUE SENCILLO PYL - A(15)/70/A(15)", "n": 1.0, "a": 0.06, "b": null, "c": null, "subtotal": 0.06, "planta": "Planta 0", "zona": "Viv. 12", "ifc_guid": null, "cert_cant": 0.0, "prop_cant": 0.0}, {"id": 34, "comentario": " PL00 12 - - PTI-311.1 TABIQUE SENCILLO PYL - A(15)/70/A(15)", "n": 1.0, "a": 0.38, "b": null, "c": null, "subtotal": 0.38, "planta": "Planta 0", "zona": "Viv. 12", "ifc_guid": null, "cert_cant": 0.0, "prop_cant": 0.0}, {"id": 35, "comentario": " PL00 12 - - PTI-311.1 TABIQUE SENCILLO PYL - A(15)/70/A(15)", "n": 1.0, "a": 0.98, "b": null, "c": null, "subtotal": 0.98, "planta": "Planta 0", "zona": "Viv. 12", "ifc_guid": null, "cert_cant": 0.0, "prop_cant": 0.0}, {"id": 36, "comentario": " PL00 12 - - PTI-311.1 TABIQUE SENCILLO PYL - A(15)/70/A(15)", "n": 1.0, "a": 0.06, "b": null, "c": null, "subtotal": 0.06, "planta": "Planta 0", "zona": "Viv. 12", "ifc_guid": null, "cert_cant": 0.0, "prop_cant": 0.0}, {"id": 37, "comentario": " PL00 12 - - PTI-311.1 TABIQUE SENCILLO PYL - A(15)/70/A(15)", "n": 1.0, "a": 0.38, "b": null, "c": null, "subtotal": 0.38, "planta": "Planta 0", "zona": "Viv. 12", "ifc_guid": null, "cert_cant": 0.0, "prop_cant": 0.0}, {"id": 38, "comentario": " PL00 12 - - PTI-311.1 TABIQUE SENCILLO PYL - A(15)/70/A(15)", "n": 1.0, "a": 0.98, "b": null, "c": null, "subtotal": 0.98, "planta": "Planta 0", "zona": "Viv. 12", "ifc_guid": null, "cert_cant": 0.0, "prop_cant": 0.0}, {"id": 39, "comentario": " PL00 56 - - PTI-311.1 TABIQUE SENCILLO PYL - A(15)/70/A(15)", "n": 1.0, "a": 0.06, "b": null, "c": null, "subtotal": 0.06, "planta": "Planta 0", "zona": "Viv. 56", "ifc_guid": null, "cert_cant": 0.0, "prop_cant": 0.0}, {"id": 40, "comentario": " PL00 56 - - PTI-311.1 TABIQUE SENCILLO PYL - A(15)/70/A(15)", "n": 1.0, "a": 0.38, "b": null, "c": null, "subtotal": 0.38, "planta": "Planta 0", "zona": "Viv. 56", "ifc_guid": null, "cert_cant": 0.0, "prop_cant": 0.0}, {"id": 41, "comentario": " PL00 56 - - PTI-311.1 TABIQUE SENCILLO PYL - A(15)/70/A(15)", "n": 1.0, "a": 0.98, "b": null, "c": null, "subtotal": 0.98, "planta": "Planta 0", "zona": "Viv. 56", "ifc_guid": null, "cert_cant": 0.0, "prop_cant": 0.0}, {"id": 42, "comentario": " PL00 78 - - PTI-311.1 TABIQUE SENCILLO PYL - A(15)/70/A(15)", "n": 1.0, "a": 0.06, "b": null, "c": null, "subtotal": 0.06, "planta": "Planta 0", "zona": "Viv. 78", "ifc_guid": null, "cert_cant": 0.0, "prop_cant": 0.0}, {"id": 43, "comentario": " PL00 78 - - PTI-311.1 TABIQUE SENCILLO PYL - A(15)/70/A(15)", "n": 1.0, "a": 0.38, "b": null, "c": null, "subtotal": 0.38, "planta": "Planta 0", "zona": "Viv. 78", "ifc_guid": null, "cert_cant": 0.0, "prop_cant": 0.0}, {"id": 44, "comentario": " PL00 78 - - PTI-311.1 TABIQUE SENCILLO PYL - A(15)/70/A(15)", "n": 1.0, "a": 0.98, "b": null, "c": null, "subtotal": 0.98, "planta": "Planta 0", "zona": "Viv. 78", "ifc_guid": null, "cert_cant": 0.0, "prop_cant": 0.0}, {"id": 45, "comentario": " PL01 12 - - PTI-311.1 TABIQUE SENCILLO PYL - A(15)/70/A(15)", "n": 1.0, "a": 0.83, "b": null, "c": null, "subtotal": 0.83, "planta": "Planta 1", "zona": "Viv. 12", "ifc_guid": null, "cert_cant": 0.0, "prop_cant": 0.0}, {"id": 46, "comentario": " PL01 12 - - PTI-311.1 TABIQUE SENCILLO PYL - A(15)/70/A(15)", "n": 1.0, "a": 3.42, "b": null, "c": null, "subtotal": 3.42, "planta": "Planta 1", "zona": "Viv. 12", "ifc_guid": null, "cert_cant": 0.0, "prop_cant": 0.0}, {"id": 47, "comentario": " PL01 12 - - PTI-311.1 TABIQUE SENCILLO PYL - A(15)/70/A(15)", "n": 1.0, "a": 12.17, "b": null, "c": null, "subtotal": 12.17, "planta": "Planta 1", "zona": "Viv. 12", "ifc_guid": null, "cert_cant": 0.0, "prop_cant": 0.0}, {"id": 48, "comentario": " PLS1 34 - - PTI-311.1 TABIQUE SENCILLO PYL - A(15)/70/A(15)", "n": 1.0, "a": 11.35, "b": null, "c": null, "subtotal": 11.35, "planta": "Sótano 1", "zona": "Viv. 34", "ifc_guid": null, "cert_cant": 0.0, "prop_cant": 0.0}, {"id": 49, "comentario": " PLS1 34 - - PTI-311.1 TABIQUE SENCILLO PYL - A(15)/70/A(15)", "n": 1.0, "a": 6.02, "b": null, "c": null, "subtotal": 1.0, "planta": "Sótano 1", "zona": "Viv. 34", "ifc_guid": null, "cert_cant": 0.0, "prop_cant": 0.0}], "total_lineas": 50}, {"codigo": "PTI-311.2", "descripcion": "PTI-311.2 TABIQUE SENCILLO PYL - A(15)/70/H1(15)", "unidad": "m2", "precio": 280.426, "total_med": 24.91, "importe_contrato": 6985.41, "cert_anterior_pct": 20, "cert_anterior_imp": 1397, "bloqueado": true, "bloqueo_motivo": "CE placa H1 pendiente", "plantas": ["Planta 0"], "zonas": ["Zonas comunes"], "mediciones": [{"id": 0, "comentario": " PL00 ZC - - PTI-311.2 TABIQUE SENCILLO PYL - A(15)/70/H1(15", "n": 1.0, "a": 15.8, "b": null, "c": null, "subtotal": 15.8, "planta": "Planta 0", "zona": "Zonas comunes", "ifc_guid": null, "cert_cant": 0.0, "prop_cant": 0.0}, {"id": 1, "comentario": " PL00 ZC - - PTI-311.2 TABIQUE SENCILLO PYL - A(15)/70/H1(15", "n": 1.0, "a": 6.97, "b": null, "c": null, "subtotal": 6.97, "planta": "Planta 0", "zona": "Zonas comunes", "ifc_guid": null, "cert_cant": 0.0, "prop_cant": 0.0}, {"id": 2, "comentario": " PL00 ZC - - PTI-311.2 TABIQUE SENCILLO PYL - A(15)/70/H1(15", "n": 1.0, "a": 2.14, "b": null, "c": null, "subtotal": 1.0, "planta": "Planta 0", "zona": "Zonas comunes", "ifc_guid": null, "cert_cant": 0.0, "prop_cant": 0.0}], "total_lineas": 3}, {"codigo": "AYA-103", "descripcion": "AYA-103 CONJUNTO SELLADOS CORTAFUEGOS EI-90", "unidad": "PA", "precio": 241.025, "total_med": 1.0, "importe_contrato": 241.03, "cert_anterior_pct": 0, "cert_anterior_imp": 0, "bloqueado": false, "bloqueo_motivo": "", "plantas": [], "zonas": [], "mediciones": [], "total_lineas": 0}];
+
+let rol = 'con';
+let activeIdx = 0;
+let modo = 'pct';
+let filterPlanta = null;
+let filterZona   = null;
+
+// ── SIDEBAR ───────────────────────────────────────────────────────────────────
+function renderSidebar() {
+  const list = document.getElementById('sb-list');
+  list.innerHTML = '';
+  PARTIDAS.forEach((p, i) => {
+    const certAnt = p.cert_anterior_imp || 0;
+    const pctAnt  = p.cert_anterior_pct || 0;
+    const propCant = sumProp(p);
+    const propImp  = Math.round(p.precio * propCant);
+    const btn = document.createElement('button');
+    btn.className = `p-btn${i===activeIdx?' active':''}`;
+    btn.onclick = () => { activeIdx=i; renderSidebar(); renderPartida(); };
+    btn.innerHTML = `
+      <div class="pb-top">
+        <span class="pb-cod">${p.codigo}</span>
+        <span class="pb-nom">${p.descripcion}</span>
+      </div>
+      <span class="pb-imp">${fmt(p.importe_contrato)}</span>
+      ${p.bloqueado?`<span class="pb-bloq">🔒 Bloqueado</span>`:''}
+      ${propCant>0?`<span style="font-size:10px;color:var(--grn);font-weight:500">${propCant.toFixed(2)} ${p.unidad} propuesto</span>`:''}`;
+    list.appendChild(btn);
+  });
+}
+
+// ── RENDER PARTIDA ────────────────────────────────────────────────────────────
+function renderPartida() {
+  const p = PARTIDAS[activeIdx];
+  const certAntImp = p.cert_anterior_imp || 0;
+  const certAntPct = p.cert_anterior_pct || 0;
+  const certAntCant= Math.round((certAntPct/100)*p.total_med * 100) / 100;
+  const propCant   = sumProp(p);
+  const propPct    = p.total_med > 0 ? Math.round(propCant/p.total_med*100*10)/10 : 0;
+  const propImp    = Math.round(p.precio * propCant);
+  const aOrigenImp = certAntImp + propImp;
+  const aOrigenPct = Math.round((certAntPct + propPct)*10)/10;
+  const pendImp    = p.importe_contrato - aOrigenImp;
+
+  // Header
+  document.getElementById('part-header-wrap').innerHTML = `
+    <div class="part-header">
+      <div class="ph-top">
+        <span class="ph-cod">${p.codigo}</span>
+        <div>
+          <div class="ph-desc">${p.descripcion}</div>
+          <div style="font-size:11px;color:var(--txt3);margin-top:2px">${p.unidad} · ${fmt2(p.precio)} €/${p.unidad} · Total medición: ${p.total_med} ${p.unidad}</div>
+        </div>
+      </div>
+      ${p.bloqueado?`<div class="ph-bloq">🔒 <strong>Bloqueado:</strong> ${p.bloqueo_motivo}</div>`:''}
+      <div class="part-kpis">
+        <div class="pk"><div class="pk-lbl">Contrato</div><div class="pk-val">${fmt(p.importe_contrato)}</div><div class="pk-sub">${p.total_med} ${p.unidad}</div></div>
+        <div class="pk-sep"></div>
+        <div class="pk"><div class="pk-lbl">Certif. anterior</div><div class="pk-val" style="color:var(--cyan)">${fmt(certAntImp)}</div><div class="pk-sub">${certAntPct}% · ${certAntCant} ${p.unidad}</div></div>
+        <div class="pk-sep"></div>
+        <div class="pk"><div class="pk-lbl">Este mes (propuesta)</div><div class="pk-val" style="color:var(--ylw)">${fmt(propImp)}</div><div class="pk-sub">${propPct}% · ${propCant.toFixed(2)} ${p.unidad}</div></div>
+        <div class="pk-sep"></div>
+        <div class="pk"><div class="pk-lbl">A origen</div><div class="pk-val" style="color:${aOrigenPct>=99?'var(--grn)':'var(--txt)'}">${fmt(aOrigenImp)}</div><div class="pk-sub">${aOrigenPct}% acumulado</div></div>
+        <div class="pk-sep"></div>
+        <div class="pk"><div class="pk-lbl">Pendiente</div><div class="pk-val" style="color:var(--txt3)">${fmt(Math.max(0,pendImp))}</div><div class="pk-sub">${Math.max(0,100-aOrigenPct).toFixed(1)}% restante</div></div>
+      </div>
+    </div>`;
+
+  document.getElementById('modo-bar').style.display='flex';
+  document.getElementById('totales-bar').style.display='flex';
+  document.getElementById('lineas-count').textContent=`(${p.total_lineas} líneas)`;
+
+  renderModo();
+  renderTotales();
+  renderFilters();
+}
+
+function sumProp(p) {
+  if (!p.mediciones || !p.mediciones.length) return p._propCant||0;
+  return p.mediciones.reduce((a,m)=>a+(m.prop_cant||0),0);
+}
+
+// ── MODO ──────────────────────────────────────────────────────────────────────
+function setModo(m) {
+  modo = m;
+  ['pct','cant','lineas'].forEach(v=>{
+    document.getElementById(`view-${v}`).classList.toggle('active',v===m);
+    document.getElementById(`tab-${v}`).classList.toggle('active',v===m);
+  });
+  document.getElementById('filter-area').style.display = m==='lineas'?'flex':'none';
+  renderModo();
+}
+
+function renderModo() {
+  if (modo==='pct')    renderPct();
+  if (modo==='cant')   renderCant();
+  if (modo==='lineas') renderLineas();
+}
+
+// ── VISTA % ───────────────────────────────────────────────────────────────────
+function renderPct() {
+  const p = PARTIDAS[activeIdx];
+  const certAntPct = p.cert_anterior_pct || 0;
+  const propCant   = sumProp(p);
+  const propPct    = p.total_med>0?Math.round(propCant/p.total_med*100*10)/10:p._propPct||certAntPct;
+  const valPct     = propPct;
+
+  document.getElementById('pct-content').innerHTML = `
+    <div class="pct-card">
+      <div class="pct-card-title">Introduce el % de avance de esta partida</div>
+      <div style="margin-bottom:8px;font-size:11px;color:var(--txt3)">Certificado anterior: <strong>${certAntPct}%</strong> · Máximo permitido: <strong>99%</strong></div>
+      <div class="pct-slider-wrap">
+        <input type="range" class="pct-slider" id="pct-slider" min="${certAntPct}" max="99" step="0.5" value="${valPct}"
+          oninput="onPctSlider(this.value)">
+        <div class="pct-big" id="pct-big">${valPct}%</div>
+      </div>
+      <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap" id="pct-presets"></div>
+      <div class="pct-rows" id="pct-rows"></div>
+    </div>`;
+
+  // Presets de fase
+  const fasePresets = [
+    {lbl:'Replanteo',pct:10},{lbl:'1ª cara',pct:40},{lbl:'2ª cara+ais.',pct:75},
+    {lbl:'Encintado',pct:85},{lbl:'Recepción',pct:90}
+  ].filter(f=>f.pct>certAntPct);
+  document.getElementById('pct-presets').innerHTML = fasePresets.map(f=>
+    `<button class="btn btn-ghost btn-xs" onclick="onPctSlider(${f.pct})">${f.lbl} (${f.pct}%)</button>`
+  ).join('');
+
+  updatePctRows(valPct);
+}
+
+function onPctSlider(val) {
+  const pct = parseFloat(val);
+  const p   = PARTIDAS[activeIdx];
+  document.getElementById('pct-slider').value = pct;
+  document.getElementById('pct-big').textContent = pct+'%';
+  // Sincronizar con mediciones: distribuir proporcionalmente
+  p._propPct  = pct;
+  p._propCant = Math.round((pct/100)*p.total_med*100)/100;
+  updatePctRows(pct);
+  renderTotales();
+  renderSidebar();
+}
+
+function updatePctRows(pct) {
+  const p = PARTIDAS[activeIdx];
+  const certAntPct = p.cert_anterior_pct||0;
+  const cant  = Math.round((pct/100)*p.total_med*100)/100;
+  const imp   = Math.round(p.precio*cant);
+  const antImp= p.cert_anterior_imp||0;
+  const aOr   = antImp+imp;
+  document.getElementById('pct-rows').innerHTML = `
+    <div class="pct-row"><span style="color:var(--txt3)">Anterior</span><span class="v" style="color:var(--cyan)">${certAntPct}% · ${fmt(antImp)}</span></div>
+    <div class="pct-row"><span>Este mes (${pct}%)</span><span class="v" style="color:var(--ylw)">${cant} ${p.unidad} · ${fmt(imp)}</span></div>
+    <div class="pct-row"><span>A origen</span><span class="v">${(certAntPct+pct).toFixed(1)}% · ${fmt(aOr)}</span></div>
+    <div class="pct-row"><span>Pendiente</span><span class="v" style="color:var(--txt3)">${fmt(Math.max(0,p.importe_contrato-aOr))}</span></div>`;
+}
+
+// ── VISTA CANTIDAD ────────────────────────────────────────────────────────────
+function renderCant() {
+  const p = PARTIDAS[activeIdx];
+  const certAntCant = Math.round((p.cert_anterior_pct||0)/100*p.total_med*100)/100;
+  const propCant    = p._propCant || sumProp(p) || 0;
+  const pctAnt      = p.cert_anterior_pct||0;
+  const aOrigenFill = Math.min(100, (certAntCant/p.total_med*100).toFixed(1));
+  const propFill    = Math.min(100, ((certAntCant+propCant)/p.total_med*100).toFixed(1));
+
+  document.getElementById('cant-content').innerHTML = `
+    <div class="cant-card">
+      <div style="font-size:13px;font-weight:600;color:var(--txt2);margin-bottom:12px">Introduce la cantidad de este mes</div>
+      <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:4px">
+        <input class="cant-input-big" type="number" id="cant-input" min="0" max="${p.total_med-certAntCant}"
+          step="0.01" value="${propCant||''}" placeholder="0"
+          oninput="onCantInput(this.value)">
+        <span style="font-family:var(--mono);font-size:20px;color:var(--txt3)">${p.unidad}</span>
+      </div>
+      <div class="cant-unit">Precio unitario: <strong>${fmt2(p.precio)} €/${p.unidad}</strong></div>
+      <div class="cant-max">Máximo disponible: <strong>${(p.total_med-certAntCant).toFixed(2)} ${p.unidad}</strong> (total ${p.total_med} − anterior ${certAntCant})</div>
+      <div class="cant-warn" id="cant-warn">⚠ Supera la medición disponible</div>
+      <div class="ant-bar">
+        <div class="ant-fill" id="ant-fill" style="width:${aOrigenFill}%;background:linear-gradient(90deg,var(--cyan) ${aOrigenFill/propFill*100}%,var(--ylw) ${aOrigenFill/propFill*100}%)"></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--txt3);margin-bottom:16px">
+        <span>Anterior: ${certAntCant} ${p.unidad} (${pctAnt}%)</span>
+        <span>Total: ${p.total_med} ${p.unidad}</span>
+      </div>
+      <div class="pct-rows" id="cant-rows"></div>
+    </div>`;
+  updateCantRows(propCant);
+}
+
+function onCantInput(val) {
+  const p = PARTIDAS[activeIdx];
+  const cant = parseFloat(val)||0;
+  const certAntCant = Math.round((p.cert_anterior_pct||0)/100*p.total_med*100)/100;
+  const max = p.total_med - certAntCant;
+  const warn = document.getElementById('cant-warn');
+  const inp  = document.getElementById('cant-input');
+  if (cant > max) {
+    warn.style.display='block'; inp.style.borderColor='var(--red)'; return;
+  }
+  warn.style.display='none'; inp.style.borderColor='';
+  p._propCant = cant;
+  p._propPct  = p.total_med>0?Math.round(cant/p.total_med*100*10)/10:0;
+  updateCantRows(cant);
+  renderTotales();
+  renderSidebar();
+}
+
+function updateCantRows(cant) {
+  const p = PARTIDAS[activeIdx];
+  const certAntImp = p.cert_anterior_imp||0;
+  const propImp = Math.round(p.precio*cant);
+  const propPct = p.total_med>0?Math.round(cant/p.total_med*100*10)/10:0;
+  document.getElementById('cant-rows').innerHTML = `
+    <div class="pct-row"><span style="color:var(--txt3)">Importe este mes</span><span class="v" style="color:var(--ylw)">${fmt(propImp)}</span></div>
+    <div class="pct-row"><span>% sobre contrato</span><span class="v">${propPct}%</span></div>
+    <div class="pct-row"><span>A origen</span><span class="v">${fmt(certAntImp+propImp)}</span></div>
+    <div class="pct-row"><span>Pendiente</span><span class="v" style="color:var(--txt3)">${fmt(Math.max(0,p.importe_contrato-certAntImp-propImp))}</span></div>`;
+}
+
+// ── VISTA LÍNEAS ──────────────────────────────────────────────────────────────
+function renderFilters() {
+  const p = PARTIDAS[activeIdx];
+  const fp = document.getElementById('filter-plantas');
+  const fz = document.getElementById('filter-zonas');
+
+  fp.innerHTML = `<span class="fchip on" data-val="" onclick="setFilterPlanta('',this)">Todas</span>`
+    + (p.plantas||[]).map(pl=>
+      `<span class="fchip${filterPlanta===pl?' on':''}" data-val="${pl}" onclick="setFilterPlanta('${pl}',this)">${pl}</span>`
+    ).join('');
+
+  fz.innerHTML = `<span class="fchip on" data-val="" onclick="setFilterZona('',this)">Todas</span>`
+    + (p.zonas||[]).map(z=>
+      `<span class="fchip${filterZona===z?' on':''}" data-val="${z}" onclick="setFilterZona('${z}',this)">${z}</span>`
+    ).join('');
+}
+
+function setFilterPlanta(val, el) {
+  filterPlanta = val||null;
+  document.querySelectorAll('#filter-plantas .fchip').forEach(c=>c.classList.remove('on'));
+  el.classList.add('on');
+  renderLineas();
+}
+function setFilterZona(val, el) {
+  filterZona = val||null;
+  document.querySelectorAll('#filter-zonas .fchip').forEach(c=>c.classList.remove('on'));
+  el.classList.add('on');
+  renderLineas();
+}
+
+function renderLineas() {
+  const p   = PARTIDAS[activeIdx];
+  const meds = (p.mediciones||[]).filter(m => {
+    if (filterPlanta && m.planta !== filterPlanta) return false;
+    if (filterZona   && m.zona   !== filterZona)   return false;
+    return true;
+  });
+
+  // Agrupar por planta+zona
+  const grupos = {};
+  meds.forEach(m => {
+    const key = `${m.planta||'Sin planta'}||${m.zona||'Sin zona'}`;
+    if (!grupos[key]) grupos[key] = {planta:m.planta,zona:m.zona,meds:[]};
+    grupos[key].meds.push(m);
+  });
+
+  const cont = document.getElementById('lineas-content');
+  cont.innerHTML = `
+    <div class="lineas-scroll" id="lineas-scroll">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 20px;background:var(--surf2);border-bottom:1px solid var(--bdr)">
+        <span style="font-size:11px;color:var(--txt3)">${meds.length} líneas · Haz clic en ✓ para certificar línea completa, o introduce la cantidad parcial</span>
+        <div style="display:flex;gap:6px">
+          <button class="btn btn-ghost btn-xs" onclick="selectAll()">Seleccionar todo visible</button>
+          <button class="btn btn-ghost btn-xs" onclick="clearAll()">Limpiar</button>
+        </div>
+      </div>
+      ${Object.entries(grupos).map(([key,g])=>{
+        const gProp = g.meds.reduce((a,m)=>a+(m.prop_cant||0),0);
+        const gTotal= g.meds.reduce((a,m)=>a+(m.subtotal||0),0);
+        const gPct  = gTotal>0?Math.round(gProp/gTotal*100):0;
+        return `<div>
+          <div class="grupo-header" onclick="toggleGrupo('gr-${key.replace(/[^a-z0-9]/gi,'_')}',this)">
+            <span class="grupo-tog open">▶</span>
+            <span class="grupo-planta">${g.planta||'—'}</span>
+            <span style="font-size:10px;color:var(--bdr2)">·</span>
+            <span class="grupo-zona">${g.zona||'—'}</span>
+            <div class="grupo-stats">
+              <span>${g.meds.length} líneas</span>
+              <span>${gTotal.toFixed(2)} ${p.unidad} total</span>
+              ${gProp>0?`<span style="color:var(--ylw-d)">${gProp.toFixed(2)} propuesto</span>`:''}
+            </div>
+            <button class="grupo-sel-btn" onclick="event.stopPropagation();selGrupo('${key}')">Certificar todo</button>
+          </div>
+          <div class="grupo-body open" id="gr-${key.replace(/[^a-z0-9]/gi,'_')}">
+            <table class="med-table">
+              <thead><tr>
+                <th>✓</th><th>Comentario</th><th>Fórmula</th>
+                <th class="r">Total</th><th class="r">Anterior</th>
+                <th class="r">Propuesto</th><th class="r">%</th>
+                ${p.ifc_guid?'<th>IFC</th>':''}
+              </tr></thead>
+              <tbody>
+                ${g.meds.map(m=>medRow(m,p)).join('')}
+              </tbody>
+            </table>
+          </div>
+        </div>`;
+      }).join('')}
+    </div>`;
+  renderTotales();
+}
+
+function medRow(m, p) {
+  const max  = m.subtotal||0;
+  const ant  = m.cert_cant||0;
+  const prop = m.prop_cant||0;
+  const propPct = max>0?Math.round(prop/max*100):0;
+  const formula = [m.n,m.a,m.b,m.c].filter(v=>v!=null).join('×');
+  const full = prop >= max && max > 0;
+  return `<tr class="${prop>0?'has-cert':''}">
+    <td><input type="checkbox" class="med-check" ${full?'checked':''} onchange="toggleMedFull(${m.id},this.checked)"></td>
+    <td><span class="med-comentario" title="${m.comentario}">${m.comentario||'—'}</span></td>
+    <td><span class="med-formula">${formula||'—'}</span></td>
+    <td class="med-sub">${max.toFixed(3)}</td>
+    <td class="med-sub" style="color:var(--txt3)">${ant>0?ant.toFixed(3):'—'}</td>
+    <td>
+      <input class="med-input${full?' full':prop>max?' over':''}" type="number" min="0" max="${max}" step="0.001"
+        value="${prop>0?prop:''}" placeholder="0" data-id="${m.id}" data-max="${max}"
+        oninput="onMedInput(${m.id},this.value,${max})">
+    </td>
+    <td class="med-pct" style="${propPct>0?'color:var(--ylw-d)':''}">
+      ${propPct>0?propPct+'%':''}
+    </td>
+    ${m.ifc_guid?`<td><span class="med-ifc" title="${m.ifc_guid}">IFC</span></td>`:''}
+  </tr>`;
+}
+
+function toggleMedFull(id, checked) {
+  const p = PARTIDAS[activeIdx];
+  const m = p.mediciones.find(x=>x.id===id);
+  if (!m) return;
+  m.prop_cant = checked ? (m.subtotal||0) : 0;
+  renderLineas(); renderTotales(); renderSidebar();
+}
+
+function onMedInput(id, val, max) {
+  const p = PARTIDAS[activeIdx];
+  const m = p.mediciones.find(x=>x.id===id);
+  if (!m) return;
+  const cant = Math.min(parseFloat(val)||0, max);
+  m.prop_cant = cant;
+  // Update input style
+  const inp = document.querySelector(`.med-input[data-id="${id}"]`);
+  if (inp) {
+    inp.classList.toggle('full', cant>=max&&max>0);
+    inp.classList.toggle('over', parseFloat(val)>max);
+  }
+  renderTotales(); renderSidebar();
+}
+
+function selGrupo(key) {
+  const p = PARTIDAS[activeIdx];
+  const [planta, zona] = key.split('||');
+  p.mediciones.forEach(m=>{
+    if ((m.planta||'Sin planta')===planta && (m.zona||'Sin zona')===zona) {
+      m.prop_cant = m.subtotal||0;
+    }
+  });
+  renderLineas(); renderTotales(); renderSidebar();
+  showToast(`✓ Grupo certificado: ${zona}`);
+}
+
+function selectAll() {
+  const p = PARTIDAS[activeIdx];
+  p.mediciones.forEach(m=>{
+    const pMatch = !filterPlanta || m.planta===filterPlanta;
+    const zMatch = !filterZona   || m.zona===filterZona;
+    if (pMatch&&zMatch) m.prop_cant = m.subtotal||0;
+  });
+  renderLineas(); renderTotales(); renderSidebar();
+}
+
+function clearAll() {
+  const p = PARTIDAS[activeIdx];
+  p.mediciones.forEach(m=>{
+    const pMatch = !filterPlanta || m.planta===filterPlanta;
+    const zMatch = !filterZona   || m.zona===filterZona;
+    if (pMatch&&zMatch) m.prop_cant = 0;
+  });
+  renderLineas(); renderTotales(); renderSidebar();
+}
+
+function toggleGrupo(id, header) {
+  const body=document.getElementById(id);
+  const tog =header.querySelector('.grupo-tog');
+  const open=body.classList.toggle('open');
+  tog.classList.toggle('open',open);
+}
+
+// ── TOTALES BAR ───────────────────────────────────────────────────────────────
+function renderTotales() {
+  const p = PARTIDAS[activeIdx];
+  const certAntImp = p.cert_anterior_imp||0;
+  const certAntPct = p.cert_anterior_pct||0;
+  let propCant, propPct, propImp;
+
+  if (modo==='pct') {
+    propPct  = p._propPct  ?? certAntPct;
+    propCant = p._propCant ?? Math.round((propPct/100)*p.total_med*100)/100;
+  } else if (modo==='cant') {
+    propCant = p._propCant || 0;
+    propPct  = p.total_med>0?Math.round(propCant/p.total_med*100*10)/10:0;
+  } else {
+    propCant = p.mediciones.reduce((a,m)=>a+(m.prop_cant||0),0);
+    propPct  = p.total_med>0?Math.round(propCant/p.total_med*100*10)/10:0;
+  }
+  propImp = Math.round(p.precio*propCant);
+  const aOrImp = certAntImp+propImp;
+  const aOrPct = Math.round((certAntPct+propPct)*10)/10;
+
+  document.getElementById('totales-bar').innerHTML = `
+    <div class="tb-item"><div class="tb-lbl">Anterior</div><div class="tb-val" style="color:var(--cyan)">${fmt(certAntImp)} <span style="font-size:11px;color:var(--txt3)">(${certAntPct}%)</span></div></div>
+    <div class="tb-sep"></div>
+    <div class="tb-item"><div class="tb-lbl">Este mes</div><div class="tb-val" style="color:var(--ylw)">${fmt(propImp)} <span style="font-size:11px;color:var(--txt3)">${propCant.toFixed(2)} ${p.unidad} · ${propPct}%</span></div></div>
+    <div class="tb-sep"></div>
+    <div class="tb-item"><div class="tb-lbl">A origen</div><div class="tb-val" style="color:var(--grn)">${fmt(aOrImp)} <span style="font-size:11px;color:var(--txt3)">(${aOrPct}%)</span></div></div>
+    <div class="tb-sep"></div>
+    <div class="tb-item"><div class="tb-lbl">Pendiente</div><div class="tb-val" style="color:var(--txt3)">${fmt(Math.max(0,p.importe_contrato-aOrImp))}</div></div>
+    <div style="margin-left:auto;display:flex;align-items:center;gap:8px">
+      <span style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--grn)">${fmt(p.importe_contrato)} total contrato</span>
+    </div>`;
+}
+
+// ── GUARDAR ───────────────────────────────────────────────────────────────────
+function guardarPartida() {
+  renderSidebar();
+  showToast('✓ Medición guardada — partida actualizada en la certificación');
+}
+
+// ── ROL ───────────────────────────────────────────────────────────────────────
+function setRol(r, btn) {
+  rol = r;
+  document.querySelectorAll('.rol-btn').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+}
+
+// ── HELPERS ───────────────────────────────────────────────────────────────────
+function fmt(n){return new Intl.NumberFormat('es-ES',{maximumFractionDigits:0}).format(Math.round(n))+' €'}
+function fmt2(n){return new Intl.NumberFormat('es-ES',{minimumFractionDigits:2,maximumFractionDigits:2}).format(n)}
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2600);
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+renderSidebar();
+renderPartida();
+</script>
+</body>
+</html>

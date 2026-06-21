@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AXIS OS — Incidencias</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#f0f2f5;--surf:#fff;--surf2:#f8fafc;--surf3:#f1f5f9;
+  --bdr:#e2e8f0;--bdr2:#cbd5e1;
+  --ink:#0d1117;--ink2:#1c2433;--ink3:#2d3748;
+  --muted:#64748b;--subtle:#94a3b8;--ghost:#cbd5e1;
+  --blue:#2563eb;--blue-l:#eff6ff;--blue-b:#bfdbfe;--blue-d:#1d4ed8;
+  --grn:#16a34a;--grn-l:#f0fdf4;--grn-b:#bbf7d0;--grn-d:#15803d;
+  --ylw:#ca8a04;--ylw-l:#fefce8;--ylw-b:#fef08a;--ylw-d:#a16207;
+  --red:#dc2626;--red-l:#fef2f2;--red-b:#fecaca;--red-d:#b91c1c;
+  --ora:#ea580c;--ora-l:#fff7ed;--ora-b:#fed7aa;
+  --vio:#7c3aed;--vio-l:#f5f3ff;--vio-b:#ddd6fe;
+  --mono:'JetBrains Mono',monospace;
+  --r:5px;--r2:8px;--r3:12px;
+  --sh:0 1px 2px rgba(0,0,0,.06),0 1px 3px rgba(0,0,0,.08);
+  --sh2:0 4px 16px rgba(0,0,0,.12);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--ink);font-size:13px;line-height:1.5;height:100vh;display:flex;flex-direction:column;overflow:hidden}
+
+.topbar{height:48px;background:var(--ink);display:flex;align-items:center;padding:0 20px;gap:14px;flex-shrink:0;border-bottom:1px solid var(--ink2)}
+.logo{font-family:var(--mono);font-size:12px;font-weight:500;letter-spacing:3px;color:#e2e8f0}
+.vr{width:1px;height:18px;background:var(--ink2)}
+.tb-info{font-size:12px;color:var(--muted)}.tb-info strong{color:#94a3b8;font-weight:500}
+.tb-r{margin-left:auto;display:flex;gap:8px;align-items:center}
+
+.btn{display:inline-flex;align-items:center;gap:5px;padding:6px 13px;border-radius:var(--r);border:1px solid;font-family:'Inter',sans-serif;font-size:12px;font-weight:500;cursor:pointer;transition:all .15s;white-space:nowrap}
+.btn-prim{background:var(--blue);color:#fff;border-color:var(--blue-d)}.btn-prim:hover{background:var(--blue-d)}
+.btn-ghost{background:var(--surf);color:var(--ink2);border-color:var(--bdr)}.btn-ghost:hover{background:var(--surf2)}
+.btn-grn{background:var(--grn);color:#fff;border-color:var(--grn-d)}.btn-grn:hover{background:var(--grn-d)}
+.btn-ylw{background:var(--ylw-l);color:var(--ylw-d);border-color:var(--ylw-b)}
+.btn-red{background:var(--red-l);color:var(--red);border-color:var(--red-b)}
+.btn-sm{padding:4px 10px;font-size:11px}
+.btn-xs{padding:2px 8px;font-size:10px}
+
+.badge{display:inline-flex;align-items:center;font-size:10px;font-weight:600;padding:2px 7px;border-radius:10px;border:1px solid;white-space:nowrap}
+.b-blue{background:var(--blue-l);color:var(--blue);border-color:var(--blue-b)}
+.b-grn{background:var(--grn-l);color:var(--grn);border-color:var(--grn-b)}
+.b-ylw{background:var(--ylw-l);color:var(--ylw);border-color:var(--ylw-b)}
+.b-red{background:var(--red-l);color:var(--red);border-color:var(--red-b)}
+.b-ora{background:var(--ora-l);color:var(--ora);border-color:var(--ora-b)}
+.b-neu{background:var(--surf3);color:var(--muted);border-color:var(--bdr)}
+
+/* LAYOUT */
+.app{flex:1;display:flex;flex-direction:column;overflow:hidden}
+
+/* TOOLBAR */
+.toolbar{background:var(--surf);border-bottom:1px solid var(--bdr);padding:8px 20px;display:flex;align-items:center;gap:8px;flex-shrink:0;flex-wrap:wrap}
+.filt{padding:4px 12px;border-radius:20px;border:1px solid var(--bdr);background:var(--surf);color:var(--muted);font-size:11px;font-weight:500;cursor:pointer;transition:all .15s;font-family:'Inter',sans-serif}
+.filt:hover{border-color:var(--bdr2);color:var(--ink2)}
+.filt.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.tool-sep{flex:1}
+.view-toggle{display:flex;background:var(--surf3);border:1px solid var(--bdr);border-radius:var(--r);padding:2px;gap:2px}
+.vt-btn{padding:4px 10px;border-radius:3px;border:none;background:none;font-family:'Inter',sans-serif;font-size:11px;font-weight:500;color:var(--muted);cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:4px}
+.vt-btn.on{background:var(--surf);color:var(--ink);box-shadow:var(--sh)}
+.vt-btn svg{display:block}
+
+/* KANBAN */
+.kanban-wrap{flex:1;overflow-x:auto;overflow-y:hidden;padding:16px 20px;display:flex;gap:12px}
+.kanban-wrap::-webkit-scrollbar{height:4px}
+.kanban-wrap::-webkit-scrollbar-thumb{background:var(--bdr);border-radius:4px}
+
+.col{width:260px;flex-shrink:0;display:flex;flex-direction:column;overflow:hidden}
+.col-head{padding:8px 10px;border-radius:var(--r2) var(--r2) 0 0;display:flex;align-items:center;gap:8px;margin-bottom:1px}
+.col-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;flex:1}
+.col-n{font-family:var(--mono);font-size:11px;font-weight:600;padding:2px 7px;border-radius:10px}
+.col-cards{flex:1;overflow-y:auto;padding:6px 0;display:flex;flex-direction:column;gap:6px;min-height:100px}
+.col-cards::-webkit-scrollbar{width:3px}
+.col-cards::-webkit-scrollbar-thumb{background:var(--bdr);border-radius:3px}
+
+/* Colores de columna */
+.col-abierta .col-head{background:rgba(220,38,38,.06);border-top:3px solid var(--red)}
+.col-abierta .col-n{background:var(--red-l);color:var(--red)}
+.col-curso .col-head{background:rgba(234,88,12,.06);border-top:3px solid var(--ora)}
+.col-curso .col-n{background:var(--ora-l);color:var(--ora)}
+.col-resuelta .col-head{background:rgba(37,99,235,.06);border-top:3px solid var(--blue)}
+.col-resuelta .col-n{background:var(--blue-l);color:var(--blue)}
+.col-verificada .col-head{background:rgba(22,163,74,.06);border-top:3px solid var(--grn)}
+.col-verificada .col-n{background:var(--grn-l);color:var(--grn)}
+
+/* CARD incidencia */
+.card{background:var(--surf);border:1px solid var(--bdr);border-radius:var(--r2);padding:10px 12px;cursor:pointer;transition:all .15s;position:relative;overflow:hidden}
+.card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px}
+.card.leve::before{background:var(--muted)}
+.card.media::before{background:var(--ylw)}
+.card.grave::before{background:var(--ora)}
+.card.critica::before{background:var(--red)}
+.card:hover{border-color:var(--bdr2);box-shadow:var(--sh)}
+.card.selected{border-color:var(--blue-b);background:var(--blue-l)}
+.card-top{display:flex;align-items:flex-start;gap:6px;margin-bottom:5px}
+.card-cod{font-family:var(--mono);font-size:10px;font-weight:600;color:var(--muted);flex-shrink:0}
+.card-desc{font-size:12px;font-weight:500;color:var(--ink2);line-height:1.35;flex:1}
+.card-bottom{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.card-sistema{font-size:10px;color:var(--muted)}
+.card-edad{font-size:10px;font-weight:600;margin-left:auto}
+.card-edad.urgente{color:var(--red)}
+.card-edad.normal{color:var(--muted)}
+.card-oo{font-size:10px;color:var(--blue);display:flex;align-items:center;gap:3px}
+.card-foto{font-size:10px;color:var(--muted);display:flex;align-items:center;gap:3px}
+
+/* LISTA VIEW */
+.lista-wrap{flex:1;overflow-y:auto;padding:0}
+.lista-wrap::-webkit-scrollbar{width:4px}
+.lista-wrap::-webkit-scrollbar-thumb{background:var(--bdr);border-radius:4px}
+.lista-row{display:flex;align-items:center;gap:0;padding:0 20px;border-bottom:1px solid var(--bdr);cursor:pointer;transition:background .1s;position:relative}
+.lista-row:hover{background:var(--surf2)}
+.lista-row.selected{background:var(--blue-l)}
+.lr-bar{width:3px;flex-shrink:0;align-self:stretch;margin-right:14px;border-radius:0}
+.lr-bar.leve{background:var(--muted)}
+.lr-bar.media{background:var(--ylw)}
+.lr-bar.grave{background:var(--ora)}
+.lr-bar.critica{background:var(--red)}
+.lr-body{flex:1;padding:10px 0;min-width:0}
+.lr-top{display:flex;align-items:center;gap:8px;margin-bottom:3px}
+.lr-cod{font-family:var(--mono);font-size:11px;font-weight:600;color:var(--blue);flex-shrink:0}
+.lr-desc{font-size:13px;font-weight:500;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lr-meta{font-size:11px;color:var(--muted);display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.lr-right{display:flex;align-items:center;gap:8px;flex-shrink:0;padding-left:12px}
+
+/* DRAWER */
+.drawer-overlay{position:fixed;inset:0;background:rgba(0,0,0,.2);z-index:80;display:none}
+.drawer-overlay.open{display:block}
+.drawer{position:fixed;top:48px;right:0;bottom:0;width:460px;background:var(--surf);border-left:1px solid var(--bdr);z-index:90;display:flex;flex-direction:column;transform:translateX(100%);transition:transform .22s cubic-bezier(.4,0,.2,1);box-shadow:var(--sh2)}
+.drawer.open{transform:translateX(0)}
+.dr-head{padding:14px 18px;border-bottom:1px solid var(--bdr);display:flex;align-items:flex-start;gap:10px;flex-shrink:0}
+.dr-titulo{font-size:13px;font-weight:700;flex:1;line-height:1.4}
+.dr-x{background:none;border:none;color:var(--muted);cursor:pointer;font-size:18px;line-height:1;padding:2px;flex-shrink:0}
+.dr-x:hover{color:var(--ink)}
+.dr-scroll{flex:1;overflow-y:auto;padding:16px 18px;display:flex;flex-direction:column;gap:14px}
+.dr-scroll::-webkit-scrollbar{width:3px}
+.dr-scroll::-webkit-scrollbar-thumb{background:var(--bdr);border-radius:3px}
+.dr-foot{padding:12px 18px;border-top:1px solid var(--bdr);display:flex;gap:8px;flex-shrink:0;flex-wrap:wrap}
+
+.dr-sec{display:flex;flex-direction:column;gap:8px}
+.dr-sec-title{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.6px}
+.dr-grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.dr-field{display:flex;flex-direction:column;gap:2px}
+.dr-label{font-size:10px;font-weight:600;color:var(--muted)}
+.dr-val{font-size:12px;font-weight:500;color:var(--ink2)}
+.dr-val.mono{font-family:var(--mono)}
+.dr-desc-box{font-size:12px;color:var(--ink2);line-height:1.6;padding:10px;background:var(--surf2);border-radius:var(--r);border:1px solid var(--bdr)}
+
+/* Gravedad selector */
+.grav-selector{display:grid;grid-template-columns:repeat(4,1fr);gap:5px}
+.grav-opt{border:1px solid var(--bdr);border-radius:var(--r);padding:7px 6px;cursor:pointer;transition:all .15s;text-align:center}
+.grav-opt .gv{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.4px}
+.grav-opt.on-leve{border-color:var(--bdr2);background:var(--surf3)}
+.grav-opt.on-media{border-color:var(--ylw-b);background:var(--ylw-l)}
+.grav-opt.on-grave{border-color:var(--ora-b);background:var(--ora-l)}
+.grav-opt.on-critica{border-color:var(--red-b);background:var(--red-l)}
+
+/* Timeline */
+.timeline{display:flex;flex-direction:column;gap:0}
+.tl-item{display:flex;gap:12px;position:relative}
+.tl-item::before{content:'';position:absolute;left:6px;top:18px;bottom:-4px;width:1px;background:var(--bdr)}
+.tl-item:last-child::before{display:none}
+.tl-dot{width:13px;height:13px;border-radius:50%;flex-shrink:0;margin-top:3px;border:2px solid var(--surf)}
+.tl-dot.done{background:var(--grn)}
+.tl-dot.current{background:var(--blue);animation:tlpulse 2s infinite}
+@keyframes tlpulse{0%,100%{box-shadow:0 0 0 0 rgba(37,99,235,.3)}50%{box-shadow:0 0 0 4px rgba(37,99,235,.1)}}
+.tl-dot.pend{background:var(--surf3);border-color:var(--bdr)}
+.tl-info{padding-bottom:14px;flex:1}
+.tl-label{font-size:12px;font-weight:600;color:var(--ink2)}
+.tl-meta{font-size:11px;color:var(--muted);margin-top:1px}
+.tl-nota{font-size:11px;color:var(--ink2);margin-top:3px;font-style:italic}
+
+/* Fotos */
+.fotos-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.foto-thumb{aspect-ratio:1;background:var(--surf3);border:1px solid var(--bdr);border-radius:var(--r);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .15s;overflow:hidden}
+.foto-thumb:hover{border-color:var(--bdr2);box-shadow:var(--sh)}
+.foto-add{border-style:dashed;color:var(--muted)}
+.foto-add:hover{border-color:var(--blue);color:var(--blue);background:var(--blue-l)}
+
+/* MODAL */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:200;display:none;align-items:center;justify-content:center;backdrop-filter:blur(3px)}
+.overlay.open{display:flex}
+.modal{background:var(--surf);border:1px solid var(--bdr);border-radius:var(--r2);width:540px;max-height:88vh;display:flex;flex-direction:column;box-shadow:var(--sh2)}
+.modal-head{padding:14px 18px;border-bottom:1px solid var(--bdr);display:flex;align-items:center;gap:10px;flex-shrink:0}
+.modal-title{font-size:14px;font-weight:700;flex:1}
+.modal-x{background:none;border:none;color:var(--muted);cursor:pointer;font-size:18px;line-height:1}
+.modal-x:hover{color:var(--ink)}
+.modal-body{padding:18px;overflow-y:auto;flex:1;display:flex;flex-direction:column;gap:12px}
+.modal-foot{padding:12px 18px;border-top:1px solid var(--bdr);display:flex;gap:8px;justify-content:flex-end;flex-shrink:0}
+.fg{display:flex;flex-direction:column;gap:5px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.lbl{font-size:11px;font-weight:600;color:var(--muted)}
+.inp,.sel,.ta{background:var(--surf2);border:1px solid var(--bdr2);border-radius:var(--r);padding:7px 10px;font-family:'Inter',sans-serif;font-size:13px;color:var(--ink);outline:none;width:100%;transition:border-color .15s}
+.inp:focus,.sel:focus,.ta:focus{border-color:var(--blue);background:var(--surf)}
+.ta{resize:vertical;min-height:72px}
+
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--ink);color:#e2e8f0;padding:8px 18px;border-radius:var(--r);font-size:12px;font-weight:500;z-index:600;display:none;box-shadow:var(--sh2)}
+.toast.show{display:block;animation:tin .2s}
+@keyframes tin{from{opacity:0;transform:translateX(-50%) translateY(8px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="logo">AXIS OS</div>
+  <div class="vr"></div>
+  <div class="tb-info">Incidencias · <strong>FLEXLIVING 417 LAS ROZAS</strong></div>
+  <div class="tb-r">
+    <button class="btn btn-ghost btn-sm" onclick="openModal()">
+      <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+      Nueva incidencia
+    </button>
+  </div>
+</header>
+
+<div class="app">
+  <div class="toolbar">
+    <!-- Filtros gravedad -->
+    <button class="filt on" onclick="setFiltGrav('todas',this)">Todas</button>
+    <button class="filt" style="border-left:3px solid var(--red)" onclick="setFiltGrav('critica',this)">Crítica</button>
+    <button class="filt" style="border-left:3px solid var(--ora)" onclick="setFiltGrav('grave',this)">Grave</button>
+    <button class="filt" style="border-left:3px solid var(--ylw)" onclick="setFiltGrav('media',this)">Media</button>
+    <button class="filt" style="border-left:3px solid var(--muted)" onclick="setFiltGrav('leve',this)">Leve</button>
+    <div style="width:1px;height:16px;background:var(--bdr)"></div>
+    <!-- Filtros tipo -->
+    <button class="filt on" id="filt-tipo-todas" onclick="setFiltTipo('todas',this)">Técnica + Documental</button>
+    <button class="filt" onclick="setFiltTipo('tecnica',this)">Técnica</button>
+    <button class="filt" onclick="setFiltTipo('documental',this)">Documental</button>
+    <div class="tool-sep"></div>
+    <div class="view-toggle">
+      <button class="vt-btn on" id="vbtn-kanban" onclick="setVista('kanban')">
+        <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><rect x="3" y="3" width="5" height="18" rx="1"/><rect x="10" y="3" width="5" height="18" rx="1"/><rect x="17" y="3" width="4" height="18" rx="1"/></svg>
+        Tablero
+      </button>
+      <button class="vt-btn" id="vbtn-lista" onclick="setVista('lista')">
+        <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+        Lista
+      </button>
+    </div>
+  </div>
+
+  <div id="vista-kanban" style="flex:1;overflow:hidden;display:flex;flex-direction:column">
+    <div class="kanban-wrap" id="kanban-wrap"></div>
+  </div>
+  <div id="vista-lista" style="flex:1;overflow:hidden;display:none;flex-direction:column">
+    <div class="lista-wrap" id="lista-wrap"></div>
+  </div>
+</div>
+
+<!-- DRAWER -->
+<div class="drawer-overlay" id="drawer-overlay" onclick="closeDrawer()"></div>
+<div class="drawer" id="drawer">
+  <div class="dr-head">
+    <div class="dr-titulo" id="dr-titulo">Incidencia</div>
+    <button class="dr-x" onclick="closeDrawer()">×</button>
+  </div>
+  <div class="dr-scroll" id="dr-scroll"></div>
+  <div class="dr-foot" id="dr-foot"></div>
+</div>
+
+<!-- MODAL NUEVA -->
+<div class="overlay" id="modal-nueva">
+  <div class="modal">
+    <div class="modal-head"><span class="modal-title">Nueva incidencia</span><button class="modal-x" onclick="closeModalEl()">×</button></div>
+    <div class="modal-body">
+      <div class="fg">
+        <label class="lbl">Gravedad</label>
+        <div class="grav-selector" id="grav-selector">
+          <div class="grav-opt" data-g="leve" onclick="selGrav('leve')"><div class="gv" style="color:var(--muted)">Leve</div></div>
+          <div class="grav-opt on-media" data-g="media" onclick="selGrav('media')"><div class="gv" style="color:var(--ylw-d)">Media</div></div>
+          <div class="grav-opt" data-g="grave" onclick="selGrav('grave')"><div class="gv" style="color:var(--ora)">Grave</div></div>
+          <div class="grav-opt" data-g="critica" onclick="selGrav('critica')"><div class="gv" style="color:var(--red)">Crítica</div></div>
+        </div>
+      </div>
+      <div class="g2">
+        <div class="fg">
+          <label class="lbl">Tipo</label>
+          <select class="sel" id="ni-tipo">
+            <option value="tecnica">Técnica</option>
+            <option value="documental">Documental</option>
+          </select>
+        </div>
+        <div class="fg">
+          <label class="lbl">Sistema</label>
+          <select class="sel" id="ni-sistema">
+            <option>02.03 Estructura H.A.</option>
+            <option>08.01 Tabiquería PYL</option>
+            <option>03.02 Fontanería y ACS</option>
+            <option>03.06 Electricidad</option>
+            <option>01.04 Cubiertas</option>
+            <option>01.07 Fachada</option>
+            <option>General</option>
+          </select>
+        </div>
+      </div>
+      <div class="fg">
+        <label class="lbl">Descripción <span style="color:var(--red)">*</span></label>
+        <textarea class="ta" id="ni-desc" placeholder="Describe la incidencia detectada..."></textarea>
+      </div>
+      <div class="g2">
+        <div class="fg">
+          <label class="lbl">Responsable</label>
+          <select class="sel" id="ni-resp">
+            <option>Const. Martínez S.L.</option>
+            <option>Instalaciones XYZ</option>
+            <option>Carpintería Pérez</option>
+            <option>DEO</option>
+          </select>
+        </div>
+        <div class="fg">
+          <label class="lbl">Plazo resolución</label>
+          <input class="inp" type="date" id="ni-plazo">
+        </div>
+      </div>
+      <div class="fg">
+        <label class="lbl">Ubicación</label>
+        <input class="inp" id="ni-ubic" placeholder="Ej: Planta 1 · Portal A · Eje 4">
+      </div>
+      <div class="g2">
+        <div class="fg">
+          <label class="lbl">Acta de origen</label>
+          <select class="sel" id="ni-acta">
+            <option value="">(sin acta — directa)</option>
+            <option value="#012">#012 · 20/11/2024</option>
+            <option value="#011">#011 · 13/11/2024</option>
+            <option value="#010">#010 · 06/11/2024</option>
+          </select>
+        </div>
+        <div class="fg">
+          <label class="lbl">¿Genera orden de obra?</label>
+          <select class="sel" id="ni-oo">
+            <option value="">No</option>
+            <option value="si">Sí — crear automáticamente</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost btn-sm" onclick="closeModalEl()">Cancelar</button>
+      <button class="btn btn-prim btn-sm" onclick="crearIncidencia()">Crear incidencia</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast-el"></div>
+
+<script>
+// ── DATOS ─────────────────────────────────────────────────────────────────────
+let INC = [
+  {id:'i1',codigo:'INC-001',gravedad:'grave',tipo:'tecnica',estado:'abierta',
+   desc:'Armado incorrecto en pilar P-12. Estribos no cumplen con plano DO-EST-047.',
+   sistema:'02.03 Estructura H.A.',ubicacion:'Planta 1 · Eje D-4',
+   responsable:'Const. Martínez S.L.',plazo:'2024-11-25',
+   acta:'#009',oo:'OO-017',
+   diasAbierto:21,fotos:2,
+   historial:[
+     {estado:'abierta',fecha:'30/10/2024',user:'Ana García (DEO)',nota:'Detectado durante inspección de armado. Se paraliza la zona.'},
+     {estado:'abierta',fecha:'13/11/2024',user:'Ana García (DEO)',nota:'Constructora presenta propuesta de reparación. DEO la aprueba.'},
+   ]},
+  {id:'i2',codigo:'INC-002',gravedad:'media',tipo:'tecnica',estado:'en_curso',
+   desc:'Replanteo tabiquería PB desviado 3cm respecto a planos de proyecto.',
+   sistema:'08.01 Tabiquería PYL',ubicacion:'Planta Baja · Portal A',
+   responsable:'Const. Martínez S.L.',plazo:'2024-11-20',
+   acta:'#011',oo:null,
+   diasAbierto:7,fotos:1,
+   historial:[
+     {estado:'abierta',fecha:'13/11/2024',user:'Ana García (DEO)',nota:'Desviación detectada durante visita. Se paraliza ejecución.'},
+     {estado:'en_curso',fecha:'20/11/2024',user:'Carlos Martín (JO)',nota:'Corrección en curso. Encargado revisa con cinta y planos.'},
+   ]},
+  {id:'i3',codigo:'INC-003',gravedad:'media',tipo:'tecnica',estado:'en_curso',
+   desc:'Rotura en tubería de saneamiento colgado, tramo fase 2. Fuga activa detectada.',
+   sistema:'03.03 Saneamiento',ubicacion:'Forjado sanitario · Fase 2',
+   responsable:'Const. Martínez S.L.',plazo:'2024-11-21',
+   acta:'#012',oo:'OO-015',
+   diasAbierto:0,fotos:0,
+   historial:[
+     {estado:'abierta',fecha:'20/11/2024',user:'Ana García (DEO)',nota:'Rotura detectada durante visita. Se genera OO-015.'},
+     {estado:'en_curso',fecha:'20/11/2024',user:'Carlos Martín (JO)',nota:'Reparación iniciada.'},
+   ]},
+  {id:'i4',codigo:'INC-004',gravedad:'leve',tipo:'documental',estado:'abierta',
+   desc:'Ventana tipo V3 instalada sin certificado CE aportado ni validado.',
+   sistema:'01.07 Fachada',ubicacion:'Planta 2 · Fachada norte',
+   responsable:'Carpintería Pérez S.L.',plazo:'2024-11-22',
+   acta:'#011',oo:null,
+   diasAbierto:7,fotos:0,
+   historial:[
+     {estado:'abierta',fecha:'13/11/2024',user:'Ana García (DEO)',nota:'Certificado CE no aportado antes de la instalación.'},
+   ]},
+  {id:'i5',codigo:'INC-005',gravedad:'grave',tipo:'tecnica',estado:'resuelta',
+   desc:'Impermeabilización terraza P1 incompleta. Zona noroeste sin membrana.',
+   sistema:'01.04 Cubiertas',ubicacion:'Terraza planta 1',
+   responsable:'Const. Martínez S.L.',plazo:'2024-11-10',
+   acta:'#010',oo:'OO-013',
+   diasAbierto:14,fotos:3,
+   historial:[
+     {estado:'abierta',fecha:'06/11/2024',user:'Ana García (DEO)',nota:'Zona noroeste sin lámina impermeabilizante.'},
+     {estado:'en_curso',fecha:'08/11/2024',user:'Const. Martínez S.L.',nota:'Inicio de trabajos de impermeabilización.'},
+     {estado:'resuelta',fecha:'11/11/2024',user:'Const. Martínez S.L.',nota:'Membrana colocada. Pendiente verificación DEO.'},
+   ]},
+  {id:'i6',codigo:'INC-006',gravedad:'leve',tipo:'documental',estado:'verificada',
+   desc:'Ficha técnica del yeso proyectado no aportada antes del inicio.',
+   sistema:'08.01 Tabiquería PYL',ubicacion:'General',
+   responsable:'Const. Martínez S.L.',plazo:'2024-11-08',
+   acta:'#010',oo:null,
+   diasAbierto:14,fotos:0,
+   historial:[
+     {estado:'abierta',fecha:'06/11/2024',user:'Ana García (DEO)',nota:'FT no disponible antes del inicio.'},
+     {estado:'en_curso',fecha:'07/11/2024',user:'Const. Martínez S.L.',nota:'FT solicitada al proveedor.'},
+     {estado:'resuelta',fecha:'08/11/2024',user:'Const. Martínez S.L.',nota:'FT aportada.'},
+     {estado:'verificada',fecha:'09/11/2024',user:'Ana García (DEO)',nota:'FT validada. Incidencia cerrada.'},
+   ]},
+];
+
+const ESTADOS = ['abierta','en_curso','resuelta','verificada'];
+const ESTADO_LABEL = {abierta:'Abierta',en_curso:'En curso',resuelta:'Resuelta',verificada:'Verificada'};
+const ESTADO_COL   = {abierta:'col-abierta',en_curso:'col-curso',resuelta:'col-resuelta',verificada:'col-verificada'};
+const ESTADO_BADGE = {abierta:'b-red',en_curso:'b-ora',resuelta:'b-blue',verificada:'b-grn'};
+const GRAV_COLOR   = {leve:'var(--muted)',media:'var(--ylw)',grave:'var(--ora)',critica:'var(--red)'};
+const GRAV_LABEL   = {leve:'Leve',media:'Media',grave:'Grave',critica:'Crítica'};
+const GRAV_BADGE   = {leve:'b-neu',media:'b-ylw',grave:'b-ora',critica:'b-red'};
+
+let filtGrav  = 'todas';
+let filtTipo  = 'todas';
+let vista     = 'kanban';
+let selectedId = null;
+let gravSeleccionada = 'media';
+
+// ── FILTRO ────────────────────────────────────────────────────────────────────
+function incsFiltradas() {
+  return INC.filter(i => {
+    if (filtGrav !== 'todas' && i.gravedad !== filtGrav) return false;
+    if (filtTipo !== 'todas' && i.tipo !== filtTipo) return false;
+    return true;
+  });
+}
+
+function setFiltGrav(g, btn) {
+  filtGrav = g;
+  document.querySelectorAll('.toolbar .filt').forEach(b=>{ if(['Todas','Crítica','Grave','Media','Leve'].includes(b.textContent.trim())) b.classList.remove('on'); });
+  btn.classList.add('on');
+  render();
+}
+function setFiltTipo(t, btn) {
+  filtTipo = t;
+  document.querySelectorAll('.toolbar .filt').forEach(b=>{ if(['Técnica + Documental','Técnica','Documental'].includes(b.textContent.trim())) b.classList.remove('on'); });
+  btn.classList.add('on');
+  render();
+}
+
+// ── VISTA ─────────────────────────────────────────────────────────────────────
+function setVista(v) {
+  vista = v;
+  document.getElementById('vista-kanban').style.display = v==='kanban'?'flex':'none';
+  document.getElementById('vista-lista').style.display  = v==='lista' ?'flex':'none';
+  document.getElementById('vbtn-kanban').classList.toggle('on', v==='kanban');
+  document.getElementById('vbtn-lista').classList.toggle('on',  v==='lista');
+  render();
+}
+
+// ── RENDER ────────────────────────────────────────────────────────────────────
+function render() {
+  if (vista === 'kanban') renderKanban();
+  else renderLista();
+}
+
+function renderKanban() {
+  const incs = incsFiltradas();
+  const wrap = document.getElementById('kanban-wrap');
+  wrap.innerHTML = ESTADOS.map(est => {
+    const cols = incs.filter(i=>i.estado===est);
+    return `<div class="col ${ESTADO_COL[est]}">
+      <div class="col-head">
+        <span class="col-title">${ESTADO_LABEL[est]}</span>
+        <span class="col-n">${cols.length}</span>
+      </div>
+      <div class="col-cards">
+        ${cols.length ? cols.map(i=>cardHTML(i)).join('') : `<div style="font-size:11px;color:var(--ghost);text-align:center;padding:16px 0">Sin incidencias</div>`}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function cardHTML(i) {
+  const edadCls = i.diasAbierto > 14 ? 'urgente' : 'normal';
+  const edadTxt = i.diasAbierto === 0 ? 'Hoy' : `${i.diasAbierto}d`;
+  return `<div class="card ${i.gravedad}${selectedId===i.id?' selected':''}" onclick="selectInc('${i.id}')">
+    <div class="card-top">
+      <span class="card-cod">${i.codigo}</span>
+      <span class="card-desc">${i.desc}</span>
+    </div>
+    <div class="card-bottom">
+      <span class="badge ${GRAV_BADGE[i.gravedad]}" style="font-size:9px">${GRAV_LABEL[i.gravedad]}</span>
+      <span class="card-sistema">${i.sistema.split(' ').slice(1).join(' ')}</span>
+      <span class="card-edad ${edadCls}">${edadTxt}</span>
+    </div>
+    <div style="display:flex;gap:6px;margin-top:5px;flex-wrap:wrap">
+      ${i.oo?`<span class="card-oo"><svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>${i.oo}</span>`:''}
+      ${i.fotos>0?`<span class="card-foto"><svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>${i.fotos}</span>`:''}
+      ${i.acta?`<span style="font-size:10px;color:var(--muted)">Acta ${i.acta}</span>`:''}
+    </div>
+  </div>`;
+}
+
+function renderLista() {
+  const incs = incsFiltradas();
+  const wrap = document.getElementById('lista-wrap');
+  if (!incs.length) { wrap.innerHTML=`<div style="text-align:center;padding:40px;color:var(--muted)">Sin incidencias</div>`; return; }
+  // Ordenar: estado (abiertas primero), luego gravedad, luego antigüedad
+  const ORDER_EST  = {abierta:0,en_curso:1,resuelta:2,verificada:3};
+  const ORDER_GRAV = {critica:0,grave:1,media:2,leve:3};
+  const sorted = [...incs].sort((a,b)=>ORDER_EST[a.estado]-ORDER_EST[b.estado]||ORDER_GRAV[a.gravedad]-ORDER_GRAV[b.gravedad]||b.diasAbierto-a.diasAbierto);
+  wrap.innerHTML = sorted.map(i=>`
+    <div class="lista-row${selectedId===i.id?' selected':''}" onclick="selectInc('${i.id}')">
+      <div class="lr-bar ${i.gravedad}"></div>
+      <div class="lr-body">
+        <div class="lr-top">
+          <span class="lr-cod">${i.codigo}</span>
+          <span class="lr-desc">${i.desc}</span>
+          <span class="badge ${ESTADO_BADGE[i.estado]}">${ESTADO_LABEL[i.estado]}</span>
+          <span class="badge ${GRAV_BADGE[i.gravedad]}">${GRAV_LABEL[i.gravedad]}</span>
+        </div>
+        <div class="lr-meta">
+          <span>${i.sistema}</span>
+          <span style="color:var(--ghost)">·</span>
+          <span>${i.ubicacion}</span>
+          <span style="color:var(--ghost)">·</span>
+          <span>${i.responsable}</span>
+          ${i.oo?`<span style="color:var(--ghost)">·</span><span style="color:var(--blue)">${i.oo}</span>`:''}
+          <span style="margin-left:auto;font-weight:600;color:${i.diasAbierto>14?'var(--red)':'var(--muted)'}">
+            ${i.diasAbierto===0?'Hoy':i.diasAbierto+'d'}
+          </span>
+        </div>
+      </div>
+      <div style="padding-left:12px;color:var(--ghost)">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>
+      </div>
+    </div>`).join('');
+}
+
+// ── DRAWER ────────────────────────────────────────────────────────────────────
+function selectInc(id) {
+  selectedId = id;
+  render();
+  const i = INC.find(x=>x.id===id);
+  if (!i) return;
+
+  document.getElementById('dr-titulo').innerHTML =
+    `<span style="font-family:var(--mono);font-size:11px;color:var(--blue);margin-right:8px">${i.codigo}</span>${i.desc}`;
+
+  const nextEstado = {abierta:'en_curso',en_curso:'resuelta',resuelta:'verificada'}[i.estado];
+  const nextLabel  = {abierta:'Iniciar resolución',en_curso:'Marcar resuelta',resuelta:'Verificar y cerrar'}[i.estado];
+
+  document.getElementById('dr-scroll').innerHTML = `
+    <!-- Estado y gravedad -->
+    <div class="dr-sec">
+      <div style="display:flex;gap:6px;flex-wrap:wrap">
+        <span class="badge ${ESTADO_BADGE[i.estado]}">${ESTADO_LABEL[i.estado]}</span>
+        <span class="badge ${GRAV_BADGE[i.gravedad]}">${GRAV_LABEL[i.gravedad]}</span>
+        <span class="badge b-neu">${i.tipo==='tecnica'?'Técnica':'Documental'}</span>
+      </div>
+    </div>
+
+    <!-- Campos -->
+    <div class="dr-sec">
+      <div class="dr-grid2">
+        <div class="dr-field"><div class="dr-label">Sistema</div><div class="dr-val">${i.sistema}</div></div>
+        <div class="dr-field"><div class="dr-label">Ubicación</div><div class="dr-val">${i.ubicacion}</div></div>
+        <div class="dr-field"><div class="dr-label">Responsable</div><div class="dr-val">${i.responsable}</div></div>
+        <div class="dr-field"><div class="dr-label">Plazo</div><div class="dr-val mono">${i.plazo||'—'}</div></div>
+        ${i.acta?`<div class="dr-field"><div class="dr-label">Acta origen</div><div class="dr-val mono">${i.acta}</div></div>`:''}
+        ${i.oo?`<div class="dr-field"><div class="dr-label">Orden de obra</div><div class="dr-val mono" style="color:var(--blue)">${i.oo}</div></div>`:''}
+      </div>
+    </div>
+
+    <!-- Descripción -->
+    <div class="dr-sec">
+      <div class="dr-sec-title">Descripción</div>
+      <div class="dr-desc-box">${i.desc}</div>
+    </div>
+
+    <!-- Fotos -->
+    <div class="dr-sec">
+      <div class="dr-sec-title">Documentación fotográfica</div>
+      <div class="fotos-grid">
+        ${Array.from({length:i.fotos}).map((_,n)=>`
+          <div class="foto-thumb" onclick="toast('Ver foto ${n+1}')">
+            <svg width="20" height="20" fill="none" stroke="var(--ghost)" stroke-width="1" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          </div>`).join('')}
+        <div class="foto-thumb foto-add" onclick="toast('Añadir foto')">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- Timeline -->
+    <div class="dr-sec">
+      <div class="dr-sec-title">Historial</div>
+      <div class="timeline">
+        ${i.historial.map(h=>`
+          <div class="tl-item">
+            <div class="tl-dot done"></div>
+            <div class="tl-info">
+              <div class="tl-label">${ESTADO_LABEL[h.estado]} · ${h.user}</div>
+              <div class="tl-meta">${h.fecha}</div>
+              ${h.nota?`<div class="tl-nota">"${h.nota}"</div>`:''}
+            </div>
+          </div>`).join('')}
+        ${nextEstado?`
+          <div class="tl-item">
+            <div class="tl-dot current"></div>
+            <div class="tl-info">
+              <div class="tl-label" style="color:var(--blue)">Pendiente: ${nextLabel}</div>
+            </div>
+          </div>`:
+          `<div class="tl-item">
+            <div class="tl-dot done"></div>
+            <div class="tl-info"><div class="tl-label" style="color:var(--grn)">✓ Incidencia cerrada y verificada</div></div>
+          </div>`}
+      </div>
+    </div>
+
+    <!-- Nota nueva -->
+    ${i.estado!=='verificada'?`
+    <div class="dr-sec">
+      <div class="dr-sec-title">Añadir nota</div>
+      <textarea class="ta" id="dr-nota" placeholder="Nota de seguimiento..." style="background:var(--surf2);border:1px solid var(--bdr2);border-radius:var(--r);padding:7px 10px;font-family:'Inter',sans-serif;font-size:12px;color:var(--ink);outline:none;width:100%;resize:none;min-height:60px;transition:border-color .15s"></textarea>
+    </div>`:''}`;
+
+  document.getElementById('dr-foot').innerHTML = `
+    <button class="btn btn-ghost btn-sm" onclick="toast('Exportar incidencia PDF')">
+      <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+      PDF
+    </button>
+    ${!i.oo&&i.estado!=='verificada'?`<button class="btn btn-ghost btn-sm" onclick="generarOO('${i.id}')">→ Generar OO</button>`:''}
+    ${nextEstado?`<button class="btn btn-grn btn-sm" onclick="avanzarEstado('${i.id}','${nextEstado}')">${nextLabel}</button>`:''}
+    ${i.estado!=='verificada'?`<button class="btn btn-red btn-sm" onclick="toast('Incidencia archivada')">Archivar</button>`:''}`;
+
+  openDrawer();
+}
+
+function avanzarEstado(id, nuevoEstado) {
+  const i = INC.find(x=>x.id===id);
+  if (!i) return;
+  const nota = document.getElementById('dr-nota')?.value.trim()||'';
+  i.historial.push({estado:nuevoEstado, fecha:new Date().toLocaleDateString('es-ES'), user:'Ana García (DEO)', nota});
+  i.estado = nuevoEstado;
+  render();
+  selectInc(id);
+  toast(`INC actualizada → ${ESTADO_LABEL[nuevoEstado]}`);
+}
+
+function generarOO(id) {
+  const i = INC.find(x=>x.id===id);
+  if (!i) return;
+  const n = 19 + INC.length;
+  i.oo = `OO-0${n}`;
+  selectInc(id);
+  toast(`✓ ${i.oo} generada desde ${i.codigo}`);
+}
+
+function openDrawer()  { document.getElementById('drawer').classList.add('open'); document.getElementById('drawer-overlay').classList.add('open') }
+function closeDrawer() { document.getElementById('drawer').classList.remove('open'); document.getElementById('drawer-overlay').classList.remove('open'); selectedId=null; render() }
+
+// ── MODAL NUEVA ───────────────────────────────────────────────────────────────
+function selGrav(g) {
+  gravSeleccionada = g;
+  const map = {leve:'on-leve',media:'on-media',grave:'on-grave',critica:'on-critica'};
+  document.querySelectorAll('.grav-opt').forEach(el=>{ el.className=`grav-opt${el.dataset.g===g?' '+map[g]:''}` });
+}
+
+function crearIncidencia() {
+  const desc = document.getElementById('ni-desc').value.trim();
+  if (!desc) { toast('Describe la incidencia'); return; }
+  const n = INC.length+1;
+  const nueva = {
+    id:'i'+Date.now(),
+    codigo:`INC-00${n}`,
+    gravedad: gravSeleccionada,
+    tipo: document.getElementById('ni-tipo').value,
+    estado:'abierta',
+    desc,
+    sistema:   document.getElementById('ni-sistema').value,
+    ubicacion: document.getElementById('ni-ubic').value||'—',
+    responsable: document.getElementById('ni-resp').value,
+    plazo:     document.getElementById('ni-plazo').value,
+    acta:      document.getElementById('ni-acta').value||null,
+    oo:        document.getElementById('ni-oo').value==='si'?`OO-0${20+n}`:null,
+    diasAbierto:0, fotos:0,
+    historial:[{estado:'abierta',fecha:new Date().toLocaleDateString('es-ES'),user:'Ana García (DEO)',nota:'Incidencia creada.'}],
+  };
+  INC.unshift(nueva);
+  closeModalEl();
+  render();
+  toast(`✓ ${nueva.codigo} registrada${nueva.oo?` · ${nueva.oo} generada`:''}`);
+}
+
+function openModal()    { document.getElementById('modal-nueva').classList.add('open') }
+function closeModalEl() { document.getElementById('modal-nueva').classList.remove('open') }
+document.addEventListener('click',e=>{ if(e.target.classList.contains('overlay')) closeModalEl() });
+
+function toast(msg){
+  const t=document.getElementById('toast-el');
+  t.textContent=msg;t.classList.add('show');
+  clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2400);
+}
+
+render();
+</script>
+</body>
+</html>

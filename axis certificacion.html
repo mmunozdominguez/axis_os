@@ -1,0 +1,858 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AXIS OS — Certificación</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#f0f2f5;--surf:#fff;--surf2:#f8f9fb;--bdr:#e4e7ec;--bdr2:#cdd2db;
+  --txt:#111827;--txt2:#4b5563;--txt3:#9ca3af;
+  --cyan:#0284c7;--cyan-l:#e0f2fe;--cyan-bd:#bae6fd;--cyan-d:#0369a1;
+  --grn:#059669;--grn-l:#d1fae5;--grn-bd:#6ee7b7;--grn-d:#047857;
+  --ylw:#d97706;--ylw-l:#fef3c7;--ylw-bd:#fde68a;--ylw-d:#b45309;
+  --red:#dc2626;--red-l:#fee2e2;--red-bd:#fca5a5;
+  --ora:#ea580c;--ora-l:#fff7ed;--ora-bd:#fed7aa;
+  --vio:#7c3aed;--vio-l:#ede9fe;--vio-bd:#c4b5fd;
+  --mono:'JetBrains Mono',monospace;
+  --r:6px;--r2:10px;
+  --sh:0 1px 3px rgba(0,0,0,.07),0 1px 2px rgba(0,0,0,.04);
+  --sh2:0 4px 20px rgba(0,0,0,.12);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--txt);font-size:13px;line-height:1.5;height:100vh;display:flex;flex-direction:column;overflow:hidden}
+
+/* TOPBAR */
+.topbar{height:50px;background:var(--surf);border-bottom:1px solid var(--bdr);display:flex;align-items:center;padding:0 20px;gap:12px;flex-shrink:0;box-shadow:var(--sh)}
+.logo{font-family:var(--mono);font-size:13px;font-weight:500;color:var(--cyan);letter-spacing:2px}
+.vr{width:1px;height:18px;background:var(--bdr2)}
+.topbar-info{font-size:12px;color:var(--txt3)}.topbar-info strong{color:var(--txt2);font-weight:600}
+.topbar-r{margin-left:auto;display:flex;gap:8px;align-items:center}
+.btn{display:inline-flex;align-items:center;gap:5px;padding:6px 13px;border-radius:var(--r);border:1px solid;font-family:'Inter',sans-serif;font-size:12px;font-weight:500;cursor:pointer;transition:all .15s;white-space:nowrap}
+.btn-primary{background:var(--cyan);color:#fff;border-color:var(--cyan-d)}
+.btn-primary:hover{background:var(--cyan-d)}
+.btn-ghost{background:var(--surf);color:var(--txt2);border-color:var(--bdr2)}
+.btn-ghost:hover{background:var(--surf2)}
+.btn-grn{background:var(--grn);color:#fff;border-color:var(--grn-d)}
+.btn-grn:hover{background:var(--grn-d)}
+.btn-sm{padding:4px 10px;font-size:11px}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+
+/* ROL SWITCH */
+.rol-sw{display:flex;background:var(--surf2);border:1px solid var(--bdr);border-radius:var(--r);padding:2px;gap:2px}
+.rol-btn{padding:3px 12px;border-radius:5px;font-size:11px;font-weight:500;cursor:pointer;border:none;background:none;color:var(--txt3);transition:all .15s}
+.rol-btn.on{background:var(--surf);color:var(--cyan);box-shadow:var(--sh)}
+
+/* RESUMEN BAR */
+.resumen-bar{background:var(--surf);border-bottom:1px solid var(--bdr);padding:10px 20px;display:flex;align-items:center;gap:16px;flex-shrink:0}
+.rb-item{display:flex;flex-direction:column;gap:1px}
+.rb-lbl{font-size:10px;font-weight:600;color:var(--txt3);text-transform:uppercase;letter-spacing:.5px}
+.rb-val{font-family:var(--mono);font-size:15px;font-weight:600;line-height:1}
+.rb-sep{width:1px;height:32px;background:var(--bdr)}
+.rb-bloq{background:var(--red-l);border:1px solid var(--red-bd);border-radius:var(--r);padding:6px 12px;display:flex;align-items:center;gap:8px;cursor:pointer;transition:all .15s}
+.rb-bloq:hover{box-shadow:var(--sh)}
+.rb-bloq-val{font-family:var(--mono);font-size:15px;font-weight:700;color:var(--red)}
+.rb-bloq-lbl{font-size:10px;color:var(--red);font-weight:600}
+.rb-bloq-sub{font-size:10px;color:var(--red);opacity:.7}
+.rb-r{margin-left:auto;display:flex;gap:8px}
+
+/* MAIN LAYOUT */
+.app{flex:1;display:flex;overflow:hidden}
+
+/* SCROLL AREA */
+.cert-scroll{flex:1;overflow-y:auto;padding:16px 20px}
+.cert-scroll::-webkit-scrollbar{width:4px}
+.cert-scroll::-webkit-scrollbar-thumb{background:var(--bdr2);border-radius:4px}
+
+/* CAPÍTULO */
+.cap-block{margin-bottom:10px;border:1px solid var(--bdr);border-radius:var(--r2);background:var(--surf);box-shadow:var(--sh);overflow:hidden}
+.cap-header{padding:11px 14px;display:flex;align-items:center;gap:10px;cursor:pointer;transition:background .1s;user-select:none}
+.cap-header:hover{background:var(--surf2)}
+.cap-toggle{font-size:10px;color:var(--txt3);transition:transform .2s;flex-shrink:0}
+.cap-toggle.open{transform:rotate(90deg)}
+.cap-cod{font-family:var(--mono);font-size:11px;font-weight:600;color:var(--cyan);flex-shrink:0}
+.cap-nom{font-size:13px;font-weight:700;flex:1}
+.cap-imp{font-family:var(--mono);font-size:12px;color:var(--txt3);flex-shrink:0}
+
+/* SUBCAPÍTULO */
+.sub-block{border-top:1px solid var(--bdr)}
+.sub-header{padding:9px 14px 9px 28px;display:flex;align-items:center;gap:8px;cursor:pointer;transition:background .1s;user-select:none}
+.sub-header:hover{background:var(--surf2)}
+.sub-toggle{font-size:9px;color:var(--txt3);transition:transform .2s;flex-shrink:0}
+.sub-toggle.open{transform:rotate(90deg)}
+.sub-cod{font-family:var(--mono);font-size:10px;color:var(--txt3);flex-shrink:0}
+.sub-nom{font-size:12px;font-weight:600;flex:1}
+.sub-chips{display:flex;gap:5px;align-items:center;flex-wrap:wrap}
+
+/* CHIPS */
+.chip{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:600;padding:3px 9px;border-radius:12px;border:1px solid;cursor:pointer;transition:all .15s;white-space:nowrap;user-select:none}
+.chip:hover{transform:translateY(-1px);box-shadow:var(--sh)}
+.chip-bloq{background:var(--red-l);color:var(--red);border-color:var(--red-bd)}
+.chip-bloq:hover{background:#fecaca}
+.chip-parc{background:var(--ylw-l);color:var(--ylw-d);border-color:var(--ylw-bd)}
+.chip-parc:hover{background:#fde68a}
+.chip-ok{background:var(--grn-l);color:var(--grn-d);border-color:var(--grn-bd)}
+.chip-ok:hover{background:#a7f3d0}
+.chip-imp{background:var(--surf2);color:var(--txt2);border-color:var(--bdr2)}
+.chip-imp:hover{background:var(--bdr)}
+.chip-libre{background:var(--cyan-l);color:var(--cyan);border-color:var(--cyan-bd)}
+.chip-libre:hover{background:#bae6fd}
+
+/* TABLA PARTIDAS */
+.sub-body{display:none;border-top:1px solid var(--bdr)}
+.sub-body.open{display:block}
+.ptable{width:100%;border-collapse:collapse}
+.ptable th{font-size:10px;font-weight:600;color:var(--txt3);text-transform:uppercase;letter-spacing:.4px;padding:7px 12px;text-align:left;border-bottom:1px solid var(--bdr);background:var(--surf2);white-space:nowrap}
+.ptable th.r{text-align:right}
+.ptable td{padding:8px 12px;border-bottom:1px solid var(--bdr);vertical-align:middle}
+.ptable tr:last-child td{border-bottom:none}
+.ptable tr.p-bloq td{background:#fffafa}
+.ptable tr:not(.p-bloq):hover td{background:var(--surf2)}
+.ptable tr{cursor:pointer}
+.p-cod{font-family:var(--mono);font-size:10px;color:var(--cyan);white-space:nowrap}
+.p-desc{font-size:12px;font-weight:500;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.p-unit{font-family:var(--mono);font-size:10px;color:var(--txt3)}
+.p-pct{font-family:var(--mono);font-size:12px;font-weight:600;text-align:right;white-space:nowrap}
+.p-imp{font-family:var(--mono);font-size:12px;text-align:right;white-space:nowrap}
+.p-bloq-icon{color:var(--red);font-size:12px}
+.p-fase{font-size:10px;color:var(--vio);background:var(--vio-l);border:1px solid var(--vio-bd);border-radius:10px;padding:1px 7px;white-space:nowrap}
+
+/* ARROW indicator pct */
+.pct-flow{display:flex;align-items:center;gap:4px;justify-content:flex-end}
+.pct-ant{font-family:var(--mono);font-size:11px;color:var(--txt3)}
+.pct-arr{font-size:10px;color:var(--txt3)}
+.pct-new{font-family:var(--mono);font-size:12px;font-weight:700}
+.pct-new.up{color:var(--cyan)}
+.pct-new.bloq{color:var(--red-bd)}
+
+/* INPUT inline */
+.pct-input{background:var(--surf2);border:1px solid var(--bdr2);border-radius:4px;padding:3px 6px;font-family:var(--mono);font-size:12px;font-weight:600;color:var(--txt);outline:none;width:52px;text-align:right}
+.pct-input:focus{border-color:var(--cyan);background:var(--surf)}
+.pct-input:disabled{background:var(--red-l);color:var(--red-bd);border-color:var(--red-bd);cursor:not-allowed}
+.pct-input.deo{border-color:var(--cyan-bd);background:var(--cyan-l)}
+
+/* SUBTOTAL row */
+.sub-total-row td{background:var(--surf2)!important;font-weight:600;font-size:12px;border-top:1px solid var(--bdr)}
+
+/* ── PANEL LATERAL (drawer) ── */
+.drawer-overlay{position:fixed;inset:0;background:rgba(0,0,0,.3);z-index:100;display:none}
+.drawer-overlay.open{display:block}
+.drawer{position:fixed;top:50px;right:0;bottom:0;width:420px;background:var(--surf);border-left:1px solid var(--bdr);z-index:101;display:flex;flex-direction:column;transform:translateX(100%);transition:transform .25s ease;box-shadow:var(--sh2)}
+.drawer.open{transform:translateX(0)}
+.drawer-head{padding:14px 16px;border-bottom:1px solid var(--bdr);display:flex;align-items:center;gap:10px;flex-shrink:0}
+.drawer-title{font-size:13px;font-weight:700;flex:1}
+.drawer-close{background:none;border:none;color:var(--txt3);cursor:pointer;font-size:18px;line-height:1;padding:2px}
+.drawer-close:hover{color:var(--txt)}
+.drawer-body{flex:1;overflow-y:auto;padding:14px 16px;display:flex;flex-direction:column;gap:14px}
+.drawer-body::-webkit-scrollbar{width:3px}
+.drawer-body::-webkit-scrollbar-thumb{background:var(--bdr2);border-radius:3px}
+.drawer-foot{padding:12px 16px;border-top:1px solid var(--bdr);display:flex;gap:8px;justify-content:flex-end;flex-shrink:0}
+
+/* Drawer sections */
+.dsec{display:flex;flex-direction:column;gap:8px}
+.dsec-title{font-size:10px;font-weight:700;color:var(--txt3);text-transform:uppercase;letter-spacing:.6px}
+.doc-req-row{display:flex;align-items:center;gap:8px;padding:8px 10px;border:1px solid var(--bdr);border-radius:var(--r);transition:all .15s}
+.doc-req-row.done{border-color:var(--grn-bd);background:var(--grn-l)}
+.drr-tipo{font-family:var(--mono);font-size:10px;font-weight:600;min-width:52px;padding:2px 6px;border-radius:4px;text-align:center}
+.drr-nombre{font-size:11px;font-weight:500;flex:1}
+.drr-estado{font-size:10px;font-weight:600;flex-shrink:0}
+.drr-upload{flex-shrink:0}
+
+/* Drop zone mini */
+.mini-dz{border:2px dashed var(--bdr2);border-radius:var(--r);padding:12px;text-align:center;cursor:pointer;transition:all .15s;background:var(--surf2)}
+.mini-dz:hover,.mini-dz.drag{border-color:var(--cyan);background:var(--cyan-l)}
+.mini-dz-txt{font-size:11px;font-weight:500;color:var(--txt2)}
+.mini-dz-sub{font-size:10px;color:var(--txt3)}
+.mini-file{background:var(--grn-l);border:1px solid var(--grn-bd);border-radius:var(--r);padding:8px 10px;display:flex;align-items:center;gap:8px;display:none}
+.mini-file-name{font-family:var(--mono);font-size:10px;color:var(--grn-d);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* Partida detail in drawer */
+.pd-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--bdr);font-size:12px}
+.pd-row:last-child{border-bottom:none}
+.pd-lbl{color:var(--txt3)}
+.pd-val{font-family:var(--mono);font-weight:600}
+.pct-editor{display:flex;align-items:center;gap:8px}
+.pct-editor input{background:var(--surf2);border:1px solid var(--bdr2);border-radius:var(--r);padding:5px 10px;font-family:var(--mono);font-size:14px;font-weight:700;color:var(--txt);outline:none;width:72px;text-align:right}
+.pct-editor input:focus{border-color:var(--cyan);background:var(--surf)}
+.pct-editor input:disabled{background:var(--red-l);color:var(--red-bd);border-color:var(--red-bd)}
+.fase-list{display:flex;flex-direction:column;gap:4px}
+.fase-item{display:flex;align-items:center;gap:8px;padding:7px 10px;border:1px solid var(--bdr);border-radius:var(--r);cursor:pointer;transition:all .15s}
+.fase-item:hover{border-color:var(--bdr2)}
+.fase-item.sel{border-color:var(--vio);background:var(--vio-l)}
+.fase-item input{accent-color:var(--vio);cursor:pointer}
+.fase-pct-acum{font-family:var(--mono);font-size:11px;color:var(--vio);margin-left:auto;flex-shrink:0}
+
+/* Desbloqueo */
+.db-warn{background:var(--red-l);border:1px solid var(--red-bd);border-radius:var(--r);padding:10px 12px;font-size:11px;color:var(--red);line-height:1.5}
+.db-ta{background:var(--surf2);border:1px solid var(--bdr2);border-radius:var(--r);padding:8px;font-family:'Inter',sans-serif;font-size:12px;color:var(--txt);outline:none;width:100%;resize:none;min-height:72px}
+.db-ta:focus{border-color:var(--red)}
+
+/* MODAL validar */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;display:none;align-items:center;justify-content:center;backdrop-filter:blur(3px)}
+.overlay.open{display:flex}
+.modal{background:var(--surf);border:1px solid var(--bdr);border-radius:var(--r2);width:440px;box-shadow:var(--sh2);display:flex;flex-direction:column}
+.modal-head{padding:14px 18px;border-bottom:1px solid var(--bdr);display:flex;align-items:center;gap:10px}
+.modal-title{font-size:14px;font-weight:700;flex:1}
+.modal-x{background:none;border:none;color:var(--txt3);cursor:pointer;font-size:18px;line-height:1}
+.modal-x:hover{color:var(--txt)}
+.modal-body{padding:18px;display:flex;flex-direction:column;gap:10px}
+.modal-foot{padding:12px 18px;border-top:1px solid var(--bdr);display:flex;gap:8px;justify-content:flex-end}
+.total-line{display:flex;justify-content:space-between;font-size:12px;padding:5px 0;border-bottom:1px solid var(--bdr)}
+.total-line:last-child{border-bottom:none;font-weight:700;font-size:14px}
+.total-line .v{font-family:var(--mono)}
+
+/* Toast */
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#1e293b;color:#fff;padding:9px 18px;border-radius:var(--r);font-size:13px;font-weight:500;z-index:500;display:none;box-shadow:var(--sh2)}
+.toast.show{display:block;animation:tin .2s}
+@keyframes tin{from{opacity:0;transform:translateX(-50%) translateY(8px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="logo">AXIS OS</div>
+  <div class="vr"></div>
+  <div class="topbar-info">Certificación nº <strong>6 · Noviembre 2024</strong> · FLEXLIVING 417 LAS ROZAS</div>
+  <div class="topbar-r">
+    <div class="rol-sw">
+      <button class="rol-btn on" id="rb-deo" onclick="setRol('deo',this)">DEO</button>
+      <button class="rol-btn" id="rb-con" onclick="setRol('con',this)">Constructora</button>
+    </div>
+    <button class="btn btn-ghost btn-sm">⬇ BC3</button>
+    <button class="btn btn-grn btn-sm" onclick="openValidar()">✓ Validar</button>
+  </div>
+</header>
+
+<!-- RESUMEN TOP -->
+<div class="resumen-bar" id="resumen-bar"></div>
+
+<div class="app">
+  <div class="cert-scroll" id="cert-scroll"></div>
+</div>
+
+<!-- DRAWER OVERLAY -->
+<div class="drawer-overlay" id="drawer-overlay" onclick="closeDrawer()"></div>
+<div class="drawer" id="drawer">
+  <div class="drawer-head">
+    <div class="drawer-title" id="drawer-title">Detalle</div>
+    <button class="drawer-close" onclick="closeDrawer()">×</button>
+  </div>
+  <div class="drawer-body" id="drawer-body"></div>
+  <div class="drawer-foot" id="drawer-foot"></div>
+</div>
+
+<!-- MODAL VALIDAR -->
+<div class="overlay" id="modal-validar">
+  <div class="modal">
+    <div class="modal-head">
+      <span class="modal-title">Validar certificación nº 6</span>
+      <button class="modal-x" onclick="closeModal()">×</button>
+    </div>
+    <div class="modal-body" id="mv-body"></div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost btn-sm" onclick="closeModal()">Cancelar</button>
+      <button class="btn btn-grn btn-sm" onclick="firmar()">✓ Firmar y cerrar</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── DATOS ─────────────────────────────────────────────────────────────────────
+let rol = 'deo';
+
+const CAPS = [
+  { cod:'01', nom:'ARQUITECTURA', imp:1850000, certAnt:680000,
+    subs:[
+      { cod:'01.06', nom:'ALBAÑILERÍA', imp:285000, certAnt:82000,
+        sistema:'Tabiquería PYL', docEst:'bloqueado',
+        docsPend:[
+          {tipo:'DoP',nom:'Declaración de Prestaciones — Perfilería metálica',estado:'pendiente',archivo:null},
+          {tipo:'CE', nom:'Marcado CE — Placa YL tipo H1',estado:'pendiente',archivo:null},
+          {tipo:'ENS',nom:'Ensayo resistencia al fuego EI-60 del sistema',estado:'aportado',archivo:'ensayo_ei60_v1.pdf'},
+        ],
+        partidas:[
+          {cod:'PTI-301.1',desc:'TABIQUE SENCILLO PYL A(15)/48/A(15)',ud:'m2',impC:87749,pctAnt:35,pctProp:65,pctDeo:null,fase:'Segundas caras + aislamiento',bloq:true,motivo:'DoP perfilería · CE placa H1',db:false},
+          {cod:'PTI-311.1',desc:'TABIQUE SENCILLO PYL A(15)/70/A(15)',ud:'m2',impC:33536,pctAnt:40,pctProp:70,pctDeo:null,fase:'Segundas caras + aislamiento',bloq:true,motivo:'DoP perfilería',db:false},
+          {cod:'PTI-311.2',desc:'TABIQUE SENCILLO PYL A(15)/70/H1(15)',ud:'m2',impC:20824,pctAnt:20,pctProp:40,pctDeo:null,fase:'Primeras caras',bloq:true,motivo:'CE placa H1',db:false},
+          {cod:'AYA-103',desc:'SELLADOS CORTAFUEGOS EI-90',ud:'PA',impC:4250,pctAnt:0,pctProp:50,pctDeo:null,fase:'Ejecución parcial',bloq:false,motivo:'',db:false},
+        ]
+      },
+      { cod:'01.07', nom:'FACHADA', imp:420000, certAnt:168000,
+        sistema:'Fachada ventilada', docEst:'ok',
+        docsPend:[],
+        partidas:[
+          {cod:'FV-101',desc:'FACHADA VENTILADA APLACADO CERÁMICO',ud:'m2',impC:229400,pctAnt:45,pctProp:75,pctDeo:null,fase:'Aplacado',bloq:false,motivo:'',db:false},
+          {cod:'FV-102',desc:'CARPINTERÍA EXTERIOR ALUMINIO LACADO',ud:'m2',impC:155200,pctAnt:30,pctProp:60,pctDeo:null,fase:'Marco colocado',bloq:false,motivo:'',db:false},
+        ]
+      },
+      { cod:'01.04', nom:'CUBIERTAS', imp:195000, certAnt:58500,
+        sistema:'Cubierta plana', docEst:'parcial',
+        docsPend:[
+          {tipo:'FT',nom:'Ficha técnica lámina impermeabilizante',estado:'pendiente',archivo:null},
+        ],
+        partidas:[
+          {cod:'CUB-101',desc:'CUBIERTA PLANA NO TRANSITABLE BICAPA',ud:'m2',impC:131100,pctAnt:25,pctProp:55,pctDeo:null,fase:'Láminas impermeabilizantes',bloq:false,motivo:'',db:false},
+        ]
+      }
+    ]
+  },
+  { cod:'02', nom:'ESTRUCTURAS', imp:1240000, certAnt:992000,
+    subs:[
+      { cod:'02.02', nom:'CIMENTACIONES', imp:380000, certAnt:361000,
+        sistema:'Hormigón armado', docEst:'ok', docsPend:[],
+        partidas:[
+          {cod:'02.02.04',desc:'H.ARM. HA-25/B/20/XC2 EN ZAPATAS',ud:'m3',impC:370029,pctAnt:95,pctProp:98,pctDeo:null,fase:'Recepción parcial',bloq:false,motivo:'',db:false},
+        ]
+      },
+      { cod:'02.03', nom:'ESTRUCTURA', imp:860000, certAnt:631000,
+        sistema:'Hormigón armado', docEst:'ok', docsPend:[],
+        partidas:[
+          {cod:'02.03.01',desc:'H.ARM. HA-25 EN PILARES Y PANTALLAS',ud:'m3',impC:149291,pctAnt:80,pctProp:95,pctDeo:null,fase:'Recepción parcial',bloq:false,motivo:'',db:false},
+          {cod:'02.03.02',desc:'FORJADO UNIDIRECCIONAL VIGUETA HA',ud:'m2',impC:330170,pctAnt:60,pctProp:80,pctDeo:null,fase:'Hormigonado',bloq:false,motivo:'',db:false},
+        ]
+      }
+    ]
+  },
+  { cod:'03', nom:'INSTALACIONES', imp:1380000, certAnt:345000,
+    subs:[
+      { cod:'03.02', nom:'FONTANERÍA Y ACS', imp:285000, certAnt:71250,
+        sistema:'Distribución agua', docEst:'parcial',
+        docsPend:[
+          {tipo:'FT',nom:'Ficha técnica tubería PP-R Aquatherm',estado:'aportado',archivo:'FT_ppr_aquatherm.pdf'},
+          {tipo:'DoP',nom:'Declaración de Prestaciones tubería multicapa',estado:'pendiente',archivo:null},
+        ],
+        partidas:[
+          {cod:'03.02.01',desc:'RED DISTRIBUCIÓN AGUA PP-R DN20-DN50',ud:'m',impC:109340,pctAnt:20,pctProp:60,pctDeo:null,fase:'Instalación completa',bloq:false,motivo:'',db:false},
+        ]
+      },
+      { cod:'03.06', nom:'ELECTRICIDAD', imp:480000, certAnt:96000,
+        sistema:'Red eléctrica', docEst:'bloqueado',
+        docsPend:[
+          {tipo:'DoP',nom:'Declaración de Prestaciones cable — versión rechazada',estado:'rechazado',archivo:'DoP_cable_v1.pdf'},
+          {tipo:'CE', nom:'Marcado CE bandeja portacables',estado:'pendiente',archivo:null},
+        ],
+        partidas:[
+          {cod:'03.06.01',desc:'RED DISTRIBUCIÓN CABLE + CANALIZACIÓN',ud:'m',impC:152440,pctAnt:15,pctProp:40,pctDeo:null,fase:'Tendido de cables',bloq:true,motivo:'DoP cable rechazada · CE bandeja pendiente',db:false},
+          {cod:'03.06.02',desc:'CUADROS ELÉCTRICOS Y SUBCUADROS',ud:'ud',impC:116400,pctAnt:0,pctProp:30,pctDeo:null,fase:'Cuadros montados',bloq:true,motivo:'DoP cable rechazada',db:false},
+        ]
+      }
+    ]
+  }
+];
+
+const FASES = {
+  'Tabiquería PYL':      [{n:'Replanteo y perfil',p:10},{n:'Primeras caras',p:30},{n:'Segundas caras + aislamiento',p:35},{n:'Encintado',p:10},{n:'Recepción parcial',p:5,rec:true}],
+  'Fachada ventilada':   [{n:'Subestructura',p:30},{n:'Aplacado',p:65},{n:'Recepción parcial',p:5,rec:true}],
+  'Cubierta plana':      [{n:'Pendientes',p:20},{n:'Láminas impermeabilizantes',p:40},{n:'Aislamiento',p:15},{n:'Protección/acabado',p:20},{n:'Recepción parcial',p:5,rec:true}],
+  'Hormigón armado':     [{n:'Encofrado y puntales',p:20},{n:'Armado',p:25},{n:'Hormigonado',p:30},{n:'Replanteo bloques',p:20},{n:'Recepción parcial',p:5,rec:true}],
+  'Distribución agua':   [{n:'Instalación completa',p:95},{n:'Pruebas y puesta en marcha',p:5,rec:true}],
+  'Red eléctrica':       [{n:'Canalización y tendido',p:60},{n:'Conexionado y mecanismos',p:35},{n:'Pruebas y legalización',p:5,rec:true}],
+};
+
+// ── HELPERS ───────────────────────────────────────────────────────────────────
+function fmt(n){return new Intl.NumberFormat('es-ES',{maximumFractionDigits:0}).format(Math.round(n))+' €'}
+function allP(){return CAPS.flatMap(c=>c.subs.flatMap(s=>s.partidas))}
+function impEfectivo(p){
+  if (p.bloq&&!p.db) return 0;
+  const pct = rol==='deo' ? (p.pctDeo??p.pctProp) : p.pctProp;
+  return Math.round(p.impC*pct/100);
+}
+
+function totales(){
+  const ps = allP();
+  const prop  = ps.reduce((a,p)=>a+Math.round(p.impC*p.pctProp/100),0);
+  const bloq  = ps.reduce((a,p)=>a+(p.bloq&&!p.db?Math.round(p.impC*p.pctProp/100):0),0);
+  const libre = prop-bloq;
+  return {prop,bloq,libre,ret:Math.round(libre*.05)};
+}
+
+// ── RENDER RESUMEN ────────────────────────────────────────────────────────────
+function renderResumen(){
+  const t=totales();
+  document.getElementById('resumen-bar').innerHTML=`
+    <div class="rb-item"><div class="rb-lbl">Contrato</div><div class="rb-val">${fmt(4850000)}</div></div>
+    <div class="rb-sep"></div>
+    <div class="rb-item"><div class="rb-lbl">Certificado anterior</div><div class="rb-val" style="color:var(--cyan)">${fmt(CAPS.reduce((a,c)=>a+c.certAnt,0))}</div></div>
+    <div class="rb-sep"></div>
+    <div class="rb-item"><div class="rb-lbl">Propuesta este mes</div><div class="rb-val" style="color:var(--ylw)">${fmt(t.prop)}</div></div>
+    <div class="rb-sep"></div>
+    <div class="rb-bloq" onclick="openResumenBloq()">
+      <div>
+        <div class="rb-bloq-lbl">🔒 Bloqueado (doc. incompleta)</div>
+        <div class="rb-bloq-sub">clic para ver detalle y aportar docs</div>
+      </div>
+      <div class="rb-bloq-val">${fmt(t.bloq)}</div>
+    </div>
+    <div class="rb-sep"></div>
+    <div class="rb-item"><div class="rb-lbl">Certificable libre</div><div class="rb-val" style="color:var(--grn)">${fmt(t.libre)}</div></div>
+    <div class="rb-sep"></div>
+    <div class="rb-item"><div class="rb-lbl">Líquido (−5% ret.)</div><div class="rb-val" style="color:var(--grn-d)">${fmt(t.libre-t.ret)}</div></div>
+    <div class="rb-r">
+      ${rol==='con'
+        ?`<button class="btn btn-primary btn-sm" onclick="showToast('Propuesta enviada al DEO')">Enviar propuesta →</button>`
+        :`<button class="btn btn-ghost btn-sm" onclick="showToast('Devuelta a constructora con notas')">← Devolver</button>
+          <button class="btn btn-grn btn-sm" onclick="openValidar()">✓ Validar</button>`}
+    </div>`;
+}
+
+// ── RENDER CAPS ───────────────────────────────────────────────────────────────
+function renderCaps(){
+  const scroll = document.getElementById('cert-scroll');
+  scroll.innerHTML = CAPS.map(c=>{
+    const subsBloq = c.subs.some(s=>s.partidas.some(p=>p.bloq&&!p.db));
+    return `<div class="cap-block">
+      <div class="cap-header" onclick="toggleEl('cap-body-${c.cod}',this.querySelector('.cap-toggle'))">
+        <span class="cap-toggle open">▶</span>
+        <span class="cap-cod">${c.cod}</span>
+        <span class="cap-nom">${c.nom}</span>
+        ${subsBloq?`<span class="chip chip-bloq" onclick="event.stopPropagation();openCapBloq('${c.cod}')">🔒 Tiene bloqueos</span>`:''}
+        <span class="cap-imp">${fmt(c.imp)}</span>
+      </div>
+      <div id="cap-body-${c.cod}" style="display:block">
+        ${c.subs.map(s=>renderSub(s,c.cod)).join('')}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderSub(s,capCod){
+  const pBloq   = s.partidas.filter(p=>p.bloq&&!p.db);
+  const propImp = s.partidas.reduce((a,p)=>a+Math.round(p.impC*p.pctProp/100),0);
+  const bloqImp = pBloq.reduce((a,p)=>a+Math.round(p.impC*p.pctProp/100),0);
+  const libreImp= propImp-bloqImp;
+
+  // Chip doc
+  const docChip = s.docEst==='ok'
+    ? `<span class="chip chip-ok" onclick="event.stopPropagation();openDocsSub('${capCod}','${s.cod}')">✓ Doc completa</span>`
+    : s.docEst==='bloqueado'
+    ? `<span class="chip chip-bloq" onclick="event.stopPropagation();openDocsSub('${capCod}','${s.cod}')">🔒 ${s.docsPend.filter(d=>d.estado!=='validado').length} docs pendientes</span>`
+    : `<span class="chip chip-parc" onclick="event.stopPropagation();openDocsSub('${capCod}','${s.cod}')">⚠ Doc parcial</span>`;
+
+  const bloqChip = bloqImp>0
+    ? `<span class="chip chip-bloq" onclick="event.stopPropagation();openDocsSub('${capCod}','${s.cod}')">🔒 ${fmt(bloqImp)}</span>`
+    : '';
+  const libreChip = `<span class="chip chip-libre">${fmt(libreImp)} certificable</span>`;
+
+  return `<div class="sub-block" id="sub-${s.cod}">
+    <div class="sub-header" onclick="toggleEl('sb-body-${s.cod}',this.querySelector('.sub-toggle'))">
+      <span class="sub-toggle open">▶</span>
+      <span class="sub-cod">${s.cod}</span>
+      <span class="sub-nom">${s.nom}</span>
+      <div class="sub-chips">
+        ${docChip}
+        ${bloqChip}
+        ${libreChip}
+        <span class="chip chip-imp" onclick="event.stopPropagation();openResumenSub('${capCod}','${s.cod}')">${fmt(propImp)} propuesto</span>
+      </div>
+    </div>
+    <div class="sub-body open" id="sb-body-${s.cod}">
+      <table class="ptable">
+        <thead><tr>
+          <th>Cód.</th><th>Descripción</th><th>Ud.</th>
+          <th class="r">Contrato</th>
+          <th class="r">% Ant.</th>
+          <th class="r">% Prop.</th>
+          ${rol==='deo'?'<th class="r">% DEO</th>':''}
+          <th>Fase</th>
+          <th class="r">Importe</th>
+        </tr></thead>
+        <tbody>
+          ${s.partidas.map(p=>rowPartida(p,s,capCod)).join('')}
+        </tbody>
+        <tr class="sub-total-row">
+          <td colspan="${rol==='deo'?7:6}" style="text-align:right;color:var(--txt2)">Total ${s.nom}</td>
+          <td></td>
+          <td style="text-align:right;font-family:var(--mono)">${fmt(propImp)}</td>
+        </tr>
+      </table>
+    </div>
+  </div>`;
+}
+
+function rowPartida(p,s,capCod){
+  const bloq = p.bloq&&!p.db;
+  const pctEf = rol==='deo'?(p.pctDeo??p.pctProp):p.pctProp;
+  const impEf = bloq?0:Math.round(p.impC*pctEf/100);
+
+  const pctCell = rol==='con'
+    ? `<td class="r"><div class="pct-flow">
+        <span class="pct-ant">${p.pctAnt}%</span>
+        <span class="pct-arr">→</span>
+        <input class="pct-input${bloq?' ':''}'" type="number" min="${p.pctAnt}" max="99" value="${p.pctProp}"
+          ${bloq?'disabled':''} onchange="updPct('${p.cod}',this.value)" onclick="event.stopPropagation()">
+      </div></td>`
+    : `<td class="r"><div class="pct-flow">
+        <span class="pct-ant">${p.pctAnt}%</span>
+        <span class="pct-arr">→</span>
+        <span class="pct-new${bloq?' bloq':' up'}">${p.pctProp}%</span>
+      </div></td>`;
+
+  const deoCel = rol==='deo'
+    ? `<td class="r"><input class="pct-input deo" type="number" min="${p.pctAnt}" max="99"
+        value="${p.pctDeo??p.pctProp}" ${bloq&&!p.db?'disabled':''}
+        onchange="updDeo('${p.cod}',this.value)" onclick="event.stopPropagation()"></td>`
+    : '';
+
+  return `<tr class="${bloq?'p-bloq':''}" onclick="openPartidaDrawer('${p.cod}','${s.cod}','${capCod}')">
+    <td class="p-cod">${p.cod}</td>
+    <td>
+      <div class="p-desc" title="${p.desc}">${p.desc}</div>
+      ${bloq?`<div style="font-size:10px;color:var(--red-bd);margin-top:1px">🔒 ${p.motivo}</div>`:''}
+    </td>
+    <td class="p-unit">${p.ud}</td>
+    <td class="p-imp">${fmt(p.impC)}</td>
+    ${pctCell}
+    ${deoCel}
+    <td><span class="p-fase">${p.fase}</span></td>
+    <td class="p-imp" style="${bloq?'color:var(--red-bd)':'color:var(--txt)'}">${bloq?`<span title="Bloqueado">—</span>`:fmt(impEf)}</td>
+  </tr>`;
+}
+
+// ── TOGGLE COLLAPSE ───────────────────────────────────────────────────────────
+function toggleEl(id,tog){
+  const el=document.getElementById(id);
+  const vis=el.style.display!=='none';
+  el.style.display=vis?'none':'block';
+  if(tog){tog.style.transform=vis?'rotate(0deg)':'rotate(90deg)'}
+}
+
+// ── UPDATE PCTs ───────────────────────────────────────────────────────────────
+function findP(cod){return allP().find(p=>p.cod===cod)}
+function updPct(cod,val){
+  const p=findP(cod); if(!p) return;
+  p.pctProp=Math.min(99,Math.max(p.pctAnt,parseInt(val)||0));
+  refreshAll();
+}
+function updDeo(cod,val){
+  const p=findP(cod); if(!p) return;
+  p.pctDeo=Math.min(99,Math.max(p.pctAnt,parseInt(val)||0));
+  refreshAll();
+}
+function refreshAll(keepDrawer){
+  renderResumen();
+  const scroll=document.getElementById('cert-scroll');
+  const scrollTop=scroll.scrollTop;
+  renderCaps();
+  scroll.scrollTop=scrollTop;
+}
+
+// ── DRAWER: DOCS SUBCAPÍTULO ──────────────────────────────────────────────────
+function findSub(capCod,subCod){
+  return CAPS.find(c=>c.cod===capCod)?.subs.find(s=>s.cod===subCod);
+}
+
+function openDocsSub(capCod,subCod){
+  const s=findSub(capCod,subCod);
+  if(!s) return;
+  const bloqImp=s.partidas.filter(p=>p.bloq&&!p.db).reduce((a,p)=>a+Math.round(p.impC*p.pctProp/100),0);
+
+  document.getElementById('drawer-title').textContent=`Documentación — ${s.nom}`;
+  document.getElementById('drawer-body').innerHTML=`
+    ${bloqImp>0?`<div style="background:var(--red-l);border:1px solid var(--red-bd);border-radius:var(--r);padding:10px 12px">
+      <div style="font-size:12px;font-weight:700;color:var(--red)">🔒 ${fmt(bloqImp)} bloqueados</div>
+      <div style="font-size:11px;color:var(--red);margin-top:2px">Aporta la documentación pendiente para desbloquear la certificación</div>
+    </div>`:''}
+    <div class="dsec">
+      <div class="dsec-title">Documentación requerida</div>
+      ${s.docsPend.map((d,i)=>docReqRow(d,i,capCod,subCod)).join('')}
+    </div>
+    <div class="dsec" id="upload-area-${subCod}" style="${s.docsPend.some(d=>d.estado!=='validado')&&(rol==='con'||s.docsPend.some(d=>d.estado==='rechazado'))?'':'display:none'}">
+      <div class="dsec-title">Subir nueva documentación</div>
+      <div class="mini-dz" id="dz-${subCod}"
+        ondragover="event.preventDefault();this.classList.add('drag')"
+        ondragleave="this.classList.remove('drag')"
+        ondrop="handleDocDrop(event,'${capCod}','${subCod}')"
+        onclick="document.getElementById('fi-${subCod}').click()">
+        <input type="file" id="fi-${subCod}" accept=".pdf" style="display:none"
+          onchange="handleDocFile(this,'${capCod}','${subCod}')">
+        <div class="mini-dz-txt">Arrastra el PDF o haz clic</div>
+        <div class="mini-dz-sub">Se vinculará automáticamente al sistema ${s.sistema}</div>
+      </div>
+      <div class="mini-file" id="mf-${subCod}">
+        <span>📄</span>
+        <span class="mini-file-name" id="mfn-${subCod}"></span>
+        <button class="btn btn-ghost btn-sm" onclick="clearDoc('${subCod}')">Quitar</button>
+      </div>
+    </div>`;
+
+  document.getElementById('drawer-foot').innerHTML=`
+    <button class="btn btn-ghost btn-sm" onclick="closeDrawer()">Cerrar</button>
+    ${rol==='deo'&&s.partidas.some(p=>p.bloq&&!p.db)
+      ?`<button class="btn btn-red btn-sm" onclick="openDesbloqueoSub('${capCod}','${subCod}')">Desbloquear partidas →</button>`:''}`;
+
+  openDrawer();
+}
+
+function docReqRow(d,i,capCod,subCod){
+  const est = d.estado;
+  const rowCls = est==='validado'?'done':'';
+  const color = est==='validado'?'var(--grn-d)':est==='aportado'?'var(--ylw-d)':est==='rechazado'?'var(--red)':'var(--txt3)';
+  const label = {pendiente:'Pendiente',aportado:'Aportado ⏳',validado:'✓ Validado',rechazado:'✕ Rechazado'}[est]||est;
+  const bgDot = {pendiente:'var(--bdr2)',aportado:'var(--ylw)',validado:'var(--grn)',rechazado:'var(--red)'}[est];
+  return `<div class="doc-req-row ${rowCls}" id="drr-${capCod}-${subCod}-${i}">
+    <div style="width:8px;height:8px;border-radius:50%;background:${bgDot};flex-shrink:0"></div>
+    <span class="drr-tipo" style="background:${est==='validado'?'var(--grn-l)':'#eff6ff'};color:${est==='validado'?'var(--grn-d)':'#1d4ed8'};border:1px solid ${est==='validado'?'var(--grn-bd)':'#bfdbfe'}">${d.tipo}</span>
+    <span class="drr-nombre">${d.nom}</span>
+    ${d.archivo?`<span style="font-size:10px;color:var(--txt3)">📄</span>`:''}
+    <span class="drr-estado" style="color:${color}">${label}</span>
+    ${est==='aportado'&&rol==='deo'
+      ?`<div style="display:flex;gap:4px">
+          <button class="btn btn-grn btn-sm" onclick="validarDoc('${capCod}','${subCod}',${i})">✓</button>
+          <button class="btn btn-red btn-sm" onclick="rechazarDoc('${capCod}','${subCod}',${i})">✕</button>
+        </div>`
+      :''}
+  </div>`;
+}
+
+function validarDoc(capCod,subCod,i){
+  const s=findSub(capCod,subCod); if(!s) return;
+  s.docsPend[i].estado='validado';
+  // Si todos validados → desbloquear partidas del subcapítulo
+  const allOk=s.docsPend.every(d=>d.estado==='validado');
+  if(allOk){
+    s.docEst='ok';
+    s.partidas.forEach(p=>{p.bloq=false;});
+    showToast('✓ Documentación completa — partidas desbloqueadas');
+  } else {
+    showToast('✓ Documento validado');
+  }
+  openDocsSub(capCod,subCod);
+  refreshAll(true);
+}
+
+function rechazarDoc(capCod,subCod,i){
+  const s=findSub(capCod,subCod); if(!s) return;
+  s.docsPend[i].estado='rechazado';
+  showToast('Documento rechazado — notificado a constructora');
+  openDocsSub(capCod,subCod);
+}
+
+function handleDocDrop(ev,capCod,subCod){
+  ev.preventDefault();
+  document.getElementById(`dz-${subCod}`).classList.remove('drag');
+  const f=ev.dataTransfer.files[0];
+  if(f) processDoc(f,capCod,subCod);
+}
+function handleDocFile(inp,capCod,subCod){if(inp.files[0]) processDoc(inp.files[0],capCod,subCod);}
+function clearDoc(subCod){
+  document.getElementById(`dz-${subCod}`).style.display='';
+  document.getElementById(`mf-${subCod}`).style.display='none';
+}
+
+function processDoc(file,capCod,subCod){
+  const s=findSub(capCod,subCod); if(!s) return;
+  document.getElementById(`dz-${subCod}`).style.display='none';
+  document.getElementById(`mf-${subCod}`).style.display='flex';
+  document.getElementById(`mfn-${subCod}`).textContent=file.name;
+
+  // Marcar el primer doc pendiente/rechazado como aportado
+  const doc=s.docsPend.find(d=>d.estado==='pendiente'||d.estado==='rechazado');
+  if(doc){
+    doc.estado= rol==='deo'?'validado':'aportado';
+    doc.archivo=file.name;
+    if(rol==='deo'){
+      // DEO sube → auto-validado
+      const allOk=s.docsPend.every(d=>d.estado==='validado');
+      if(allOk){ s.docEst='ok'; s.partidas.forEach(p=>{p.bloq=false;}); }
+      showToast('✓ Documento subido y validado automáticamente (DEO)');
+    } else {
+      if(s.docEst==='bloqueado') s.docEst='parcial';
+      showToast('Documento aportado — pendiente validación DEO');
+    }
+    openDocsSub(capCod,subCod);
+    refreshAll(true);
+  }
+}
+
+// ── DRAWER: PARTIDA DETALLE ───────────────────────────────────────────────────
+function openPartidaDrawer(cod,subCod,capCod){
+  const p=findP(cod);
+  const s=findSub(capCod,subCod);
+  if(!p||!s) return;
+  const bloq=p.bloq&&!p.db;
+  const pctEf=rol==='deo'?(p.pctDeo??p.pctProp):p.pctProp;
+  const fasesList=FASES[s.sistema]||[];
+
+  document.getElementById('drawer-title').textContent=p.cod+' — '+p.desc.slice(0,30);
+  document.getElementById('drawer-body').innerHTML=`
+    ${bloq?`<div class="db-warn">🔒 Partida bloqueada por documentación incompleta:<br><strong>${p.motivo}</strong><br>Aporta la documentación desde el capítulo o desbloquea manualmente.</div>`:''}
+    <div class="dsec">
+      <div class="dsec-title">Datos de la partida</div>
+      <div class="pd-row"><span class="pd-lbl">Importe contrato</span><span class="pd-val">${fmt(p.impC)}</span></div>
+      <div class="pd-row"><span class="pd-lbl">% certificado anterior</span><span class="pd-val">${p.pctAnt}%</span></div>
+      <div class="pd-row"><span class="pd-lbl">Acum. anterior</span><span class="pd-val">${fmt(p.impC*p.pctAnt/100)}</span></div>
+    </div>
+    <div class="dsec">
+      <div class="dsec-title">${rol==='con'?'% Propuesto':'% Validado DEO'}</div>
+      <div class="pct-editor">
+        <input type="number" min="${p.pctAnt}" max="99" value="${pctEf}"
+          ${bloq&&rol==='deo'?'disabled':''} id="drawer-pct-input"
+          onchange="${rol==='con'?`updPct('${cod}',this.value)`:`updDeo('${cod}',this.value)`}">
+        <span style="font-size:12px;color:var(--txt3)">% (máx. 99%)</span>
+        <span style="font-family:var(--mono);font-size:13px;font-weight:600;color:var(--grn);margin-left:8px">${fmt(p.impC*pctEf/100)}</span>
+      </div>
+    </div>
+    <div class="dsec">
+      <div class="dsec-title">Fase de ejecución — ${s.sistema}</div>
+      <div class="fase-list">
+        ${fasesList.map((f,i)=>{
+          const acum=fasesList.slice(0,i+1).reduce((a,x)=>a+x.p,0);
+          return `<div class="fase-item${p.fase===f.n?' sel':''}" onclick="selFase('${cod}','${f.n}',this)">
+            <input type="radio" name="fase-dr" ${p.fase===f.n?'checked':''} style="accent-color:var(--vio)">
+            <span style="font-size:12px;flex:1">${i+1}. ${f.n}${f.rec?' <span style="font-size:10px;color:var(--grn-d)">(recepción)</span>':''}</span>
+            <span class="fase-pct-acum">≤${acum}%</span>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>
+    ${bloq&&rol==='deo'?`<div class="dsec">
+      <div class="dsec-title">Desbloqueo manual (DEO)</div>
+      <div class="db-warn" style="margin-bottom:8px">Quedará registrado en el historial.</div>
+      <textarea class="db-ta" id="db-motivo" placeholder="Motivo técnico del desbloqueo..."></textarea>
+    </div>`:''}`;
+
+  document.getElementById('drawer-foot').innerHTML=`
+    <button class="btn btn-ghost btn-sm" onclick="closeDrawer()">Cerrar</button>
+    ${bloq&&rol==='deo'
+      ?`<button class="btn btn-red btn-sm" onclick="confirmarDB('${cod}')">Desbloquear</button>`
+      :bloq&&rol==='con'
+      ?`<button class="btn btn-primary btn-sm" onclick="openDocsSub('${capCod}','${subCod}');closeDrawer()">Ver docs pendientes</button>`
+      :`<button class="btn btn-primary btn-sm" onclick="closeDrawer()">Guardar</button>`}`;
+  openDrawer();
+}
+
+function selFase(cod,nombre,el){
+  document.querySelectorAll('.fase-item').forEach(e=>e.classList.remove('sel'));
+  el.classList.add('sel');
+  const p=findP(cod); if(p) p.fase=nombre;
+  refreshAll(true);
+}
+
+function confirmarDB(cod){
+  const mot=document.getElementById('db-motivo')?.value.trim();
+  if(!mot){showToast('Escribe el motivo');return;}
+  const p=findP(cod); if(!p) return;
+  p.db=true; p.dbMotivo=mot;
+  closeDrawer();
+  refreshAll();
+  showToast(`⚠ ${cod} desbloqueado por DEO — registrado`);
+}
+
+function openDesbloqueoSub(capCod,subCod){
+  const s=findSub(capCod,subCod); if(!s) return;
+  const bloqPs=s.partidas.filter(p=>p.bloq&&!p.db);
+  bloqPs.forEach(p=>{p.db=true;p.dbMotivo='Desbloqueo conjunto por DEO'});
+  s.partidas.forEach(p=>{if(p.db){}});
+  closeDrawer();
+  refreshAll();
+  showToast(`⚠ ${bloqPs.length} partidas desbloqueadas por DEO`);
+}
+
+// ── RESUMEN BLOQUEADO ─────────────────────────────────────────────────────────
+function openResumenBloq(){
+  const bloqueos=[];
+  CAPS.forEach(c=>c.subs.forEach(s=>{
+    const bp=s.partidas.filter(p=>p.bloq&&!p.db);
+    if(bp.length) bloqueos.push({s,bp,capCod:c.cod});
+  }));
+  document.getElementById('drawer-title').textContent='Importes bloqueados';
+  document.getElementById('drawer-body').innerHTML=bloqueos.length?bloqueos.map(b=>`
+    <div style="border:1px solid var(--red-bd);border-radius:var(--r);overflow:hidden;margin-bottom:8px">
+      <div style="background:var(--red-l);padding:8px 12px;display:flex;align-items:center;gap:8px">
+        <span style="font-size:12px;font-weight:600;color:var(--red);flex:1">${b.s.cod} ${b.s.nom}</span>
+        <span style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--red)">${fmt(b.bp.reduce((a,p)=>a+Math.round(p.impC*p.pctProp/100),0))}</span>
+      </div>
+      <div style="padding:8px 12px;display:flex;flex-direction:column;gap:5px">
+        ${b.s.docsPend.filter(d=>d.estado!=='validado').map(d=>`
+          <div style="display:flex;align-items:center;gap:8px;font-size:11px">
+            <span style="font-family:var(--mono);font-size:10px;font-weight:600;background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe;border-radius:3px;padding:1px 6px">${d.tipo}</span>
+            <span style="flex:1;color:var(--txt2)">${d.nom}</span>
+            <span style="color:var(--red);font-weight:600">${d.estado}</span>
+          </div>`).join('')}
+        <button class="btn btn-primary btn-sm" style="margin-top:4px;align-self:flex-start"
+          onclick="openDocsSub('${b.capCod}','${b.s.cod}')">Aportar documentación →</button>
+      </div>
+    </div>`).join('')
+    :`<div style="text-align:center;padding:24px;color:var(--grn-d)"><div style="font-size:24px;margin-bottom:8px">✓</div>Sin bloqueos documentales</div>`;
+  document.getElementById('drawer-foot').innerHTML=`<button class="btn btn-ghost btn-sm" onclick="closeDrawer()">Cerrar</button>`;
+  openDrawer();
+}
+
+function openCapBloq(capCod){
+  const c=CAPS.find(x=>x.cod===capCod); if(!c) return;
+  openResumenBloq();
+}
+
+function openResumenSub(capCod,subCod){
+  const s=findSub(capCod,subCod); if(!s) return;
+  const prop=s.partidas.reduce((a,p)=>a+Math.round(p.impC*p.pctProp/100),0);
+  const bloq=s.partidas.filter(p=>p.bloq&&!p.db).reduce((a,p)=>a+Math.round(p.impC*p.pctProp/100),0);
+  document.getElementById('drawer-title').textContent=`Resumen — ${s.nom}`;
+  document.getElementById('drawer-body').innerHTML=`
+    <div class="dsec">
+      <div class="pd-row"><span class="pd-lbl">Contrato subcapítulo</span><span class="pd-val">${fmt(s.imp)}</span></div>
+      <div class="pd-row"><span class="pd-lbl">Certificado anterior</span><span class="pd-val" style="color:var(--cyan)">${fmt(s.certAnt)}</span></div>
+      <div class="pd-row"><span class="pd-lbl">Propuesta este mes</span><span class="pd-val" style="color:var(--ylw)">${fmt(prop)}</span></div>
+      <div class="pd-row"><span class="pd-lbl">Bloqueado</span><span class="pd-val" style="color:var(--red)">−${fmt(bloq)}</span></div>
+      <div class="pd-row"><span class="pd-lbl">Certificable</span><span class="pd-val" style="color:var(--grn)">${fmt(prop-bloq)}</span></div>
+      <div class="pd-row"><span class="pd-lbl">Acum. tras certificación</span><span class="pd-val" style="color:var(--grn-d)">${fmt(s.certAnt+(prop-bloq))}</span></div>
+    </div>`;
+  document.getElementById('drawer-foot').innerHTML=`<button class="btn btn-ghost btn-sm" onclick="closeDrawer()">Cerrar</button>`;
+  openDrawer();
+}
+
+// ── DRAWER UTILS ──────────────────────────────────────────────────────────────
+function openDrawer(){
+  document.getElementById('drawer').classList.add('open');
+  document.getElementById('drawer-overlay').classList.add('open');
+}
+function closeDrawer(){
+  document.getElementById('drawer').classList.remove('open');
+  document.getElementById('drawer-overlay').classList.remove('open');
+}
+
+// ── VALIDAR MODAL ─────────────────────────────────────────────────────────────
+function openValidar(){
+  const t=totales();
+  document.getElementById('mv-body').innerHTML=`
+    <div class="total-line"><span>Propuesta constructora</span><span class="v" style="color:var(--ylw)">${fmt(t.prop)}</span></div>
+    <div class="total-line"><span style="color:var(--red)">🔒 Bloqueado (doc. incompleta)</span><span class="v" style="color:var(--red)">−${fmt(t.bloq)}</span></div>
+    <div class="total-line"><span>Certificable</span><span class="v" style="color:var(--grn)">${fmt(t.libre)}</span></div>
+    <div class="total-line"><span>Retención 5%</span><span class="v" style="color:var(--txt3)">−${fmt(t.ret)}</span></div>
+    <div class="total-line"><span>Líquido a certificar</span><span class="v" style="color:var(--grn-d)">${fmt(t.libre-t.ret)}</span></div>
+    ${t.bloq>0?`<div style="background:var(--ylw-l);border:1px solid var(--ylw-bd);border-radius:var(--r);padding:9px 12px;font-size:11px;color:var(--ylw-d);margin-top:4px">
+      ⚠ Quedan ${fmt(t.bloq)} bloqueados. La constructora ha sido notificada del importe no certificable y los documentos que debe aportar.
+    </div>`:''}`;
+  document.getElementById('modal-validar').classList.add('open');
+}
+function firmar(){
+  closeModal();
+  showToast('✓ Certificación nº 6 firmada — generando PDF...');
+}
+function closeModal(){ document.getElementById('modal-validar').classList.remove('open'); }
+document.addEventListener('click',e=>{if(e.target.classList.contains('overlay'))closeModal();});
+
+// ── ROL ───────────────────────────────────────────────────────────────────────
+function setRol(r,btn){
+  rol=r;
+  document.querySelectorAll('.rol-btn').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  refreshAll();
+}
+
+// ── TOAST ─────────────────────────────────────────────────────────────────────
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  clearTimeout(t._t); t._t=setTimeout(()=>t.classList.remove('show'),2600);
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+renderResumen();
+renderCaps();
+</script>
+</body>
+</html>

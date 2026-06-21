@@ -1,0 +1,964 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AXIS OS — Actas de visita</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#f0f2f5;--surf:#fff;--surf2:#f8fafc;--surf3:#f1f5f9;
+  --bdr:#e2e8f0;--bdr2:#cbd5e1;
+  --ink:#0d1117;--ink2:#1c2433;--ink3:#2d3748;
+  --muted:#64748b;--subtle:#94a3b8;--ghost:#cbd5e1;
+  --blue:#2563eb;--blue-l:#eff6ff;--blue-b:#bfdbfe;--blue-d:#1d4ed8;
+  --grn:#16a34a;--grn-l:#f0fdf4;--grn-b:#bbf7d0;--grn-d:#15803d;
+  --ylw:#ca8a04;--ylw-l:#fefce8;--ylw-b:#fef08a;--ylw-d:#a16207;
+  --red:#dc2626;--red-l:#fef2f2;--red-b:#fecaca;
+  --ora:#ea580c;--ora-l:#fff7ed;--ora-b:#fed7aa;
+  --vio:#7c3aed;--vio-l:#f5f3ff;--vio-b:#ddd6fe;
+  --mono:'JetBrains Mono',monospace;
+  --r:5px;--r2:8px;--r3:12px;
+  --sh:0 1px 2px rgba(0,0,0,.06),0 1px 3px rgba(0,0,0,.08);
+  --sh2:0 4px 12px rgba(0,0,0,.1);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--ink);font-size:13px;line-height:1.5;height:100vh;display:flex;flex-direction:column;overflow:hidden}
+
+/* TOPBAR */
+.topbar{height:48px;background:var(--ink);display:flex;align-items:center;padding:0 20px;gap:14px;flex-shrink:0;border-bottom:1px solid var(--ink2)}
+.logo{font-family:var(--mono);font-size:12px;font-weight:500;letter-spacing:3px;color:#e2e8f0}
+.vr{width:1px;height:18px;background:var(--ink2)}
+.tb-info{font-size:12px;color:var(--muted)}.tb-info strong{color:#94a3b8;font-weight:500}
+.tb-r{margin-left:auto;display:flex;gap:8px;align-items:center}
+.btn{display:inline-flex;align-items:center;gap:5px;padding:6px 13px;border-radius:var(--r);border:1px solid;font-family:'Inter',sans-serif;font-size:12px;font-weight:500;cursor:pointer;transition:all .15s;white-space:nowrap}
+.btn-prim{background:var(--blue);color:#fff;border-color:var(--blue-d)}.btn-prim:hover{background:var(--blue-d)}
+.btn-ghost{background:var(--surf);color:var(--ink2);border-color:var(--bdr)}.btn-ghost:hover{background:var(--surf2)}
+.btn-grn{background:var(--grn);color:#fff;border-color:var(--grn-d)}.btn-grn:hover{background:var(--grn-d)}
+.btn-red{background:var(--red-l);color:var(--red);border-color:var(--red-b)}.btn-red:hover{background:#fecaca}
+.btn-sm{padding:4px 10px;font-size:11px}
+.btn-xs{padding:2px 8px;font-size:10px}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.badge{display:inline-flex;align-items:center;font-size:10px;font-weight:600;padding:2px 7px;border-radius:10px;border:1px solid;white-space:nowrap}
+.b-blue{background:var(--blue-l);color:var(--blue);border-color:var(--blue-b)}
+.b-grn{background:var(--grn-l);color:var(--grn);border-color:var(--grn-b)}
+.b-ylw{background:var(--ylw-l);color:var(--ylw);border-color:var(--ylw-b)}
+.b-red{background:var(--red-l);color:var(--red);border-color:var(--red-b)}
+.b-neu{background:var(--surf3);color:var(--muted);border-color:var(--bdr)}
+.b-vio{background:var(--vio-l);color:var(--vio);border-color:var(--vio-b)}
+.b-ora{background:var(--ora-l);color:var(--ora);border-color:var(--ora-b)}
+
+/* LAYOUT */
+.app{flex:1;display:flex;overflow:hidden}
+
+/* SIDEBAR: actas anteriores */
+.sidebar{width:260px;background:var(--surf);border-right:1px solid var(--bdr);display:flex;flex-direction:column;overflow:hidden;flex-shrink:0}
+.sb-head{padding:12px 14px;border-bottom:1px solid var(--bdr);display:flex;align-items:center;gap:8px}
+.sb-title{font-size:12px;font-weight:700;flex:1}
+.sb-list{flex:1;overflow-y:auto;padding:6px}
+.sb-list::-webkit-scrollbar{width:3px}
+.sb-list::-webkit-scrollbar-thumb{background:var(--bdr);border-radius:3px}
+.acta-item{border:1px solid var(--bdr);border-radius:var(--r2);padding:10px 12px;margin-bottom:5px;cursor:pointer;transition:all .15s}
+.acta-item:hover{border-color:var(--bdr2);box-shadow:var(--sh)}
+.acta-item.active{border-color:var(--blue-b);background:var(--blue-l)}
+.acta-item.nueva{border-color:var(--grn-b);background:var(--grn-l)}
+.ai-top{display:flex;align-items:center;gap:6px;margin-bottom:3px}
+.ai-num{font-family:var(--mono);font-size:11px;font-weight:600;color:var(--blue)}
+.acta-item.nueva .ai-num{color:var(--grn)}
+.ai-fecha{font-size:11px;font-weight:600;flex:1}
+.ai-pts{font-size:10px;color:var(--muted)}
+.ai-estado{flex-shrink:0}
+
+/* MAIN */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+
+/* TABS */
+.tabs-bar{background:var(--surf);border-bottom:1px solid var(--bdr);padding:0 20px;display:flex;align-items:center;gap:0;flex-shrink:0}
+.tab{padding:11px 16px;font-size:12px;font-weight:500;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s;display:flex;align-items:center;gap:6px;white-space:nowrap}
+.tab:hover{color:var(--ink2)}
+.tab.on{color:var(--blue);border-bottom-color:var(--blue)}
+.tab-badge{font-size:9px;font-weight:700;padding:1px 5px;border-radius:10px;background:var(--red-l);color:var(--red);border:1px solid var(--red-b)}
+.tab-sep{flex:1}
+.tab-actions{display:flex;gap:6px;align-items:center;padding:6px 0}
+
+/* CONTENIDO TABS */
+.tab-content{flex:1;overflow:hidden;display:none;flex-direction:column}
+.tab-content.on{display:flex}
+.tab-scroll{flex:1;overflow-y:auto;padding:16px 20px}
+.tab-scroll::-webkit-scrollbar{width:4px}
+.tab-scroll::-webkit-scrollbar-thumb{background:var(--bdr);border-radius:4px}
+
+/* ACTA HEADER */
+.acta-header{background:var(--surf);border-bottom:1px solid var(--bdr);padding:12px 20px;flex-shrink:0}
+.ah-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.ah-num{font-family:var(--mono);font-size:13px;font-weight:600;color:var(--blue)}
+.ah-title{font-size:15px;font-weight:700;flex:1}
+.ah-meta{display:flex;gap:12px;flex-wrap:wrap;margin-top:6px}
+.ah-meta-item{font-size:11px;color:var(--muted);display:flex;align-items:center;gap:4px}
+.ah-meta-item svg{display:block;flex-shrink:0}
+.ah-asistentes{display:flex;gap:5px;flex-wrap:wrap;margin-top:8px}
+.asist-chip{font-size:11px;font-weight:500;padding:2px 10px;border-radius:20px;border:1px solid var(--bdr);background:var(--surf2);color:var(--ink2);display:flex;align-items:center;gap:4px}
+.asist-add{cursor:pointer;color:var(--blue);border-style:dashed}
+.asist-add:hover{background:var(--blue-l)}
+
+/* DISCIPLINA SECTION */
+.disc-section{margin-bottom:16px}
+.disc-header{display:flex;align-items:center;gap:8px;padding:6px 0;margin-bottom:6px;cursor:pointer;user-select:none}
+.disc-toggle{font-size:9px;color:var(--muted);transition:transform .2s;flex-shrink:0}
+.disc-toggle.open{transform:rotate(90deg)}
+.disc-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;flex:1}
+.disc-count{font-family:var(--mono);font-size:10px;color:var(--muted)}
+.disc-body{display:none}
+.disc-body.open{display:flex;flex-direction:column;gap:5px}
+
+/* PUNTO */
+.punto{border:1px solid var(--bdr);border-radius:var(--r2);overflow:hidden;transition:box-shadow .15s}
+.punto:hover{box-shadow:var(--sh)}
+.punto.abierto{border-left:3px solid var(--ylw)}
+.punto.en_curso{border-left:3px solid var(--blue)}
+.punto.cerrado{border-left:3px solid var(--grn);opacity:.7}
+.punto.nuevo{border-left:3px solid var(--vio)}
+.punto.orden{border-left:3px solid var(--ora)}
+.punto-head{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;cursor:pointer;background:var(--surf)}
+.punto-head:hover{background:var(--surf2)}
+.pt-codigo{font-family:var(--mono);font-size:10px;font-weight:600;padding:2px 6px;border-radius:3px;background:var(--surf3);border:1px solid var(--bdr);color:var(--muted);flex-shrink:0;white-space:nowrap}
+.pt-desc{font-size:12px;font-weight:500;flex:1;line-height:1.4;color:var(--ink2)}
+.pt-meta{display:flex;align-items:center;gap:6px;flex-shrink:0;flex-wrap:wrap;justify-content:flex-end}
+.pt-edad{font-size:10px;color:var(--muted);white-space:nowrap}
+.pt-edad.urgente{color:var(--red);font-weight:600}
+.pt-body{display:none;border-top:1px solid var(--bdr);padding:12px 14px;background:var(--surf2);flex-direction:column;gap:10px}
+.pt-body.open{display:flex}
+.pt-historia{display:flex;flex-direction:column;gap:4px;margin-bottom:4px}
+.pt-hist-item{display:flex;gap-8px;font-size:11px;color:var(--muted);padding:4px 0;border-bottom:1px solid var(--bdr);display:flex;align-items:flex-start;gap:8px}
+.pt-hist-item:last-child{border-bottom:none}
+.pt-hist-acta{font-family:var(--mono);font-size:10px;color:var(--blue);flex-shrink:0;min-width:40px}
+.pt-hist-txt{flex:1;line-height:1.4}
+.pt-hist-fecha{font-size:10px;color:var(--ghost);flex-shrink:0;white-space:nowrap}
+.pt-nota-nueva{display:flex;flex-direction:column;gap:6px}
+.pt-nota-label{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+.pt-ta{background:var(--surf);border:1px solid var(--bdr2);border-radius:var(--r);padding:7px 10px;font-family:'Inter',sans-serif;font-size:12px;color:var(--ink);outline:none;width:100%;resize:none;min-height:56px;transition:border-color .15s}
+.pt-ta:focus{border-color:var(--blue)}
+.pt-actions{display:flex;gap:5px;flex-wrap:wrap}
+
+/* NUEVO PUNTO FORM */
+.nuevo-punto-form{background:var(--surf);border:1px dashed var(--bdr2);border-radius:var(--r2);padding:14px;display:none;flex-direction:column;gap:10px}
+.nuevo-punto-form.open{display:flex}
+.npf-row{display:flex;gap:8px}
+.npf-inp{flex:1;background:var(--surf2);border:1px solid var(--bdr2);border-radius:var(--r);padding:7px 10px;font-family:'Inter',sans-serif;font-size:13px;color:var(--ink);outline:none}
+.npf-inp:focus{border-color:var(--blue);background:var(--surf)}
+.npf-inp::placeholder{color:var(--ghost)}
+.npf-sel{background:var(--surf2);border:1px solid var(--bdr2);border-radius:var(--r);padding:7px 10px;font-family:'Inter',sans-serif;font-size:12px;color:var(--ink);outline:none;cursor:pointer}
+.npf-sel:focus{border-color:var(--blue)}
+
+/* TIPO SELECTOR chips */
+.tipo-chips{display:flex;gap:5px;flex-wrap:wrap}
+.tipo-chip{font-size:11px;font-weight:500;padding:4px 11px;border-radius:20px;border:1px solid var(--bdr);background:var(--surf2);color:var(--muted);cursor:pointer;transition:all .15s;user-select:none}
+.tipo-chip:hover{border-color:var(--bdr2)}
+.tipo-chip.on-seguimiento{background:var(--ylw-l);color:var(--ylw-d);border-color:var(--ylw-b)}
+.tipo-chip.on-orden{background:var(--ora-l);color:var(--ora);border-color:var(--ora-b)}
+.tipo-chip.on-anotacion{background:var(--surf3);color:var(--ink2);border-color:var(--bdr2)}
+
+/* GRABACIÓN TAB */
+.grab-wrap{display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding:28px 20px;gap:20px;max-width:680px;margin:0 auto;width:100%}
+.grab-card{background:var(--surf);border:1px solid var(--bdr);border-radius:var(--r3);padding:28px;width:100%;box-shadow:var(--sh)}
+.grab-title{font-size:14px;font-weight:700;margin-bottom:4px}
+.grab-sub{font-size:12px;color:var(--muted);margin-bottom:20px;line-height:1.5}
+.grab-dz{border:2px dashed var(--bdr2);border-radius:var(--r2);padding:28px 20px;text-align:center;cursor:pointer;transition:all .2s;background:var(--surf2)}
+.grab-dz:hover,.grab-dz.drag{border-color:var(--blue);background:var(--blue-l)}
+.grab-dz-icon{margin-bottom:10px;color:var(--ghost)}
+.grab-dz-icon svg{display:block;margin:0 auto}
+.grab-dz-txt{font-size:13px;font-weight:500;color:var(--ink2)}
+.grab-dz-sub{font-size:11px;color:var(--muted);margin-top:4px}
+.grab-formats{display:flex;gap:6px;justify-content:center;margin-top:10px}
+.fmt{font-family:var(--mono);font-size:10px;padding:2px 7px;border-radius:3px;background:var(--surf3);border:1px solid var(--bdr);color:var(--muted)}
+.grab-file{background:var(--grn-l);border:1px solid var(--grn-b);border-radius:var(--r);padding:10px 14px;display:none;align-items:center;gap:10px}
+.grab-file.show{display:flex}
+.grab-file-name{font-family:var(--mono);font-size:11px;color:var(--grn-d);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* Progreso análisis IA */
+.ia-progress{display:none;flex-direction:column;gap:14px}
+.ia-progress.show{display:flex}
+.ia-step{display:flex;align-items:center;gap:12px;padding:10px 12px;background:var(--surf2);border:1px solid var(--bdr);border-radius:var(--r)}
+.ia-step.done{background:var(--grn-l);border-color:var(--grn-b)}
+.ia-step.running{background:var(--blue-l);border-color:var(--blue-b)}
+.ia-step-icon{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:13px}
+.ia-step.done .ia-step-icon{background:var(--grn);color:#fff}
+.ia-step.running .ia-step-icon{background:var(--blue);color:#fff;animation:pulsefade 1s infinite}
+.ia-step.pend .ia-step-icon{background:var(--surf3);color:var(--muted)}
+@keyframes pulsefade{0%,100%{opacity:1}50%{opacity:.5}}
+.ia-step-info{flex:1}
+.ia-step-lbl{font-size:12px;font-weight:600}
+.ia-step-sub{font-size:11px;color:var(--muted)}
+.ia-step-badge{flex-shrink:0}
+
+/* RESULTADO IA */
+.ia-resultado{display:none;flex-direction:column;gap:14px}
+.ia-resultado.show{display:flex}
+.ia-seccion{background:var(--surf);border:1px solid var(--bdr);border-radius:var(--r2);overflow:hidden}
+.ia-sec-head{padding:10px 14px;border-bottom:1px solid var(--bdr);background:var(--surf2);display:flex;align-items:center;gap:8px}
+.ia-sec-title{font-size:12px;font-weight:700;flex:1}
+.ia-sec-n{font-family:var(--mono);font-size:11px;color:var(--muted)}
+.ia-prop{display:flex;align-items:flex-start;gap:10px;padding:9px 14px;border-bottom:1px solid var(--surf3);transition:background .1s}
+.ia-prop:last-child{border-bottom:none}
+.ia-prop-check{flex-shrink:0;margin-top:2px;accent-color:var(--blue);width:14px;height:14px;cursor:pointer}
+.ia-prop-body{flex:1}
+.ia-prop-txt{font-size:12px;font-weight:500;line-height:1.4;color:var(--ink2)}
+.ia-prop-meta{display:flex;gap:6px;margin-top:4px;flex-wrap:wrap;align-items:center}
+.ia-prop-speaker{font-size:10px;font-weight:600;color:var(--blue)}
+.ia-prop-conf{font-size:10px;color:var(--muted)}
+.ia-prop-actions{flex-shrink:0;display:flex;gap:4px}
+
+/* Transcripción */
+.transcripcion-wrap{background:var(--surf);border:1px solid var(--bdr);border-radius:var(--r2);overflow:hidden}
+.trans-head{padding:10px 14px;border-bottom:1px solid var(--bdr);background:var(--surf2);display:flex;align-items:center;gap:8px}
+.trans-body{padding:14px;max-height:240px;overflow-y:auto;font-size:12px;line-height:1.7;color:var(--ink2)}
+.trans-body::-webkit-scrollbar{width:3px}
+.trans-body::-webkit-scrollbar-thumb{background:var(--bdr);border-radius:3px}
+.trans-line{margin-bottom:6px}
+.trans-speaker{font-weight:700;color:var(--blue)}
+.trans-speaker.sp2{color:var(--vio)}
+.trans-speaker.sp3{color:var(--grn)}
+.trans-speaker.sp4{color:var(--ora)}
+
+/* HISTORIAL TAB */
+.hist-list{display:flex;flex-direction:column;gap:8px}
+.hist-acta{background:var(--surf);border:1px solid var(--bdr);border-radius:var(--r2);overflow:hidden;cursor:pointer;transition:all .15s}
+.hist-acta:hover{border-color:var(--bdr2);box-shadow:var(--sh)}
+.ha-head{padding:11px 14px;display:flex;align-items:center;gap:10px}
+.ha-num{font-family:var(--mono);font-size:11px;font-weight:600;color:var(--blue);flex-shrink:0;min-width:36px}
+.ha-fecha{font-size:13px;font-weight:600;flex:1}
+.ha-temas{font-size:11px;color:var(--muted);flex:1}
+.ha-stats{display:flex;gap:8px;flex-shrink:0}
+.ha-stat{font-size:10px;color:var(--muted);font-family:var(--mono)}
+
+/* Modal */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:200;display:none;align-items:center;justify-content:center;backdrop-filter:blur(3px)}
+.overlay.open{display:flex}
+.modal{background:var(--surf);border:1px solid var(--bdr);border-radius:var(--r2);width:480px;max-height:85vh;display:flex;flex-direction:column;box-shadow:var(--sh2)}
+.modal-head{padding:14px 18px;border-bottom:1px solid var(--bdr);display:flex;align-items:center;gap:10px}
+.modal-title{font-size:14px;font-weight:700;flex:1}
+.modal-x{background:none;border:none;color:var(--muted);cursor:pointer;font-size:18px;line-height:1}
+.modal-x:hover{color:var(--ink)}
+.modal-body{padding:18px;overflow-y:auto;flex:1;display:flex;flex-direction:column;gap:12px}
+.modal-foot{padding:12px 18px;border-top:1px solid var(--bdr);display:flex;gap:8px;justify-content:flex-end}
+.fg{display:flex;flex-direction:column;gap:5px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.lbl{font-size:11px;font-weight:600;color:var(--muted)}
+.inp,.sel,.ta{background:var(--surf2);border:1px solid var(--bdr2);border-radius:var(--r);padding:7px 10px;font-family:'Inter',sans-serif;font-size:13px;color:var(--ink);outline:none;width:100%;transition:border-color .15s}
+.inp:focus,.sel:focus,.ta:focus{border-color:var(--blue);background:var(--surf)}
+.ta{resize:vertical;min-height:72px}
+
+/* Toast */
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--ink);color:#e2e8f0;padding:8px 18px;border-radius:var(--r);font-size:12px;font-weight:500;z-index:500;display:none;box-shadow:var(--sh2)}
+.toast.show{display:block;animation:tin .2s}
+@keyframes tin{from{opacity:0;transform:translateX(-50%) translateY(8px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="logo">AXIS OS</div>
+  <div class="vr"></div>
+  <div class="tb-info">Actas de visita · <strong>FLEXLIVING 417 LAS ROZAS</strong></div>
+  <div class="tb-r">
+    <button class="btn btn-ghost btn-sm" onclick="openModal('modal-nueva-acta')">
+      <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+      Nueva acta
+    </button>
+  </div>
+</header>
+
+<div class="app">
+
+  <!-- SIDEBAR: lista de actas -->
+  <div class="sidebar">
+    <div class="sb-head">
+      <span class="sb-title">Actas</span>
+      <span class="badge b-neu">12 total</span>
+    </div>
+    <div class="sb-list" id="actas-list"></div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main">
+
+    <!-- Acta header -->
+    <div class="acta-header" id="acta-header"></div>
+
+    <!-- Tabs -->
+    <div class="tabs-bar">
+      <div class="tab on" id="tab-puntos"   onclick="setTab('puntos')">Puntos de la visita <span class="tab-badge" id="tab-puntos-badge">8</span></div>
+      <div class="tab"    id="tab-grabacion" onclick="setTab('grabacion')">
+        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2M12 19v4M8 23h8"/></svg>
+        Grabación e IA
+      </div>
+      <div class="tab"    id="tab-historial" onclick="setTab('historial')">Historial</div>
+      <div class="tab-sep"></div>
+      <div class="tab-actions" id="tab-actions"></div>
+    </div>
+
+    <!-- TAB: PUNTOS -->
+    <div class="tab-content on" id="tc-puntos">
+      <div class="tab-scroll" id="puntos-scroll"></div>
+    </div>
+
+    <!-- TAB: GRABACIÓN -->
+    <div class="tab-content" id="tc-grabacion">
+      <div class="tab-scroll">
+        <div class="grab-wrap" id="grab-wrap"></div>
+      </div>
+    </div>
+
+    <!-- TAB: HISTORIAL -->
+    <div class="tab-content" id="tc-historial">
+      <div class="tab-scroll">
+        <div class="hist-list" id="hist-list"></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- MODAL NUEVA ACTA -->
+<div class="overlay" id="modal-nueva-acta">
+  <div class="modal">
+    <div class="modal-head"><span class="modal-title">Nueva acta de visita</span><button class="modal-x" onclick="closeModal('modal-nueva-acta')">×</button></div>
+    <div class="modal-body">
+      <div class="g2">
+        <div class="fg"><label class="lbl">Fecha <span style="color:var(--red)">*</span></label><input class="inp" type="date" id="na-fecha"></div>
+        <div class="fg"><label class="lbl">Hora inicio</label><input class="inp" type="time" id="na-hora" value="10:00"></div>
+      </div>
+      <div class="fg"><label class="lbl">Lugar</label><input class="inp" id="na-lugar" placeholder="Obra · Sala de reuniones · ..."></div>
+      <div class="fg">
+        <label class="lbl">Asistentes</label>
+        <div style="display:flex;flex-wrap:wrap;gap:5px;padding:8px;border:1px solid var(--bdr2);border-radius:var(--r);background:var(--surf2)" id="asist-select">
+          ${['Ana García (DEO)','Carlos Martín (JO)','Luis Pérez (Promotor)','María Sanz (DO)','Pedro Ruiz (Inst.)'].map((a,i)=>`
+            <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer;padding:3px 0;width:48%">
+              <input type="checkbox" ${i<2?'checked':''} style="accent-color:var(--blue)"> ${a}
+            </label>`).join('')}
+        </div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost btn-sm" onclick="closeModal('modal-nueva-acta')">Cancelar</button>
+      <button class="btn btn-grn btn-sm" onclick="crearActa()">Crear acta y abrir</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL NUEVO PUNTO MANUAL -->
+<div class="overlay" id="modal-punto">
+  <div class="modal">
+    <div class="modal-head"><span class="modal-title" id="modal-punto-title">Nuevo punto</span><button class="modal-x" onclick="closeModal('modal-punto')">×</button></div>
+    <div class="modal-body">
+      <div class="fg">
+        <label class="lbl">Tipo de punto</label>
+        <div class="tipo-chips" id="tipo-chips-modal">
+          <span class="tipo-chip" data-tipo="anotacion" onclick="selTipo(this,'anotacion')">Anotación</span>
+          <span class="tipo-chip on-seguimiento" data-tipo="seguimiento" onclick="selTipo(this,'seguimiento')">Seguimiento</span>
+          <span class="tipo-chip" data-tipo="orden" onclick="selTipo(this,'orden')">Orden de obra</span>
+        </div>
+      </div>
+      <div class="fg">
+        <label class="lbl">Disciplina</label>
+        <select class="sel" id="mp-disc">
+          <option>Arquitectura</option><option>Estructuras</option>
+          <option>MEP / Instalaciones</option><option>Fachada</option>
+          <option>Seguridad y Salud</option><option>General</option>
+        </select>
+      </div>
+      <div class="fg">
+        <label class="lbl">Descripción <span style="color:var(--red)">*</span></label>
+        <textarea class="ta" id="mp-desc" placeholder="Describe el punto tratado..."></textarea>
+      </div>
+      <div class="g2" id="mp-orden-fields" style="display:none">
+        <div class="fg"><label class="lbl">Destinatario</label>
+          <select class="sel" id="mp-dest"><option>Const. Martínez S.L.</option><option>Instalaciones XYZ</option><option>DEO</option></select>
+        </div>
+        <div class="fg"><label class="lbl">Plazo</label><input class="inp" type="date" id="mp-plazo"></div>
+      </div>
+      <div class="fg" id="mp-resp-field">
+        <label class="lbl">Responsable seguimiento</label>
+        <select class="sel" id="mp-resp"><option>Const. Martínez S.L.</option><option>DEO</option><option>Promotor</option></select>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost btn-sm" onclick="closeModal('modal-punto')">Cancelar</button>
+      <button class="btn btn-prim btn-sm" onclick="guardarPunto()">Añadir punto</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast-el"></div>
+
+<script>
+// ── DATOS ─────────────────────────────────────────────────────────────────────
+
+// Puntos de seguimiento vivos (persistentes entre actas)
+let PUNTOS = [
+  {id:'pt1',codigo:'PT-001',disc:'Estructuras',tipo:'seguimiento',estado:'abierto',
+   desc:'Armado incorrecto en pilar P-12 según planos. Constructora debe presentar propuesta de reparación.',
+   responsable:'Const. Martínez S.L.',plazo:'2024-11-25',
+   historia:[
+     {acta:'#009',fecha:'30/10',txt:'Se detecta el problema durante visita. Se solicita propuesta de reparación.'},
+     {acta:'#010',fecha:'06/11',txt:'Constructora presenta propuesta. DEO la estudia.'},
+     {acta:'#011',fecha:'13/11',txt:'DEO aprueba la propuesta con modificaciones. Plazo de ejecución: 25/11.'},
+   ],
+   notaHoy:'',diasAbierto:21},
+
+  {id:'pt2',codigo:'PT-002',disc:'MEP / Instalaciones',tipo:'seguimiento',estado:'abierto',
+   desc:'Documentación eléctrica incompleta bloquea certificación. DoP cable rechazado, pendiente nueva versión.',
+   responsable:'Const. Martínez S.L.',plazo:'2024-11-22',
+   historia:[
+     {acta:'#010',fecha:'06/11',txt:'Se detecta falta de documentación en electricidad.'},
+     {acta:'#011',fecha:'13/11',txt:'Constructora sube DoP pero está rechazada por falta de firma.'},
+   ],
+   notaHoy:'',diasAbierto:14},
+
+  {id:'pt3',codigo:'PT-003',disc:'Arquitectura',tipo:'seguimiento',estado:'abierto',
+   desc:'Replanteo tabiquería PB desviado 3cm respecto a planos. Pendiente corrección antes de continuar.',
+   responsable:'Const. Martínez S.L.',plazo:'2024-11-20',
+   historia:[
+     {acta:'#011',fecha:'13/11',txt:'Se detecta desviación en replanteo. Se para la ejecución hasta corrección.'},
+   ],
+   notaHoy:'',diasAbierto:7},
+
+  {id:'pt4',codigo:'PT-004',disc:'Arquitectura',tipo:'orden',estado:'abierto',
+   desc:'OO-018 — Ejecución tabique tipo T1 en zona húmeda según especificaciones DEO. Antes de iniciar se requiere orden previa.',
+   responsable:'Const. Martínez S.L.',plazo:'2024-11-28',
+   historia:[
+     {acta:'#011',fecha:'13/11',txt:'Se emite orden previa al inicio de tabiquería planta baja.'},
+   ],
+   notaHoy:'',diasAbierto:7},
+
+  {id:'pt5',codigo:'PT-005',disc:'MEP / Instalaciones',tipo:'seguimiento',estado:'abierto',
+   desc:'Rotura tubería saneamiento colgado fase 2. Pendiente reparación y prueba de estanqueidad.',
+   responsable:'Const. Martínez S.L.',plazo:'2024-11-23',
+   historia:[
+     {acta:'#011',fecha:'13/11',txt:'Se detecta rotura durante visita. Se paraliza la zona afectada.'},
+   ],
+   notaHoy:'',diasAbierto:7},
+
+  {id:'pt6',codigo:'PT-006',disc:'Seguridad y Salud',tipo:'seguimiento',estado:'abierto',
+   desc:'Falta documentación EPI actualizada en obra. Plan de seguridad pendiente de aprobación por CSS.',
+   responsable:'Const. Martínez S.L.',plazo:'2024-11-21',
+   historia:[
+     {acta:'#012',fecha:'20/11',txt:'CSS detecta falta de documentación EPI en acceso a obra.'},
+   ],
+   notaHoy:'',diasAbierto:0},
+];
+
+const ACTAS_HIST = [
+  {num:'#012',fecha:'20/11/2024',asistentes:['Ana García (DEO)','Carlos Martín (JO)','Luis Pérez (Promotor)'],temas:'Instalaciones, carpintería, SS',estado:'borrador',pts:6,oos:2},
+  {num:'#011',fecha:'13/11/2024',asistentes:['Ana García (DEO)','Carlos Martín (JO)','María Sanz (DO)'],temas:'Estructura, cubierta, tabiquería',estado:'firmada',pts:5,oos:3},
+  {num:'#010',fecha:'06/11/2024',asistentes:['Ana García (DEO)','Carlos Martín (JO)'],temas:'Tabiquería, yeso, documentación',estado:'firmada',pts:4,oos:1},
+  {num:'#009',fecha:'30/10/2024',asistentes:['Ana García (DEO)','Carlos Martín (JO)','Luis Pérez (Promotor)'],temas:'Certificación octubre, estructura',estado:'firmada',pts:7,oos:4},
+  {num:'#008',fecha:'23/10/2024',asistentes:['Ana García (DEO)','Carlos Martín (JO)'],temas:'Cimentación, instalaciones',estado:'firmada',pts:3,oos:2},
+];
+
+const DISC_ORDEN = ['Estructuras','Arquitectura','MEP / Instalaciones','Fachada','Seguridad y Salud','General'];
+
+let actaActual = {num:'#012',fecha:'20/11/2024',lugar:'Obra',hora:'10:00',
+  asistentes:['Ana García (DEO)','Carlos Martín (JO)','Luis Pérez (Promotor)'],estado:'borrador'};
+let tipoSeleccionado = 'seguimiento';
+let expandedPuntos = new Set(['pt1']);
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+function init() {
+  renderSidebar();
+  renderActaHeader();
+  renderPuntos();
+  renderGrabacion();
+  renderHistorial();
+  renderTabActions('puntos');
+}
+
+// ── SIDEBAR ───────────────────────────────────────────────────────────────────
+function renderSidebar() {
+  const list = document.getElementById('actas-list');
+  // Acta actual (borrador)
+  list.innerHTML = `
+    <div class="acta-item nueva active">
+      <div class="ai-top">
+        <span class="ai-num">#012</span>
+        <span class="ai-fecha">20/11/2024</span>
+        <span class="ai-estado"><span class="badge b-ylw">Borrador</span></span>
+      </div>
+      <div class="ai-pts">${PUNTOS.filter(p=>p.estado==='abierto').length} puntos abiertos · En curso</div>
+    </div>`;
+  // Historial
+  ACTAS_HIST.slice(1).forEach(a => {
+    list.innerHTML += `
+      <div class="acta-item" onclick="toast('Acta ${a.num} — ${a.fecha} (firmada)')">
+        <div class="ai-top">
+          <span class="ai-num">${a.num}</span>
+          <span class="ai-fecha">${a.fecha}</span>
+          <span class="ai-estado"><span class="badge b-grn">✓</span></span>
+        </div>
+        <div class="ai-pts">${a.pts} puntos · ${a.oos} órdenes</div>
+      </div>`;
+  });
+}
+
+// ── ACTA HEADER ───────────────────────────────────────────────────────────────
+function renderActaHeader() {
+  document.getElementById('acta-header').innerHTML = `
+    <div class="ah-row">
+      <span class="ah-num">ACTA #012</span>
+      <span class="ah-title">Visita de obra — ${actaActual.fecha}</span>
+      <span class="badge b-ylw">Borrador</span>
+    </div>
+    <div class="ah-meta">
+      <span class="ah-meta-item">
+        <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        ${actaActual.hora}
+      </span>
+      <span class="ah-meta-item">
+        <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        ${actaActual.lugar}
+      </span>
+    </div>
+    <div class="ah-asistentes">
+      ${actaActual.asistentes.map(a=>`<span class="asist-chip">${a}</span>`).join('')}
+      <span class="asist-chip asist-add" onclick="toast('Añadir asistente')">
+        <svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+        Añadir
+      </span>
+    </div>`;
+}
+
+// ── PUNTOS ────────────────────────────────────────────────────────────────────
+function renderPuntos() {
+  const scroll = document.getElementById('puntos-scroll');
+
+  // Agrupar por disciplina, ordenar por antigüedad dentro de cada grupo
+  const porDisc = {};
+  PUNTOS.filter(p=>p.estado!=='cerrado').forEach(p => {
+    if (!porDisc[p.disc]) porDisc[p.disc] = [];
+    porDisc[p.disc].push(p);
+  });
+  // Ordenar dentro de cada disciplina por días abierto (desc = más antiguos primero)
+  Object.keys(porDisc).forEach(d => {
+    porDisc[d].sort((a,b)=>b.diasAbierto-a.diasAbierto);
+  });
+
+  // Orden de disciplinas
+  const discsOrdenadas = DISC_ORDEN.filter(d=>porDisc[d]);
+
+  const abiertos = PUNTOS.filter(p=>p.estado==='abierto').length;
+  document.getElementById('tab-puntos-badge').textContent = abiertos;
+
+  scroll.innerHTML = `
+    <!-- Puntos pendientes -->
+    ${discsOrdenadas.map(disc => `
+      <div class="disc-section">
+        <div class="disc-header" onclick="toggleDisc('disc-${disc.replace(/\W/g,'_')}',this)">
+          <span class="disc-toggle open">▶</span>
+          <span class="disc-label" style="color:${discColor(disc)}">${disc}</span>
+          <span class="disc-count">${porDisc[disc].length} punto${porDisc[disc].length>1?'s':''}</span>
+        </div>
+        <div class="disc-body open" id="disc-${disc.replace(/\W/g,'_')}">
+          ${porDisc[disc].map(p=>puntoHTML(p)).join('')}
+        </div>
+      </div>`).join('')}
+
+    <!-- Añadir nuevo punto -->
+    <div style="border-top:1px solid var(--bdr);padding-top:14px;margin-top:6px">
+      <button class="btn btn-ghost btn-sm" onclick="openModal('modal-punto')" style="width:100%;justify-content:center;border-style:dashed">
+        <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+        Añadir punto
+      </button>
+    </div>
+
+    <!-- Puntos cerrados hoy -->
+    ${PUNTOS.filter(p=>p.estado==='cerrado').length>0?`
+    <div style="margin-top:20px;padding-top:14px;border-top:1px solid var(--bdr)">
+      <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Cerrados en esta acta</div>
+      ${PUNTOS.filter(p=>p.estado==='cerrado').map(p=>`
+        <div class="punto cerrado">
+          <div class="punto-head">
+            <span class="pt-codigo">${p.codigo}</span>
+            <span class="pt-desc" style="text-decoration:line-through;opacity:.6">${p.desc}</span>
+            <div class="pt-meta"><span class="badge b-grn">✓ Cerrado</span></div>
+          </div>
+        </div>`).join('')}
+    </div>`:''}`;
+}
+
+function puntoHTML(p) {
+  const tipoCls = {seguimiento:'abierto',orden:'orden',anotacion:'nuevo'}[p.tipo]||'abierto';
+  const tipoBadge = {
+    seguimiento:`<span class="badge b-ylw">Seguimiento</span>`,
+    orden:`<span class="badge b-ora">Orden obra</span>`,
+    anotacion:`<span class="badge b-neu">Anotación</span>`,
+  }[p.tipo]||'';
+  const edadCls = p.diasAbierto > 14 ? 'urgente' : '';
+  const edadTxt = p.diasAbierto === 0 ? 'Hoy' : `${p.diasAbierto}d`;
+  const isOpen = expandedPuntos.has(p.id);
+
+  return `<div class="punto ${tipoCls}" id="punto-${p.id}">
+    <div class="punto-head" onclick="togglePunto('${p.id}')">
+      <span class="pt-codigo">${p.codigo}</span>
+      <span class="pt-desc">${p.desc}</span>
+      <div class="pt-meta">
+        ${tipoBadge}
+        <span class="pt-edad ${edadCls}">${edadTxt}</span>
+        ${p.plazo?`<span style="font-size:10px;color:var(--muted)">· ${p.plazo.slice(5).replace('-','/')}</span>`:''}
+      </div>
+    </div>
+    <div class="pt-body${isOpen?' open':''}" id="pt-body-${p.id}">
+      <!-- Historial -->
+      ${p.historia.length?`
+      <div>
+        <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px">Historial</div>
+        <div class="pt-historia">
+          ${p.historia.map(h=>`
+            <div class="pt-hist-item">
+              <span class="pt-hist-acta">${h.acta}</span>
+              <span class="pt-hist-txt">${h.txt}</span>
+              <span class="pt-hist-fecha">${h.fecha}</span>
+            </div>`).join('')}
+        </div>
+      </div>`:''}
+      <!-- Nota de hoy -->
+      <div class="pt-nota-nueva">
+        <div class="pt-nota-label">Nota en esta acta</div>
+        <textarea class="pt-ta" id="nota-${p.id}" placeholder="¿Qué se trató hoy sobre este punto?"
+          oninput="updateNota('${p.id}',this.value)">${p.notaHoy}</textarea>
+      </div>
+      <!-- Acciones -->
+      <div class="pt-actions">
+        ${p.estado!=='cerrado'?`
+          <button class="btn btn-grn btn-xs" onclick="cerrarPunto('${p.id}')">✓ Cerrar punto</button>
+          ${p.tipo!=='orden'?`<button class="btn btn-ghost btn-xs" onclick="convertirOrden('${p.id}')">→ Convertir a orden</button>`:''}
+          <button class="btn btn-ghost btn-xs" onclick="toast('Asignar responsable')">Responsable: ${p.responsable}</button>
+        `:''}
+      </div>
+    </div>
+  </div>`;
+}
+
+function discColor(disc) {
+  const map = {
+    'Estructuras':'var(--blue)','Arquitectura':'var(--ink2)',
+    'MEP / Instalaciones':'var(--ora)','Fachada':'var(--vio)',
+    'Seguridad y Salud':'var(--red)','General':'var(--muted)',
+  };
+  return map[disc]||'var(--muted)';
+}
+
+function toggleDisc(id, header) {
+  const body = document.getElementById(id);
+  const tog  = header.querySelector('.disc-toggle');
+  const open = body.classList.toggle('open');
+  tog.classList.toggle('open',open);
+}
+
+function togglePunto(id) {
+  if (expandedPuntos.has(id)) expandedPuntos.delete(id);
+  else expandedPuntos.add(id);
+  const body = document.getElementById(`pt-body-${id}`);
+  if (body) body.classList.toggle('open', expandedPuntos.has(id));
+}
+
+function updateNota(id, val) {
+  const p = PUNTOS.find(x=>x.id===id);
+  if (p) p.notaHoy = val;
+}
+
+function cerrarPunto(id) {
+  const p = PUNTOS.find(x=>x.id===id);
+  if (!p) return;
+  const nota = document.getElementById(`nota-${id}`)?.value.trim();
+  p.estado = 'cerrado';
+  if (nota) p.historia.push({acta:'#012',fecha:'20/11',txt:nota+' — CERRADO'});
+  renderPuntos();
+  toast(`✓ ${p.codigo} cerrado en esta acta`);
+}
+
+function convertirOrden(id) {
+  const p = PUNTOS.find(x=>x.id===id);
+  if (!p) return;
+  p.tipo = 'orden';
+  renderPuntos();
+  toast(`${p.codigo} → Convertido a orden de obra`);
+}
+
+// ── NUEVO PUNTO MODAL ─────────────────────────────────────────────────────────
+function selTipo(el, tipo) {
+  tipoSeleccionado = tipo;
+  document.querySelectorAll('#tipo-chips-modal .tipo-chip').forEach(c=>{
+    c.className = 'tipo-chip';
+    if (c.dataset.tipo===tipo) c.className = `tipo-chip on-${tipo}`;
+  });
+  document.getElementById('mp-orden-fields').style.display = tipo==='orden'?'grid':'none';
+  document.getElementById('mp-resp-field').style.display   = tipo==='anotacion'?'none':'block';
+}
+
+function guardarPunto() {
+  const desc = document.getElementById('mp-desc').value.trim();
+  if (!desc) { toast('Describe el punto'); return; }
+  const disc = document.getElementById('mp-disc').value;
+  const n = PUNTOS.length+1;
+  const nuevo = {
+    id: 'pt'+Date.now(), codigo:`PT-0${n.toString().padStart(2,'0')}`,
+    disc, tipo:tipoSeleccionado, estado:'abierto',
+    desc, responsable: document.getElementById('mp-resp')?.value||'',
+    plazo: document.getElementById('mp-plazo')?.value||'',
+    historia:[], notaHoy:'', diasAbierto:0,
+  };
+  PUNTOS.push(nuevo);
+  expandedPuntos.add(nuevo.id);
+  closeModal('modal-punto');
+  renderPuntos();
+  toast(`✓ ${nuevo.codigo} añadido`);
+  document.getElementById('mp-desc').value='';
+}
+
+// ── GRABACIÓN ─────────────────────────────────────────────────────────────────
+let grabFile = null;
+let grabAnalysisState = 'idle'; // idle | uploading | transcribing | analyzing | done
+
+function renderGrabacion() {
+  const wrap = document.getElementById('grab-wrap');
+  wrap.innerHTML = `
+    <!-- Upload card -->
+    <div class="grab-card">
+      <div class="grab-title">Transcripción e IA</div>
+      <div class="grab-sub">Sube la grabación de la visita. Whisper transcribirá el audio e identificará los participantes. Claude estructurará los puntos y propuestas automáticamente.</div>
+
+      <div class="grab-dz${grabFile?' ':''}${grabAnalysisState!=='idle'?' ':''}${grabAnalysisState==='idle'?'':' '}"
+        id="grab-dz"
+        style="${grabAnalysisState!=='idle'?'display:none':''}"
+        ondragover="event.preventDefault();this.classList.add('drag')"
+        ondragleave="this.classList.remove('drag')"
+        ondrop="handleGrabDrop(event)"
+        onclick="document.getElementById('grab-fi').click()">
+        <input type="file" id="grab-fi" accept=".mp3,.mp4,.m4a,.wav,.ogg,.webm" style="display:none" onchange="handleGrabFile(this)">
+        <div class="grab-dz-icon">
+          <svg width="36" height="36" fill="none" stroke="currentColor" stroke-width="1" viewBox="0 0 24 24"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2M12 19v4M8 23h8"/></svg>
+        </div>
+        <div class="grab-dz-txt">Arrastra el audio o haz clic para seleccionar</div>
+        <div class="grab-dz-sub">Grabación de la visita de obra · Grabador móvil, Teams, Zoom...</div>
+        <div class="grab-formats">
+          <span class="fmt">.mp3</span><span class="fmt">.m4a</span>
+          <span class="fmt">.wav</span><span class="fmt">.mp4</span>
+        </div>
+      </div>
+
+      <div class="grab-file${grabFile?' show':''}" id="grab-file-preview">
+        <svg width="16" height="16" fill="none" stroke="var(--grn)" stroke-width="1.5" viewBox="0 0 24 24"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/></svg>
+        <span class="grab-file-name" id="grab-file-name">${grabFile?.name||''}</span>
+        ${grabAnalysisState==='idle'?`<button class="btn btn-ghost btn-sm" onclick="clearGrab()">Quitar</button>
+        <button class="btn btn-prim btn-sm" onclick="startAnalysis()">Analizar con IA</button>`:''}
+      </div>
+    </div>
+
+    <!-- Progress -->
+    <div class="grab-card ia-progress${grabAnalysisState!=='idle'?' show':''}" id="ia-progress" style="width:100%">
+      ${[
+        {id:'step-upload',lbl:'Subiendo audio',sub:'Enviando el archivo al servidor...'},
+        {id:'step-trans', lbl:'Transcribiendo',sub:'Whisper convirtiendo audio a texto...'},
+        {id:'step-speak', lbl:'Identificando participantes',sub:'Diarization — detectando quién habla...'},
+        {id:'step-ia',    lbl:'Analizando con IA',sub:'Claude estructurando puntos y propuestas...'},
+      ].map((s,i)=>`
+        <div class="ia-step pend" id="${s.id}">
+          <div class="ia-step-icon">${i+1}</div>
+          <div class="ia-step-info">
+            <div class="ia-step-lbl">${s.lbl}</div>
+            <div class="ia-step-sub">${s.sub}</div>
+          </div>
+          <div class="ia-step-badge"></div>
+        </div>`).join('')}
+    </div>
+
+    <!-- Resultado IA -->
+    <div class="ia-resultado${grabAnalysisState==='done'?' show':''}" id="ia-resultado" style="width:100%">
+      <!-- Transcripción -->
+      <div class="ia-seccion">
+        <div class="ia-sec-head">
+          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+          <span class="ia-sec-title">Transcripción</span>
+          <span class="ia-sec-n">3 participantes · ~42 min</span>
+        </div>
+        <div class="trans-body">
+          ${[
+            {sp:'Ana García (DEO)',cls:'',txt:'Buenos días a todos. Vamos a repasar los puntos del acta anterior y novedades de esta semana.'},
+            {sp:'Carlos Martín (JO)',cls:'sp2',txt:'El replanteo de la tabiquería en planta baja ya está corregido. El encargado lo revisó el martes.'},
+            {sp:'Ana García (DEO)',cls:'',txt:'Bien, lo verificaré hoy. Carlos, ¿qué hay del pilar P-12? ¿Ha empezado la reparación?'},
+            {sp:'Carlos Martín (JO)',cls:'sp2',txt:'Empezamos mañana. El ferralla llega esta tarde con el material.'},
+            {sp:'Luis Pérez (Promotor)',cls:'sp3',txt:'¿Y la documentación eléctrica? Me preocupa que siga bloqueando la certificación.'},
+            {sp:'Ana García (DEO)',cls:'',txt:'La nueva versión del DoP del cable llega esta semana, según nos confirmó el instalador. Si no llega antes del viernes generamos una incidencia formal.'},
+            {sp:'Carlos Martín (JO)',cls:'sp2',txt:'También hay una rotura en el saneamiento colgado de la fase 2. La estamos reparando hoy.'},
+            {sp:'Ana García (DEO)',cls:'',txt:'Necesito ver la reparación antes de cubrirla. Que me avisen cuando esté lista para inspección.'},
+          ].map(l=>`<div class="trans-line"><span class="trans-speaker ${l.cls}">${l.sp}:</span> ${l.txt}</div>`).join('')}
+        </div>
+      </div>
+
+      <!-- Propuestas IA -->
+      <div class="ia-seccion">
+        <div class="ia-sec-head">
+          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          <span class="ia-sec-title">Propuestas IA</span>
+          <span class="ia-sec-n">8 puntos detectados</span>
+        </div>
+        ${[
+          {tipo:'b-grn',tipoTxt:'Cierre',speaker:'Carlos Martín (JO) + Ana García (DEO)',txt:'PT-003 Replanteo tabiquería PB — corregido según confirma JO. Pendiente verificación DEO in situ.',conf:'94%',check:true},
+          {tipo:'b-ylw',tipoTxt:'Actualización',speaker:'Carlos Martín (JO)',txt:'PT-001 Pilar P-12 — inicio de reparación mañana, ferralla llega esta tarde.',conf:'91%',check:true},
+          {tipo:'b-ylw',tipoTxt:'Actualización',speaker:'Ana García (DEO)',txt:'PT-002 Documentación eléctrica — nueva versión DoP esperada antes del viernes. Si no llega, incidencia formal.',conf:'88%',check:true},
+          {tipo:'b-ora',tipoTxt:'Nueva orden',speaker:'Ana García (DEO)',txt:'Inspección de reparación saneamiento fase 2 antes de cubrirla. Constructora debe avisar al DEO.',conf:'97%',check:false},
+          {tipo:'b-red',tipoTxt:'Nueva incidencia',speaker:'Carlos Martín (JO)',txt:'Rotura tubería saneamiento colgado fase 2. En reparación actualmente.',conf:'99%',check:false},
+          {tipo:'b-neu',tipoTxt:'Anotación',speaker:'Luis Pérez (Promotor)',txt:'Promotor traslada preocupación por bloqueo de certificación por documentación eléctrica.',conf:'82%',check:false},
+        ].map(p=>`
+          <div class="ia-prop">
+            <input type="checkbox" class="ia-prop-check" ${p.check?'checked':''}>
+            <div class="ia-prop-body">
+              <div class="ia-prop-txt">${p.txt}</div>
+              <div class="ia-prop-meta">
+                <span class="badge ${p.tipo}" style="font-size:9px">${p.tipoTxt}</span>
+                <span class="ia-prop-speaker">${p.speaker}</span>
+                <span class="ia-prop-conf">Confianza: ${p.conf}</span>
+              </div>
+            </div>
+            <div class="ia-prop-actions">
+              <button class="btn btn-ghost btn-xs" onclick="toast('Editando propuesta...')">Editar</button>
+            </div>
+          </div>`).join('')}
+        <div style="padding:10px 14px;border-top:1px solid var(--bdr);display:flex;gap:8px;justify-content:flex-end">
+          <button class="btn btn-ghost btn-sm" onclick="toast('Propuestas descartadas')">Descartar todo</button>
+          <button class="btn btn-prim btn-sm" onclick="aplicarPropuestas()">Aplicar seleccionados al acta</button>
+        </div>
+      </div>
+    </div>`;
+}
+
+function handleGrabDrop(ev) {
+  ev.preventDefault();
+  document.getElementById('grab-dz').classList.remove('drag');
+  const f = ev.dataTransfer.files[0];
+  if (f) setGrabFile(f);
+}
+function handleGrabFile(inp) { if(inp.files[0]) setGrabFile(inp.files[0]); }
+function setGrabFile(f) {
+  grabFile = f;
+  renderGrabacion();
+}
+function clearGrab() { grabFile=null; grabAnalysisState='idle'; renderGrabacion(); }
+
+function startAnalysis() {
+  if (!grabFile) return;
+  grabAnalysisState = 'uploading';
+  renderGrabacion();
+  // Simular pasos secuenciales
+  const steps = ['step-upload','step-trans','step-speak','step-ia'];
+  const delays = [800,1400,1200,1600];
+  let acc = 0;
+  steps.forEach((sid,i)=>{
+    acc += delays[i];
+    setTimeout(()=>{
+      // Marcar anterior como done
+      if(i>0) {
+        const prev = document.getElementById(steps[i-1]);
+        if(prev){prev.className='ia-step done';prev.querySelector('.ia-step-icon').textContent='✓';prev.querySelector('.ia-step-badge').innerHTML='<span class="badge b-grn">OK</span>';}
+      }
+      // Marcar actual como running
+      const cur = document.getElementById(sid);
+      if(cur){cur.className='ia-step running';}
+    },acc-delays[i]+200);
+  });
+  setTimeout(()=>{
+    // Marcar último como done
+    const last = document.getElementById(steps[steps.length-1]);
+    if(last){last.className='ia-step done';last.querySelector('.ia-step-icon').textContent='✓';last.querySelector('.ia-step-badge').innerHTML='<span class="badge b-grn">OK</span>';}
+    grabAnalysisState='done';
+    renderGrabacion();
+    toast('✓ Análisis completado — 8 puntos detectados');
+  },acc+400);
+}
+
+function aplicarPropuestas() {
+  // Añadir los puntos marcados al acta
+  PUNTOS.push({
+    id:'pt_new1',codigo:'PT-007',disc:'MEP / Instalaciones',tipo:'orden',estado:'abierto',
+    desc:'Inspección reparación saneamiento fase 2 antes de cubrir. Constructora debe avisar al DEO.',
+    responsable:'Const. Martínez S.L.',plazo:'',historia:[],notaHoy:'Detectado en grabación acta #012',diasAbierto:0,
+  });
+  // Actualizar nota del PT-003
+  const pt3 = PUNTOS.find(p=>p.id==='pt3');
+  if(pt3){pt3.notaHoy='Corregido según confirma JO. Pendiente verificación DEO in situ.';}
+  setTab('puntos');
+  renderPuntos();
+  toast('✓ 6 propuestas aplicadas al acta');
+}
+
+// ── HISTORIAL ─────────────────────────────────────────────────────────────────
+function renderHistorial() {
+  document.getElementById('hist-list').innerHTML = ACTAS_HIST.map(a=>`
+    <div class="hist-acta" onclick="toast('Acta ${a.num} — ${a.fecha}')">
+      <div class="ha-head">
+        <span class="ha-num">${a.num}</span>
+        <span class="ha-fecha">${a.fecha}</span>
+        <span class="ha-temas">${a.temas}</span>
+        <div class="ha-stats">
+          <span class="ha-stat">${a.pts}pts</span>
+          <span class="ha-stat">${a.oos}OO</span>
+          <span class="badge ${a.estado==='firmada'?'b-grn':'b-ylw'}">${a.estado==='firmada'?'Firmada':'Borrador'}</span>
+        </div>
+      </div>
+      <div style="padding:0 14px 10px;display:flex;gap:5px;flex-wrap:wrap">
+        ${a.asistentes.map(x=>`<span class="badge b-neu" style="font-size:9px">${x}</span>`).join('')}
+      </div>
+    </div>`).join('');
+}
+
+// ── TABS ──────────────────────────────────────────────────────────────────────
+function setTab(tab) {
+  ['puntos','grabacion','historial'].forEach(t=>{
+    document.getElementById(`tab-${t}`).classList.toggle('on',t===tab);
+    document.getElementById(`tc-${t}`).classList.toggle('on',t===tab);
+  });
+  renderTabActions(tab);
+}
+
+function renderTabActions(tab) {
+  const el = document.getElementById('tab-actions');
+  if (tab==='puntos') {
+    el.innerHTML=`
+      <button class="btn btn-ghost btn-sm" onclick="openModal('modal-punto')">
+        <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+        Punto
+      </button>
+      <button class="btn btn-prim btn-sm" onclick="toast('Enviando para firma...')">Enviar para firma</button>`;
+  } else if (tab==='grabacion') {
+    el.innerHTML=`<button class="btn btn-ghost btn-sm" onclick="toast('Grabación desde navegador — próximamente')">
+      <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/></svg>
+      Grabar ahora
+    </button>`;
+  } else {
+    el.innerHTML='';
+  }
+}
+
+// ── NUEVA ACTA ────────────────────────────────────────────────────────────────
+function crearActa() {
+  closeModal('modal-nueva-acta');
+  toast('✓ Acta #013 creada — puntos anteriores cargados automáticamente');
+}
+
+// ── MODAL ─────────────────────────────────────────────────────────────────────
+function openModal(id)  { document.getElementById(id).classList.add('open') }
+function closeModal(id) { document.getElementById(id).classList.remove('open') }
+document.addEventListener('click',e=>{
+  if(e.target.classList.contains('overlay')) e.target.classList.remove('open');
+});
+
+function toast(msg){
+  const t=document.getElementById('toast-el');
+  t.textContent=msg;t.classList.add('show');
+  clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2500);
+}
+
+init();
+</script>
+</body>
+</html>

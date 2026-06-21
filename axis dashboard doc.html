@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AXIS OS — Estado documental</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#f0f2f5; --surf:#fff; --surf2:#f8f9fb; --bdr:#e4e7ec; --bdr2:#cdd2db;
+  --txt:#111827; --txt2:#4b5563; --txt3:#9ca3af;
+  --cyan:#0284c7; --cyan-l:#e0f2fe; --cyan-bd:#bae6fd; --cyan-d:#0369a1;
+  --grn:#059669;  --grn-l:#d1fae5;  --grn-bd:#6ee7b7;  --grn-d:#047857;
+  --ylw:#d97706;  --ylw-l:#fef3c7;  --ylw-bd:#fde68a;  --ylw-d:#b45309;
+  --red:#dc2626;  --red-l:#fee2e2;  --red-bd:#fca5a5;
+  --ora:#ea580c;  --ora-l:#fff7ed;  --ora-bd:#fed7aa;
+  --vio:#7c3aed;  --vio-l:#ede9fe;  --vio-bd:#c4b5fd;
+  --mono:'JetBrains Mono',monospace;
+  --r:7px; --r2:11px;
+  --sh:0 1px 3px rgba(0,0,0,.07),0 1px 2px rgba(0,0,0,.04);
+  --sh2:0 4px 16px rgba(0,0,0,.1);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--txt);font-size:13px;line-height:1.5;min-height:100vh;display:flex;flex-direction:column;overflow:hidden}
+
+/* TOPBAR */
+.topbar{height:50px;background:var(--surf);border-bottom:1px solid var(--bdr);display:flex;align-items:center;padding:0 20px;gap:12px;flex-shrink:0;box-shadow:var(--sh)}
+.logo{font-family:var(--mono);font-size:13px;font-weight:500;color:var(--cyan);letter-spacing:2px}
+.vr{width:1px;height:18px;background:var(--bdr2)}
+.topbar-obra{font-size:12px;color:var(--txt3)}.topbar-obra strong{color:var(--txt2);font-weight:600}
+.topbar-r{margin-left:auto;display:flex;gap:8px;align-items:center}
+
+/* ROL SELECTOR */
+.rol-sel{display:flex;gap:4px;background:var(--surf2);border:1px solid var(--bdr);border-radius:var(--r);padding:3px}
+.rol-btn{padding:4px 12px;border-radius:5px;font-size:11px;font-weight:500;cursor:pointer;transition:all .15s;border:none;background:none;color:var(--txt3)}
+.rol-btn.active{background:var(--surf);color:var(--cyan);box-shadow:var(--sh)}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;gap:5px;padding:6px 13px;border-radius:var(--r);border:1px solid;font-family:'Inter',sans-serif;font-size:12px;font-weight:500;cursor:pointer;transition:all .15s;white-space:nowrap}
+.btn-ghost{background:var(--surf);color:var(--txt2);border-color:var(--bdr2)}
+.btn-ghost:hover{background:var(--surf2);color:var(--txt)}
+.btn-primary{background:var(--cyan);color:#fff;border-color:var(--cyan-d)}
+.btn-primary:hover{background:var(--cyan-d)}
+.btn-sm{padding:4px 10px;font-size:11px}
+
+/* SCROLL */
+.page-scroll{flex:1;overflow-y:auto;padding:20px}
+.page-scroll::-webkit-scrollbar{width:5px}
+.page-scroll::-webkit-scrollbar-thumb{background:var(--bdr2);border-radius:5px}
+
+/* KPI GRID */
+.kpi-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:16px}
+.kpi-card{background:var(--surf);border:1px solid var(--bdr);border-radius:var(--r2);padding:14px 16px;box-shadow:var(--sh);position:relative;overflow:hidden;cursor:default;transition:box-shadow .15s}
+.kpi-card:hover{box-shadow:var(--sh2)}
+.kpi-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
+.kpi-card.k-total::before{background:linear-gradient(90deg,var(--cyan),var(--cyan-d))}
+.kpi-card.k-pend::before{background:var(--txt3)}
+.kpi-card.k-aport::before{background:var(--ylw)}
+.kpi-card.k-caducando::before{background:var(--ora)}
+.kpi-card.k-bloq::before{background:var(--red)}
+.kpi-label{font-size:10px;font-weight:600;color:var(--txt3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px}
+.kpi-val{font-family:var(--mono);font-size:28px;font-weight:600;line-height:1;margin-bottom:4px}
+.kpi-sub{font-size:11px;color:var(--txt3)}
+.kpi-trend{font-size:10px;margin-top:6px;font-weight:500}
+
+/* MAIN GRID */
+.main-grid{display:grid;grid-template-columns:1fr 340px;gap:16px;margin-bottom:16px}
+.main-grid-full{margin-bottom:16px}
+
+/* CARDS */
+.card{background:var(--surf);border:1px solid var(--bdr);border-radius:var(--r2);box-shadow:var(--sh);overflow:hidden}
+.card-head{padding:12px 16px;border-bottom:1px solid var(--bdr);background:var(--surf2);display:flex;align-items:center;gap:8px}
+.card-icon{font-size:14px}
+.card-title{font-size:13px;font-weight:700;flex:1}
+.card-meta{font-size:11px;color:var(--txt3)}
+.card-action{font-size:11px;color:var(--cyan);cursor:pointer;font-weight:500}
+.card-action:hover{text-decoration:underline}
+.card-body{padding:16px}
+
+/* TABLA SISTEMAS */
+.sis-table{width:100%;border-collapse:collapse}
+.sis-table th{font-size:10px;font-weight:600;color:var(--txt3);text-transform:uppercase;letter-spacing:.5px;padding:8px 12px;text-align:left;border-bottom:1px solid var(--bdr);white-space:nowrap;cursor:pointer;user-select:none}
+.sis-table th:hover{color:var(--txt2)}
+.sis-table th.sorted{color:var(--cyan)}
+.sis-table th.sorted::after{content:' ↓';font-size:9px}
+.sis-table th.sorted.asc::after{content:' ↑'}
+.sis-table td{padding:10px 12px;border-bottom:1px solid var(--bdr);vertical-align:middle}
+.sis-table tr:last-child td{border-bottom:none}
+.sis-table tr:hover td{background:var(--surf2)}
+.sis-table tr.bloqueado td{background:#fff8f8}
+.sis-table tr.bloqueado:hover td{background:#fef2f2}
+
+.sis-nombre-cell{display:flex;align-items:center;gap:8px}
+.sis-codigo{font-family:var(--mono);font-size:10px;font-weight:500;padding:2px 6px;border-radius:4px;background:var(--cyan-l);color:var(--cyan);border:1px solid var(--cyan-bd);flex-shrink:0}
+.sis-nombre{font-size:12px;font-weight:500}
+
+/* Progress bar inline */
+.prog-wrap{display:flex;align-items:center;gap:8px;min-width:120px}
+.prog-bar{flex:1;height:5px;background:var(--bdr);border-radius:3px;overflow:hidden}
+.prog-fill{height:100%;border-radius:3px;transition:width .4s}
+.prog-pct{font-family:var(--mono);font-size:11px;min-width:34px;text-align:right;font-weight:500}
+
+/* Pill counts */
+.pill-count{display:inline-flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:11px;font-weight:600;min-width:24px;padding:1px 7px;border-radius:10px;border:1px solid}
+.pc-pend{background:var(--surf2);color:var(--txt3);border-color:var(--bdr)}
+.pc-aport{background:var(--ylw-l);color:var(--ylw-d);border-color:var(--ylw-bd)}
+.pc-valid{background:var(--grn-l);color:var(--grn-d);border-color:var(--grn-bd)}
+.pc-rech{background:var(--red-l);color:var(--red);border-color:var(--red-bd)}
+.pc-zero{background:var(--surf2);color:var(--bdr);border-color:var(--bdr)}
+
+/* Bloqueo cert */
+.bloqueo-badge{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:600;padding:3px 8px;border-radius:10px;white-space:nowrap}
+.bloqueo-bloq{background:var(--red-l);color:var(--red);border:1px solid var(--red-bd)}
+.bloqueo-ok{background:var(--grn-l);color:var(--grn-d);border:1px solid var(--grn-bd)}
+.bloqueo-parc{background:var(--ylw-l);color:var(--ylw-d);border:1px solid var(--ylw-bd)}
+
+/* ALERTAS */
+.alert-list{display:flex;flex-direction:column;gap:0}
+.alert-item{display:flex;align-items:flex-start;gap:10px;padding:11px 16px;border-bottom:1px solid var(--bdr);cursor:pointer;transition:background .1s}
+.alert-item:last-child{border-bottom:none}
+.alert-item:hover{background:var(--surf2)}
+.alert-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:4px}
+.alert-dot.red{background:var(--red)}
+.alert-dot.ora{background:var(--ora)}
+.alert-dot.ylw{background:var(--ylw)}
+.alert-dot.cyan{background:var(--cyan)}
+.alert-info{flex:1;min-width:0}
+.alert-titulo{font-size:12px;font-weight:500;line-height:1.3}
+.alert-meta{font-size:10px;color:var(--txt3);margin-top:2px}
+.alert-action{font-size:10px;color:var(--cyan);font-weight:500;flex-shrink:0;white-space:nowrap}
+
+/* GRAFICO EVOLUCION */
+.chart-wrap{width:100%;height:200px;position:relative}
+.chart-tooltip{position:absolute;background:#1e293b;color:#e2e8f0;padding:7px 12px;border-radius:var(--r);font-size:11px;pointer-events:none;display:none;z-index:10;white-space:nowrap}
+
+/* VISTA CONSTRUCTORA */
+.view-con .kpi-card.k-total::before{background:linear-gradient(90deg,var(--ora),var(--ylw))}
+.misfalta-list{display:flex;flex-direction:column;gap:0}
+.misfalta-item{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--bdr);transition:background .1s;cursor:pointer}
+.misfalta-item:last-child{border-bottom:none}
+.misfalta-item:hover{background:var(--surf2)}
+.mf-tipo{font-family:var(--mono);font-size:10px;font-weight:600;padding:2px 6px;border-radius:4px;background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe;flex-shrink:0;min-width:52px;text-align:center}
+.mf-info{flex:1;min-width:0}
+.mf-nombre{font-size:12px;font-weight:500}
+.mf-sistema{font-size:10px;color:var(--txt3)}
+.mf-plazo{font-size:10px;font-weight:600;flex-shrink:0}
+.mf-plazo.urgente{color:var(--red)}
+.mf-plazo.pronto{color:var(--ora)}
+.mf-plazo.normal{color:var(--txt3)}
+
+/* Badges varios */
+.badge{display:inline-flex;align-items:center;font-size:10px;font-weight:600;padding:2px 8px;border-radius:10px;border:1px solid;white-space:nowrap}
+.b-bloq{background:var(--red-l);color:var(--red);border-color:var(--red-bd)}
+.b-parc{background:var(--ylw-l);color:var(--ylw-d);border-color:var(--ylw-bd)}
+.b-ok{background:var(--grn-l);color:var(--grn-d);border-color:var(--grn-bd)}
+
+/* Stacked bar */
+.stack-bar{height:8px;border-radius:4px;overflow:hidden;display:flex;width:100%}
+.sb-valid{background:var(--grn)}
+.sb-aport{background:var(--ylw)}
+.sb-rech{background:var(--red)}
+.sb-pend{background:var(--bdr)}
+
+/* tabla sort icon */
+.th-sort{display:inline-flex;align-items:center;gap:4px}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="logo">AXIS OS</div>
+  <div class="vr"></div>
+  <div class="topbar-obra">Estado documental · <strong>FLEXLIVING 417 LAS ROZAS</strong></div>
+  <div class="topbar-r">
+    <div class="rol-sel">
+      <button class="rol-btn active" onclick="setRol('deo',this)">Vista DEO</button>
+      <button class="rol-btn" onclick="setRol('con',this)">Vista constructora</button>
+    </div>
+    <button class="btn btn-ghost btn-sm">⬇ Exportar informe</button>
+  </div>
+</header>
+
+<div class="page-scroll" id="page-scroll">
+  <div id="view-deo"></div>
+  <div id="view-con" style="display:none"></div>
+</div>
+
+<div class="chart-tooltip" id="tooltip"></div>
+
+<script>
+// ── DATOS ─────────────────────────────────────────────────────────────────────
+const SISTEMAS = [
+  {id:'s1', codigo:'08.01', nombre:'Tabiquería PYL autoportante',
+   docs:{total:17, validado:4, aportado:3, rechazado:1, pendiente:9},
+   docs_sistema:{total:2, validado:0, aportado:1, pendiente:1},
+   certificacion:'bloqueado', disciplina:'Arquitectura'},
+  {id:'s2', codigo:'08.03', nombre:'Particiones cerámicas',
+   docs:{total:10, validado:0, aportado:0, rechazado:0, pendiente:10},
+   docs_sistema:{total:1, validado:0, aportado:0, pendiente:1},
+   certificacion:'bloqueado', disciplina:'Arquitectura'},
+  {id:'s3', codigo:'05.01', nombre:'Hormigón armado in situ',
+   docs:{total:8, validado:6, aportado:1, rechazado:0, pendiente:1},
+   docs_sistema:{total:0, validado:0, aportado:0, pendiente:0},
+   certificacion:'parcial', disciplina:'Estructuras'},
+  {id:'s4', codigo:'13.02', nombre:'Red de distribución de agua',
+   docs:{total:12, validado:8, aportado:2, rechazado:0, pendiente:2},
+   docs_sistema:{total:1, validado:1, aportado:0, pendiente:0},
+   certificacion:'parcial', disciplina:'MEP'},
+  {id:'s5', codigo:'15.01', nombre:'Producción frío/calor (VRF)',
+   docs:{total:14, validado:12, aportado:1, rechazado:0, pendiente:1},
+   docs_sistema:{total:2, validado:2, aportado:0, pendiente:0},
+   certificacion:'ok', disciplina:'MEP'},
+  {id:'s6', codigo:'16.03', nombre:'Red de distribución eléctrica',
+   docs:{total:10, validado:3, aportado:2, rechazado:2, pendiente:3},
+   docs_sistema:{total:1, validado:0, aportado:1, pendiente:0},
+   certificacion:'bloqueado', disciplina:'MEP'},
+  {id:'s7', codigo:'18.01', nombre:'Sellados cortafuegos',
+   docs:{total:5, validado:5, aportado:0, rechazado:0, pendiente:0},
+   docs_sistema:{total:1, validado:1, aportado:0, pendiente:0},
+   certificacion:'ok', disciplina:'Arquitectura'},
+  {id:'s8', codigo:'21.03', nombre:'Jardinería y riego',
+   docs:{total:8, validado:2, aportado:1, rechazado:0, pendiente:5},
+   docs_sistema:{total:1, validado:0, aportado:1, pendiente:0},
+   certificacion:'bloqueado', disciplina:'Paisajismo'},
+];
+
+const ALERTAS = [
+  {tipo:'red',   titulo:'Certificado de dosificación HA-25 caduca en 8 días', meta:'05.01 Hormigón armado · CERT_DOS · Vence 28/11/2024', accion:'Renovar'},
+  {tipo:'red',   titulo:'2 documentos rechazados sin nueva versión (>7 días)', meta:'16.03 Red eléctrica · DoP Cable + CE Bandeja · Const. Martínez', accion:'Ver'},
+  {tipo:'ora',   titulo:'Sistema 08.03 sin ningún documento aportado', meta:'Particiones cerámicas · 10 docs pendientes · Ninguna actividad', accion:'Solicitar'},
+  {tipo:'ora',   titulo:'Certificado acústico PYL pendiente de validación 5 días', meta:'08.01 Tabiquería PYL · Aportado por Const. Martínez', accion:'Validar'},
+  {tipo:'ylw',   titulo:'3 sistemas bloqueados para certificación de diciembre', meta:'08.01, 08.03, 16.03 · Total bloqueado: 284.500 €', accion:'Ver'},
+  {tipo:'ylw',   titulo:'Garantía de fabricante pendiente — Climatización VRF', meta:'15.01 Producción frío/calor · GAR · Plazo: 30/11/2024', accion:'Recordar'},
+  {tipo:'cyan',  titulo:'Planta de hormigón: certificado anual próximo a renovar', meta:'05.01 Estructuras · CERT_PLANTA · Vence 15/01/2025', accion:'Programar'},
+];
+
+// Datos históricos de evolución (últimas 8 semanas)
+const EVOLUCION = [
+  {semana:'S38', validados:8,  aportados:2, pendientes:60},
+  {semana:'S39', validados:12, aportados:4, pendientes:56},
+  {semana:'S40', validados:15, aportados:6, pendientes:53},
+  {semana:'S41', validados:18, aportados:5, pendientes:51},
+  {semana:'S42', validados:22, aportados:8, pendientes:47},
+  {semana:'S43', validados:27, aportados:6, pendientes:43},
+  {semana:'S44', validados:31, aportados:5, pendientes:39},
+  {semana:'S45', validados:34, aportados:7, pendientes:35},
+];
+
+// Docs pendientes para constructora
+const DOCS_FALTA_CON = [
+  {tipo:'DoP',       nombre:'Declaración de Prestaciones — Cable eléctrico',   sistema:'16.03 Red eléctrica',       plazo:'2024-11-25', urgencia:'urgente'},
+  {tipo:'CE',        nombre:'Marcado CE — Bandeja portacables',                 sistema:'16.03 Red eléctrica',       plazo:'2024-11-25', urgencia:'urgente'},
+  {tipo:'FT',        nombre:'Ficha técnica — Bloque MEGABRICK 11',             sistema:'08.03 Particiones cerámicas',plazo:'2024-11-30', urgencia:'pronto'},
+  {tipo:'DoP',       nombre:'Declaración de Prestaciones — Bloque MEGABRICK',  sistema:'08.03 Particiones cerámicas',plazo:'2024-11-30', urgencia:'pronto'},
+  {tipo:'CE',        nombre:'Marcado CE — Bloque MEGABRICK',                   sistema:'08.03 Particiones cerámicas',plazo:'2024-11-30', urgencia:'pronto'},
+  {tipo:'FT',        nombre:'Ficha técnica — Bloque SATEBRICK ACÚSTICO',       sistema:'08.03 Particiones cerámicas',plazo:'2024-12-05', urgencia:'normal'},
+  {tipo:'DIT',       nombre:'DITplus CERANOR nº660p/21 — SATEBRICK',          sistema:'08.03 Particiones cerámicas',plazo:'2024-12-05', urgencia:'normal'},
+  {tipo:'CERT_DOS',  nombre:'Certificado de dosificación HA-25 (renovación)',  sistema:'05.01 Hormigón armado',     plazo:'2024-11-28', urgencia:'urgente'},
+  {tipo:'GAR',       nombre:'Certificado de garantía — Sistema VRF Midea',     sistema:'15.01 Climatización',       plazo:'2024-11-30', urgencia:'pronto'},
+  {tipo:'DoP',       nombre:'Declaración de Prestaciones — Perfilería PYL',    sistema:'08.01 Tabiquería PYL',      plazo:'2024-12-10', urgencia:'normal'},
+];
+
+// ── HELPERS ───────────────────────────────────────────────────────────────────
+function pct(s) {
+  const t = s.docs.total + s.docs_sistema.total;
+  const v = s.docs.validado + s.docs_sistema.validado;
+  return t > 0 ? Math.round(v/t*100) : 0;
+}
+
+function progColor(p) {
+  if (p === 0)  return 'var(--red)';
+  if (p < 40)   return 'var(--red)';
+  if (p < 70)   return 'var(--ylw)';
+  if (p < 100)  return 'var(--cyan)';
+  return 'var(--grn)';
+}
+
+function daysUntil(dateStr) {
+  const d = new Date(dateStr) - new Date();
+  return Math.ceil(d/(1000*60*60*24));
+}
+
+function urgenciaLabel(dateStr) {
+  const d = daysUntil(dateStr);
+  if (d < 0)   return {cls:'urgente', txt:`Vencido hace ${-d}d`};
+  if (d <= 7)  return {cls:'urgente', txt:`${d} días`};
+  if (d <= 14) return {cls:'pronto',  txt:`${d} días`};
+  return       {cls:'normal',  txt:new Date(dateStr).toLocaleDateString('es-ES',{day:'2-digit',month:'short'})};
+}
+
+let sortCol = 'pct'; let sortAsc = false;
+
+// ── VISTA DEO ─────────────────────────────────────────────────────────────────
+function renderDEO() {
+  const totalDocs = SISTEMAS.reduce((a,s) => a + s.docs.total + s.docs_sistema.total, 0);
+  const validados = SISTEMAS.reduce((a,s) => a + s.docs.validado + s.docs_sistema.validado, 0);
+  const aportados = SISTEMAS.reduce((a,s) => a + s.docs.aportado + s.docs_sistema.aportado, 0);
+  const pendientes= SISTEMAS.reduce((a,s) => a + s.docs.pendiente + s.docs_sistema.pendiente, 0);
+  const rechazados= SISTEMAS.reduce((a,s) => a + s.docs.rechazado, 0);
+  const bloqueados= SISTEMAS.filter(s=>s.certificacion==='bloqueado').length;
+  const pctGlobal = Math.round(validados/totalDocs*100);
+
+  document.getElementById('view-deo').innerHTML = `
+    <!-- KPIs -->
+    <div class="kpi-grid">
+      <div class="kpi-card k-total">
+        <div class="kpi-label">Documentación global</div>
+        <div class="kpi-val" style="color:var(--cyan)">${pctGlobal}%</div>
+        <div class="kpi-sub">${validados} de ${totalDocs} documentos validados</div>
+        <div style="height:5px;background:var(--bdr);border-radius:3px;overflow:hidden;margin-top:8px">
+          <div style="height:100%;width:${pctGlobal}%;background:linear-gradient(90deg,var(--cyan),var(--grn));border-radius:3px;transition:width .6s"></div>
+        </div>
+      </div>
+      <div class="kpi-card k-pend">
+        <div class="kpi-label">Pendientes de subida</div>
+        <div class="kpi-val" style="color:var(--txt2)">${pendientes}</div>
+        <div class="kpi-sub">docs obligatorios sin aportar</div>
+        <div class="kpi-trend" style="color:var(--txt3)">De ${totalDocs} requeridos</div>
+      </div>
+      <div class="kpi-card k-aport">
+        <div class="kpi-label">Pendientes validación</div>
+        <div class="kpi-val" style="color:var(--ylw)">${aportados}</div>
+        <div class="kpi-sub">aportados, esperando revisión DEO</div>
+        ${rechazados>0?`<div class="kpi-trend" style="color:var(--red)">⚠ ${rechazados} rechazados sin nueva versión</div>`:''}
+      </div>
+      <div class="kpi-card k-caducando">
+        <div class="kpi-label">Caducan en 30 días</div>
+        <div class="kpi-val" style="color:var(--ora)">2</div>
+        <div class="kpi-sub">documentos con vigencia limitada</div>
+        <div class="kpi-trend" style="color:var(--ora)">CERT_DOS vence en 8 días</div>
+      </div>
+      <div class="kpi-card k-bloq">
+        <div class="kpi-label">Sistemas bloqueados</div>
+        <div class="kpi-val" style="color:var(--red)">${bloqueados}</div>
+        <div class="kpi-sub">de ${SISTEMAS.length} sistemas totales</div>
+        <div class="kpi-trend" style="color:var(--red)">Bloquean certificación diciembre</div>
+      </div>
+    </div>
+
+    <!-- Tabla sistemas + Alertas -->
+    <div class="main-grid">
+      <div class="card">
+        <div class="card-head">
+          <span class="card-icon">📋</span>
+          <span class="card-title">Estado por sistema constructivo</span>
+          <span class="card-meta">${SISTEMAS.length} sistemas · click en columna para ordenar</span>
+          <span class="card-action" onclick="alert('→ Vista documental')">Ver documentación →</span>
+        </div>
+        <div style="overflow-x:auto">
+          <table class="sis-table" id="sis-table">
+            <thead>
+              <tr>
+                <th onclick="sortBy('nombre')" class="th-sort">Sistema</th>
+                <th onclick="sortBy('disciplina')">Disciplina</th>
+                <th onclick="sortBy('pct')" class="sorted ${sortAsc?'asc':''}">Completado</th>
+                <th>Desglose</th>
+                <th onclick="sortBy('pendiente')" style="text-align:center">Pendientes</th>
+                <th onclick="sortBy('aportado')" style="text-align:center">A validar</th>
+                <th onclick="sortBy('rechazado')" style="text-align:center">Rechazados</th>
+                <th onclick="sortBy('certificacion')" style="text-align:center">Certificación</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="sis-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Alertas -->
+      <div class="card">
+        <div class="card-head">
+          <span class="card-icon">🔔</span>
+          <span class="card-title">Alertas y acciones</span>
+          <span class="card-meta">${ALERTAS.length} activas</span>
+        </div>
+        <div class="alert-list">
+          ${ALERTAS.map(a=>`
+            <div class="alert-item">
+              <div class="alert-dot ${a.tipo}"></div>
+              <div class="alert-info">
+                <div class="alert-titulo">${a.titulo}</div>
+                <div class="alert-meta">${a.meta}</div>
+              </div>
+              <span class="alert-action">${a.accion} →</span>
+            </div>`).join('')}
+        </div>
+      </div>
+    </div>
+
+    <!-- Evolución temporal -->
+    <div class="card main-grid-full">
+      <div class="card-head">
+        <span class="card-icon">📈</span>
+        <span class="card-title">Evolución de la documentación</span>
+        <span class="card-meta">Últimas 8 semanas · documentos validados acumulados</span>
+      </div>
+      <div class="card-body">
+        <div class="chart-wrap" id="chart-evolucion"></div>
+      </div>
+    </div>
+
+    <!-- Bloqueo certificación -->
+    <div class="card main-grid-full">
+      <div class="card-head">
+        <span class="card-icon">💰</span>
+        <span class="card-title">Impacto en certificación</span>
+        <span class="card-meta">Diciembre 2024 · sistemas y su estado de desbloqueo</span>
+      </div>
+      <div class="card-body">
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px">
+          ${SISTEMAS.map(s => {
+            const p = pct(s);
+            const certCls = s.certificacion==='ok'?'b-ok':s.certificacion==='parcial'?'b-parc':'b-bloq';
+            const certTxt = s.certificacion==='ok'?'✓ Libre':s.certificacion==='parcial'?'Parcial':'🔒 Bloqueado';
+            return `<div style="background:var(--surf2);border:1px solid var(--bdr);border-radius:var(--r);padding:11px 13px">
+              <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
+                <span class="sis-codigo">${s.codigo}</span>
+                <span style="font-size:11px;font-weight:500;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${s.nombre}</span>
+              </div>
+              <div style="margin-bottom:6px">
+                <div class="prog-bar" style="height:6px"><div class="prog-fill" style="width:${p}%;background:${progColor(p)}"></div></div>
+              </div>
+              <div style="display:flex;justify-content:space-between;align-items:center">
+                <span style="font-family:var(--mono);font-size:11px;color:var(--txt3)">${p}%</span>
+                <span class="badge ${certCls}">${certTxt}</span>
+              </div>
+            </div>`;
+          }).join('')}
+        </div>
+      </div>
+    </div>`;
+
+  renderTabla();
+  renderChart();
+}
+
+function renderTabla() {
+  const sorted = [...SISTEMAS].sort((a,b) => {
+    let va, vb;
+    if (sortCol==='pct')          { va=pct(a); vb=pct(b); }
+    else if (sortCol==='nombre')  { va=a.nombre; vb=b.nombre; }
+    else if (sortCol==='disciplina'){va=a.disciplina; vb=b.disciplina;}
+    else if (sortCol==='certificacion'){
+      const o={bloqueado:0,parcial:1,ok:2};
+      va=o[a.certificacion]; vb=o[b.certificacion];
+    } else {
+      va=a.docs[sortCol]||0; vb=b.docs[sortCol]||0;
+    }
+    return sortAsc ? (va>vb?1:-1) : (va<vb?1:-1);
+  });
+
+  document.getElementById('sis-tbody').innerHTML = sorted.map(s => {
+    const p = pct(s);
+    const color = progColor(p);
+    const total = s.docs.total + s.docs_sistema.total;
+    const certCls = s.certificacion==='ok'?'bloqueo-ok':s.certificacion==='parcial'?'bloqueo-parc':'bloqueo-bloq';
+    const certTxt = s.certificacion==='ok'?'✓ Libre':s.certificacion==='parcial'?'Parcial':'🔒 Bloqueado';
+    const bloqRow = s.certificacion==='bloqueado'?' bloqueado':'';
+    const vp = Math.round(s.docs.validado/total*100);
+    const ap = Math.round(s.docs.aportado/total*100);
+    const rp = Math.round(s.docs.rechazado/total*100);
+    return `<tr class="${bloqRow}">
+      <td>
+        <div class="sis-nombre-cell">
+          <span class="sis-codigo">${s.codigo}</span>
+          <span class="sis-nombre">${s.nombre}</span>
+        </div>
+      </td>
+      <td style="font-size:11px;color:var(--txt3)">${s.disciplina}</td>
+      <td>
+        <div class="prog-wrap">
+          <div class="prog-bar"><div class="prog-fill" style="width:${p}%;background:${color}"></div></div>
+          <span class="prog-pct" style="color:${color}">${p}%</span>
+        </div>
+      </td>
+      <td style="min-width:100px">
+        <div class="stack-bar">
+          <div class="sb-valid" style="width:${vp}%" title="Validados: ${s.docs.validado}"></div>
+          <div class="sb-aport" style="width:${ap}%" title="Aportados: ${s.docs.aportado}"></div>
+          <div class="sb-rech"  style="width:${rp}%" title="Rechazados: ${s.docs.rechazado}"></div>
+          <div class="sb-pend"  style="flex:1" title="Pendientes: ${s.docs.pendiente}"></div>
+        </div>
+      </td>
+      <td style="text-align:center"><span class="pill-count ${s.docs.pendiente>0?'pc-pend':'pc-zero'}">${s.docs.pendiente+s.docs_sistema.pendiente}</span></td>
+      <td style="text-align:center"><span class="pill-count ${s.docs.aportado>0?'pc-aport':'pc-zero'}">${s.docs.aportado+s.docs_sistema.aportado}</span></td>
+      <td style="text-align:center"><span class="pill-count ${s.docs.rechazado>0?'pc-rech':'pc-zero'}">${s.docs.rechazado}</span></td>
+      <td style="text-align:center"><span class="bloqueo-badge ${certCls}">${certTxt}</span></td>
+      <td><button class="btn btn-ghost btn-sm" onclick="alert('→ Docs de ${s.nombre}')">Ver →</button></td>
+    </tr>`;
+  }).join('');
+}
+
+function sortBy(col) {
+  if (sortCol===col) sortAsc=!sortAsc; else { sortCol=col; sortAsc=false; }
+  renderTabla();
+  // Update header styles
+  document.querySelectorAll('.sis-table th').forEach(th=>{
+    th.classList.remove('sorted','asc');
+  });
+}
+
+// ── GRÁFICO D3 ────────────────────────────────────────────────────────────────
+function renderChart() {
+  const el = document.getElementById('chart-evolucion');
+  if (!el) return;
+  const W = el.clientWidth || 700, H = 200;
+  const M = {top:16, right:20, bottom:28, left:40};
+  const w = W-M.left-M.right, h = H-M.top-M.bottom;
+
+  const svg = d3.select('#chart-evolucion')
+    .append('svg').attr('width',W).attr('height',H)
+    .append('g').attr('transform',`translate(${M.left},${M.top})`);
+
+  const x = d3.scaleBand().domain(EVOLUCION.map(d=>d.semana)).range([0,w]).padding(.3);
+  const y = d3.scaleLinear().domain([0,80]).range([h,0]);
+
+  // Grid lines
+  svg.append('g').selectAll('line').data(y.ticks(5)).join('line')
+    .attr('x1',0).attr('x2',w)
+    .attr('y1',d=>y(d)).attr('y2',d=>y(d))
+    .attr('stroke','#e4e7ec').attr('stroke-dasharray','3,3');
+
+  // Barras validados
+  svg.selectAll('.bar-valid').data(EVOLUCION).join('rect')
+    .attr('class','bar-valid')
+    .attr('x',d=>x(d.semana)).attr('y',d=>y(d.validados))
+    .attr('width',x.bandwidth()).attr('height',d=>h-y(d.validados))
+    .attr('fill','#0284c7').attr('rx',3)
+    .on('mouseover',(ev,d)=>{
+      const t=document.getElementById('tooltip');
+      t.style.display='block';
+      t.style.left=(ev.offsetX+12)+'px'; t.style.top=(ev.offsetY-8)+'px';
+      t.innerHTML=`<strong>${d.semana}</strong><br>✓ Validados: ${d.validados}<br>⏳ Aportados: ${d.aportados}<br>○ Pendientes: ${d.pendientes}`;
+    })
+    .on('mouseout',()=>document.getElementById('tooltip').style.display='none');
+
+  // Línea de aportados
+  const lineAport = d3.line().x(d=>x(d.semana)+x.bandwidth()/2).y(d=>y(d.validados+d.aportados)).curve(d3.curveMonotoneX);
+  svg.append('path').datum(EVOLUCION).attr('fill','none').attr('stroke','var(--ylw)').attr('stroke-width',2).attr('stroke-dasharray','4,3').attr('d',lineAport);
+
+  // Ejes
+  svg.append('g').attr('transform',`translate(0,${h})`).call(d3.axisBottom(x).tickSize(0).tickPadding(8))
+    .call(g=>g.select('.domain').remove())
+    .call(g=>g.selectAll('text').style('font-size','10px').style('fill','#9ca3af'));
+  svg.append('g').call(d3.axisLeft(y).ticks(5).tickSize(-w))
+    .call(g=>g.select('.domain').remove())
+    .call(g=>g.selectAll('.tick line').attr('stroke','transparent'))
+    .call(g=>g.selectAll('text').style('font-size','10px').style('fill','#9ca3af'));
+
+  // Leyenda
+  const leg = svg.append('g').attr('transform',`translate(${w-160},0)`);
+  leg.append('rect').attr('width',10).attr('height',10).attr('rx',2).attr('fill','#0284c7');
+  leg.append('text').attr('x',14).attr('y',9).text('Validados').style('font-size','10px').style('fill','#9ca3af');
+  leg.append('line').attr('x1',80).attr('x2',92).attr('y1',5).attr('y2',5).attr('stroke','var(--ylw)').attr('stroke-width',2).attr('stroke-dasharray','3,2');
+  leg.append('text').attr('x',96).attr('y',9).text('Aportados').style('font-size','10px').style('fill','#9ca3af');
+}
+
+// ── VISTA CONSTRUCTORA ────────────────────────────────────────────────────────
+function renderCON() {
+  const urgentes = DOCS_FALTA_CON.filter(d=>d.urgencia==='urgente').length;
+  const pronto   = DOCS_FALTA_CON.filter(d=>d.urgencia==='pronto').length;
+  const normal   = DOCS_FALTA_CON.filter(d=>d.urgencia==='normal').length;
+
+  document.getElementById('view-con').innerHTML = `
+    <!-- KPIs constructora -->
+    <div class="kpi-grid">
+      <div class="kpi-card k-total" style="">
+        <div class="kpi-label">Docs que debes aportar</div>
+        <div class="kpi-val" style="color:var(--ora)">${DOCS_FALTA_CON.length}</div>
+        <div class="kpi-sub">pendientes de subida o renovación</div>
+      </div>
+      <div class="kpi-card k-bloq">
+        <div class="kpi-label">Urgentes (≤7 días)</div>
+        <div class="kpi-val" style="color:var(--red)">${urgentes}</div>
+        <div class="kpi-sub">acción inmediata requerida</div>
+      </div>
+      <div class="kpi-card k-caducando">
+        <div class="kpi-label">Próximos (8–14 días)</div>
+        <div class="kpi-val" style="color:var(--ora)">${pronto}</div>
+        <div class="kpi-sub">aportar esta semana</div>
+      </div>
+      <div class="kpi-card k-pend">
+        <div class="kpi-label">Sin plazo urgente</div>
+        <div class="kpi-val" style="color:var(--txt2)">${normal}</div>
+        <div class="kpi-sub">antes de fin de mes</div>
+      </div>
+      <div class="kpi-card" style="">
+        <div class="kpi-label">Sistemas bloqueados</div>
+        <div class="kpi-val" style="color:var(--red)">${SISTEMAS.filter(s=>s.certificacion==='bloqueado').length}</div>
+        <div class="kpi-sub">no certificables hasta aportar docs</div>
+        <div class="kpi-trend" style="color:var(--red)">Impacto directo en cobros</div>
+      </div>
+    </div>
+
+    <div class="main-grid">
+      <!-- Lista docs que faltan -->
+      <div class="card">
+        <div class="card-head">
+          <span class="card-icon">📤</span>
+          <span class="card-title">Documentos pendientes de subida</span>
+          <span class="card-meta">${DOCS_FALTA_CON.length} docs · ordenados por urgencia</span>
+        </div>
+        <div class="misfalta-list">
+          ${DOCS_FALTA_CON.sort((a,b)=>{
+            const o={urgente:0,pronto:1,normal:2};
+            return o[a.urgencia]-o[b.urgencia];
+          }).map(d => {
+            const u = urgenciaLabel(d.plazo);
+            return `<div class="misfalta-item">
+              <span class="mf-tipo">${d.tipo}</span>
+              <div class="mf-info">
+                <div class="mf-nombre">${d.nombre}</div>
+                <div class="mf-sistema">${d.sistema}</div>
+              </div>
+              <span class="mf-plazo ${u.cls}">${u.txt}</span>
+              <button class="btn btn-primary btn-sm" onclick="alert('→ Subir ${d.tipo}')">Subir</button>
+            </div>`;
+          }).join('')}
+        </div>
+      </div>
+
+      <!-- Estado global de la obra -->
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <div class="card">
+          <div class="card-head">
+            <span class="card-icon">📊</span>
+            <span class="card-title">Estado global obra</span>
+          </div>
+          <div class="card-body" style="display:flex;flex-direction:column;gap:10px">
+            ${SISTEMAS.map(s=>{
+              const p=pct(s);
+              return `<div>
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+                  <span style="font-size:11px;font-weight:500">${s.nombre.split(' ').slice(0,3).join(' ')}</span>
+                  <span style="font-family:var(--mono);font-size:10px;color:${progColor(p)};font-weight:600">${p}%</span>
+                </div>
+                <div class="prog-bar"><div class="prog-fill" style="width:${p}%;background:${progColor(p)}"></div></div>
+              </div>`;
+            }).join('')}
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-head">
+            <span class="card-icon">💬</span>
+            <span class="card-title">Solicitudes del DEO</span>
+            <span class="card-meta">2 nuevas</span>
+          </div>
+          <div class="alert-list">
+            <div class="alert-item">
+              <div class="alert-dot red"></div>
+              <div class="alert-info">
+                <div class="alert-titulo">Solicitud: Renovar CERT_DOS HA-25</div>
+                <div class="alert-meta">Ana García (DEO) · hace 2 días · Plazo: 28/11</div>
+              </div>
+              <span class="alert-action">Responder →</span>
+            </div>
+            <div class="alert-item">
+              <div class="alert-dot ylw"></div>
+              <div class="alert-info">
+                <div class="alert-titulo">Solicitud: DoP y CE red eléctrica</div>
+                <div class="alert-meta">Ana García (DEO) · hace 5 días · Plazo: 25/11</div>
+              </div>
+              <span class="alert-action">Responder →</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>`;
+}
+
+// ── ROL TOGGLE ────────────────────────────────────────────────────────────────
+let rolActivo = 'deo';
+
+function setRol(rol, btn) {
+  document.querySelectorAll('.rol-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  rolActivo = rol;
+  document.getElementById('view-deo').style.display = rol==='deo' ? '' : 'none';
+  document.getElementById('view-con').style.display = rol==='con' ? '' : 'none';
+  if (rol==='con' && !document.getElementById('view-con').innerHTML) renderCON();
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+renderDEO();
+</script>
+</body>
+</html>

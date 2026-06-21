@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AXIS OS — Órdenes de obra</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#f0f2f5;--surf:#fff;--surf2:#f8fafc;--surf3:#f1f5f9;
+  --bdr:#e2e8f0;--bdr2:#cbd5e1;
+  --ink:#0d1117;--ink2:#1c2433;--ink3:#2d3748;
+  --muted:#64748b;--subtle:#94a3b8;--ghost:#cbd5e1;
+  --blue:#2563eb;--blue-l:#eff6ff;--blue-b:#bfdbfe;--blue-d:#1d4ed8;
+  --grn:#16a34a;--grn-l:#f0fdf4;--grn-b:#bbf7d0;--grn-d:#15803d;
+  --ylw:#ca8a04;--ylw-l:#fefce8;--ylw-b:#fef08a;--ylw-d:#a16207;
+  --red:#dc2626;--red-l:#fef2f2;--red-b:#fecaca;--red-d:#b91c1c;
+  --ora:#ea580c;--ora-l:#fff7ed;--ora-b:#fed7aa;
+  --vio:#7c3aed;--vio-l:#f5f3ff;--vio-b:#ddd6fe;
+  --mono:'JetBrains Mono',monospace;
+  --r:5px;--r2:8px;--r3:12px;
+  --sh:0 1px 2px rgba(0,0,0,.06),0 1px 3px rgba(0,0,0,.08);
+  --sh2:0 4px 16px rgba(0,0,0,.12);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--ink);font-size:13px;line-height:1.5;height:100vh;display:flex;flex-direction:column;overflow:hidden}
+
+/* TOPBAR */
+.topbar{height:48px;background:var(--ink);display:flex;align-items:center;padding:0 20px;gap:14px;flex-shrink:0;border-bottom:1px solid var(--ink2)}
+.logo{font-family:var(--mono);font-size:12px;font-weight:500;letter-spacing:3px;color:#e2e8f0}
+.vr{width:1px;height:18px;background:var(--ink2)}
+.tb-info{font-size:12px;color:var(--muted)}.tb-info strong{color:#94a3b8;font-weight:500}
+.tb-r{margin-left:auto;display:flex;gap:8px;align-items:center}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;gap:5px;padding:6px 13px;border-radius:var(--r);border:1px solid;font-family:'Inter',sans-serif;font-size:12px;font-weight:500;cursor:pointer;transition:all .15s;white-space:nowrap}
+.btn-prim{background:var(--blue);color:#fff;border-color:var(--blue-d)}.btn-prim:hover{background:var(--blue-d)}
+.btn-ghost{background:var(--surf);color:var(--ink2);border-color:var(--bdr)}.btn-ghost:hover{background:var(--surf2)}
+.btn-grn{background:var(--grn);color:#fff;border-color:var(--grn-d)}.btn-grn:hover{background:var(--grn-d)}
+.btn-ylw{background:var(--ylw-l);color:var(--ylw-d);border-color:var(--ylw-b)}.btn-ylw:hover{background:var(--ylw-b)}
+.btn-red{background:var(--red-l);color:var(--red);border-color:var(--red-b)}.btn-red:hover{background:#fecaca}
+.btn-sm{padding:4px 10px;font-size:11px}
+.btn-xs{padding:2px 8px;font-size:10px}
+
+/* BADGES */
+.badge{display:inline-flex;align-items:center;font-size:10px;font-weight:600;padding:2px 7px;border-radius:10px;border:1px solid;white-space:nowrap}
+.b-blue{background:var(--blue-l);color:var(--blue);border-color:var(--blue-b)}
+.b-grn{background:var(--grn-l);color:var(--grn);border-color:var(--grn-b)}
+.b-ylw{background:var(--ylw-l);color:var(--ylw);border-color:var(--ylw-b)}
+.b-red{background:var(--red-l);color:var(--red);border-color:var(--red-b)}
+.b-ora{background:var(--ora-l);color:var(--ora);border-color:var(--ora-b)}
+.b-vio{background:var(--vio-l);color:var(--vio);border-color:var(--vio-b)}
+.b-neu{background:var(--surf3);color:var(--muted);border-color:var(--bdr)}
+
+/* LAYOUT */
+.app{flex:1;display:flex;overflow:hidden}
+
+/* KPI BAR */
+.kpi-bar{background:var(--surf);border-bottom:1px solid var(--bdr);padding:10px 20px;display:flex;gap:0;flex-shrink:0}
+.kpi-item{display:flex;flex-direction:column;gap:2px;padding:0 20px;border-right:1px solid var(--bdr);cursor:pointer;transition:background .1s}
+.kpi-item:first-child{padding-left:0}
+.kpi-item:last-child{border-right:none}
+.kpi-item:hover{background:var(--surf2)}
+.kpi-item.active-filter{background:var(--blue-l)}
+.ki-val{font-family:var(--mono);font-size:20px;font-weight:600;line-height:1}
+.ki-lbl{font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+
+/* TOOLBAR */
+.toolbar{background:var(--surf);border-bottom:1px solid var(--bdr);padding:8px 20px;display:flex;align-items:center;gap:8px;flex-shrink:0}
+.tb-filters{display:flex;gap:4px}
+.filt{padding:4px 12px;border-radius:20px;border:1px solid var(--bdr);background:var(--surf);color:var(--muted);font-size:11px;font-weight:500;cursor:pointer;transition:all .15s;font-family:'Inter',sans-serif}
+.filt:hover{border-color:var(--bdr2);color:var(--ink2)}
+.filt.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.tb-sep{flex:1}
+.search-inp{background:var(--surf2);border:1px solid var(--bdr);border-radius:var(--r);padding:5px 10px;font-family:'Inter',sans-serif;font-size:12px;color:var(--ink);outline:none;width:200px}
+.search-inp:focus{border-color:var(--blue)}
+
+/* MAIN SPLIT */
+.main{flex:1;display:flex;overflow:hidden}
+.list-col{flex:1;overflow-y:auto;min-width:0}
+.list-col::-webkit-scrollbar{width:4px}
+.list-col::-webkit-scrollbar-thumb{background:var(--bdr);border-radius:4px}
+
+/* ORDEN ROW */
+.orden-row{display:flex;align-items:stretch;gap:0;padding:0 20px;border-bottom:1px solid var(--bdr);cursor:pointer;transition:background .12s;position:relative}
+.orden-row:hover{background:var(--surf2)}
+.orden-row.selected{background:var(--blue-l)}
+.or-left-bar{width:3px;flex-shrink:0;border-radius:0;margin:0 14px 0 0;align-self:stretch}
+.or-left-bar.previa{background:var(--blue)}
+.or-left-bar.incidencia{background:var(--red)}
+.or-left-bar.decision{background:var(--vio)}
+.or-body{flex:1;padding:11px 0;min-width:0}
+.or-top{display:flex;align-items:center;gap:8px;margin-bottom:4px}
+.or-codigo{font-family:var(--mono);font-size:11px;font-weight:600;color:var(--blue);flex-shrink:0}
+.or-titulo{font-size:13px;font-weight:600;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--ink2)}
+.or-meta{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.or-bottom{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.or-sistema{font-size:11px;color:var(--muted)}
+.or-dest{font-size:11px;color:var(--muted);display:flex;align-items:center;gap:3px}
+.or-plazo{font-size:11px;font-weight:600;margin-left:auto}
+.or-plazo.ok{color:var(--muted)}
+.or-plazo.pronto{color:var(--ylw)}
+.or-plazo.vencido{color:var(--red)}
+.or-plazo.hoy{color:var(--ora);font-weight:700}
+.or-right{display:flex;align-items:center;padding:0 0 0 12px;flex-shrink:0}
+
+/* ESTADO BADGE con punto */
+.estado-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.ed-emitida{background:var(--blue)}
+.ed-recibida{background:var(--ylw)}
+.ed-ejecucion{background:var(--ora)}
+.ed-cerrada{background:var(--grn)}
+.ed-incumplida{background:var(--red)}
+
+/* VENCIMIENTO tag */
+.venc-tag{font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;border:1px solid}
+.vt-ok{background:var(--surf3);color:var(--muted);border-color:var(--bdr)}
+.vt-pronto{background:var(--ylw-l);color:var(--ylw-d);border-color:var(--ylw-b)}
+.vt-hoy{background:var(--ora-l);color:var(--ora);border-color:var(--ora-b)}
+.vt-vencido{background:var(--red-l);color:var(--red);border-color:var(--red-b)}
+
+/* DRAWER */
+.drawer-overlay{position:fixed;inset:0;background:rgba(0,0,0,.25);z-index:80;display:none}
+.drawer-overlay.open{display:block}
+.drawer{position:fixed;top:48px;right:0;bottom:0;width:480px;background:var(--surf);border-left:1px solid var(--bdr);z-index:90;display:flex;flex-direction:column;transform:translateX(100%);transition:transform .22s cubic-bezier(.4,0,.2,1);box-shadow:var(--sh2)}
+.drawer.open{transform:translateX(0)}
+.dr-head{padding:14px 18px;border-bottom:1px solid var(--bdr);display:flex;align-items:center;gap:10px;flex-shrink:0}
+.dr-titulo{font-size:14px;font-weight:700;flex:1;line-height:1.3}
+.dr-x{background:none;border:none;color:var(--muted);cursor:pointer;font-size:18px;line-height:1;padding:2px}
+.dr-x:hover{color:var(--ink)}
+.dr-scroll{flex:1;overflow-y:auto;padding:16px 18px;display:flex;flex-direction:column;gap:14px}
+.dr-scroll::-webkit-scrollbar{width:3px}
+.dr-scroll::-webkit-scrollbar-thumb{background:var(--bdr);border-radius:3px}
+.dr-foot{padding:12px 18px;border-top:1px solid var(--bdr);display:flex;gap:8px;flex-shrink:0;flex-wrap:wrap}
+
+/* Drawer sections */
+.dr-sec{display:flex;flex-direction:column;gap:8px}
+.dr-sec-title{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.6px}
+.dr-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.dr-field{display:flex;flex-direction:column;gap:3px}
+.dr-field-label{font-size:10px;font-weight:600;color:var(--muted)}
+.dr-field-val{font-size:12px;font-weight:500;color:var(--ink2)}
+.dr-field-val.mono{font-family:var(--mono)}
+.dr-desc{font-size:13px;color:var(--ink2);line-height:1.6;padding:10px;background:var(--surf2);border-radius:var(--r);border:1px solid var(--bdr)}
+
+/* Timeline estado */
+.estado-timeline{display:flex;flex-direction:column;gap:0}
+.et-item{display:flex;gap:12px;position:relative}
+.et-item::before{content:'';position:absolute;left:6px;top:20px;bottom:-4px;width:1px;background:var(--bdr)}
+.et-item:last-child::before{display:none}
+.et-dot{width:13px;height:13px;border-radius:50%;flex-shrink:0;margin-top:4px;border:2px solid var(--surf);box-shadow:0 0 0 1px var(--bdr)}
+.et-dot.done{background:var(--grn);border-color:var(--grn-b)}
+.et-dot.current{background:var(--blue);border-color:var(--blue-b);animation:etpulse 2s infinite}
+@keyframes etpulse{0%,100%{box-shadow:0 0 0 1px var(--blue-b)}50%{box-shadow:0 0 0 3px var(--blue-b)}}
+.et-dot.pending{background:var(--surf3);border-color:var(--bdr)}
+.et-info{padding:0 0 14px;flex:1}
+.et-label{font-size:12px;font-weight:600;color:var(--ink2)}
+.et-meta{font-size:11px;color:var(--muted)}
+
+/* Docs requeridos */
+.doc-req-list{display:flex;flex-direction:column;gap:4px}
+.doc-req{display:flex;align-items:center;gap:8px;padding:7px 10px;border:1px solid var(--bdr);border-radius:var(--r);font-size:12px}
+.doc-req.ok{border-color:var(--grn-b);background:var(--grn-l)}
+.doc-req.pend{border-color:var(--ylw-b);background:var(--ylw-l)}
+.drt{font-family:var(--mono);font-size:10px;font-weight:600;padding:1px 6px;border-radius:3px;background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe;flex-shrink:0}
+.drn{flex:1;color:var(--ink2)}
+.drs{font-size:10px;font-weight:600;flex-shrink:0}
+
+/* CHECKLIST */
+.checklist{display:flex;flex-direction:column;gap:5px}
+.cl-item{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--surf3);font-size:12px}
+.cl-item:last-child{border-bottom:none}
+.cl-cb{accent-color:var(--blue);cursor:pointer;width:14px;height:14px;flex-shrink:0}
+.cl-txt{flex:1;color:var(--ink2)}
+.cl-txt.done{text-decoration:line-through;color:var(--muted)}
+
+/* MODAL */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:200;display:none;align-items:center;justify-content:center;backdrop-filter:blur(3px)}
+.overlay.open{display:flex}
+.modal{background:var(--surf);border:1px solid var(--bdr);border-radius:var(--r2);width:560px;max-height:88vh;display:flex;flex-direction:column;box-shadow:var(--sh2)}
+.modal-head{padding:14px 18px;border-bottom:1px solid var(--bdr);display:flex;align-items:center;gap:10px;flex-shrink:0}
+.modal-title{font-size:14px;font-weight:700;flex:1}
+.modal-x{background:none;border:none;color:var(--muted);cursor:pointer;font-size:18px;line-height:1}
+.modal-x:hover{color:var(--ink)}
+.modal-body{padding:18px;overflow-y:auto;flex:1;display:flex;flex-direction:column;gap:12px}
+.modal-foot{padding:12px 18px;border-top:1px solid var(--bdr);display:flex;gap:8px;justify-content:flex-end;flex-shrink:0}
+.fg{display:flex;flex-direction:column;gap:5px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+.lbl{font-size:11px;font-weight:600;color:var(--muted)}
+.inp,.sel,.ta{background:var(--surf2);border:1px solid var(--bdr2);border-radius:var(--r);padding:7px 10px;font-family:'Inter',sans-serif;font-size:13px;color:var(--ink);outline:none;width:100%;transition:border-color .15s}
+.inp:focus,.sel:focus,.ta:focus{border-color:var(--blue);background:var(--surf)}
+.ta{resize:vertical;min-height:80px}
+.sep{height:1px;background:var(--bdr)}
+.sec-lbl{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.6px}
+
+/* Tipo selector */
+.tipo-selector{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.tipo-opt{border:1px solid var(--bdr);border-radius:var(--r2);padding:10px;cursor:pointer;transition:all .15s;text-align:center}
+.tipo-opt:hover{border-color:var(--bdr2)}
+.tipo-opt.on-previa{border-color:var(--blue-b);background:var(--blue-l)}
+.tipo-opt.on-incidencia{border-color:var(--red-b);background:var(--red-l)}
+.tipo-opt.on-decision{border-color:var(--vio-b);background:var(--vio-l)}
+.tipo-opt-icon{font-size:18px;margin-bottom:4px;display:flex;align-items:center;justify-content:center}
+.tipo-opt-icon svg{display:block}
+.tipo-opt-lbl{font-size:11px;font-weight:600}
+.tipo-opt-sub{font-size:10px;color:var(--muted);margin-top:2px}
+
+/* Toast */
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--ink);color:#e2e8f0;padding:8px 18px;border-radius:var(--r);font-size:12px;font-weight:500;z-index:600;display:none;box-shadow:var(--sh2)}
+.toast.show{display:block;animation:tin .2s}
+@keyframes tin{from{opacity:0;transform:translateX(-50%) translateY(8px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="logo">AXIS OS</div>
+  <div class="vr"></div>
+  <div class="tb-info">Órdenes de obra · <strong>FLEXLIVING 417 LAS ROZAS</strong></div>
+  <div class="tb-r">
+    <button class="btn btn-ghost btn-sm" onclick="openModal()">
+      <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+      Nueva orden
+    </button>
+  </div>
+</header>
+
+<div class="app" style="flex-direction:column">
+
+  <!-- KPI BAR -->
+  <div class="kpi-bar" id="kpi-bar"></div>
+
+  <!-- TOOLBAR -->
+  <div class="toolbar">
+    <div class="tb-filters" id="tb-filters"></div>
+    <div class="tb-sep"></div>
+    <input class="search-inp" placeholder="Buscar orden..." oninput="filterSearch(this.value)">
+    <div style="display:flex;gap:5px">
+      <button class="btn btn-ghost btn-sm" onclick="toast('Exportar libro de órdenes PDF')">
+        <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+        Libro de órdenes
+      </button>
+    </div>
+  </div>
+
+  <!-- LISTA -->
+  <div class="main">
+    <div class="list-col" id="lista-ordenes"></div>
+  </div>
+</div>
+
+<!-- DRAWER -->
+<div class="drawer-overlay" id="drawer-overlay" onclick="closeDrawer()"></div>
+<div class="drawer" id="drawer">
+  <div class="dr-head">
+    <div class="dr-titulo" id="dr-titulo">Orden</div>
+    <button class="dr-x" onclick="closeDrawer()">×</button>
+  </div>
+  <div class="dr-scroll" id="dr-scroll"></div>
+  <div class="dr-foot" id="dr-foot"></div>
+</div>
+
+<!-- MODAL NUEVA ORDEN -->
+<div class="overlay" id="modal-nueva">
+  <div class="modal">
+    <div class="modal-head">
+      <span class="modal-title">Nueva orden de obra</span>
+      <button class="modal-x" onclick="closeModalEl()">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="fg">
+        <label class="lbl">Tipo de orden</label>
+        <div class="tipo-selector" id="tipo-selector">
+          <div class="tipo-opt on-previa" data-tipo="previa" onclick="selTipo('previa')">
+            <div class="tipo-opt-icon">
+              <svg width="20" height="20" fill="none" stroke="var(--blue)" stroke-width="1.5" viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+            </div>
+            <div class="tipo-opt-lbl">Previa al tajo</div>
+            <div class="tipo-opt-sub">Antes de iniciar ejecución</div>
+          </div>
+          <div class="tipo-opt" data-tipo="incidencia" onclick="selTipo('incidencia')">
+            <div class="tipo-opt-icon">
+              <svg width="20" height="20" fill="none" stroke="var(--red)" stroke-width="1.5" viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            </div>
+            <div class="tipo-opt-lbl">Por incidencia</div>
+            <div class="tipo-opt-sub">Responde a un defecto</div>
+          </div>
+          <div class="tipo-opt" data-tipo="decision" onclick="selTipo('decision')">
+            <div class="tipo-opt-icon">
+              <svg width="20" height="20" fill="none" stroke="var(--vio)" stroke-width="1.5" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+            </div>
+            <div class="tipo-opt-lbl">Por decisión</div>
+            <div class="tipo-opt-sub">Acuerdo o cambio de criterio</div>
+          </div>
+        </div>
+      </div>
+      <div class="sep"></div>
+      <div class="g2">
+        <div class="fg">
+          <label class="lbl">Disciplina / Sistema</label>
+          <select class="sel" id="no-sistema">
+            <option>08.01 Tabiquería PYL</option>
+            <option>02.03 Estructura H.A.</option>
+            <option>03.06 Electricidad</option>
+            <option>03.02 Fontanería y ACS</option>
+            <option>15.01 Climatización VRF</option>
+            <option>01.04 Cubiertas</option>
+            <option>General</option>
+          </select>
+        </div>
+        <div class="fg">
+          <label class="lbl">Destinatario</label>
+          <select class="sel" id="no-dest">
+            <option>Const. Martínez S.L.</option>
+            <option>Instalaciones XYZ</option>
+            <option>Carpintería Pérez</option>
+            <option>Luis García (CSS)</option>
+          </select>
+        </div>
+      </div>
+      <div class="fg">
+        <label class="lbl">Descripción de la orden <span style="color:var(--red)">*</span></label>
+        <textarea class="ta" id="no-desc" placeholder="Instrucción técnica, normativa aplicable, condiciones de ejecución..."></textarea>
+      </div>
+      <div class="g2">
+        <div class="fg">
+          <label class="lbl">Inicio previsto</label>
+          <input class="inp" type="date" id="no-inicio">
+        </div>
+        <div class="fg">
+          <label class="lbl">Fin previsto</label>
+          <input class="inp" type="date" id="no-fin">
+        </div>
+      </div>
+      <div class="fg">
+        <label class="lbl">Documentación requerida antes del inicio</label>
+        <div id="no-docs-list" style="display:flex;flex-direction:column;gap:5px;margin-top:2px">
+          <div style="display:flex;gap:6px;align-items:center">
+            <select class="sel" style="width:80px;flex-shrink:0" id="no-doc-tipo"><option>FT</option><option>DoP</option><option>CE</option><option>DIT</option><option>ENS</option></select>
+            <input class="inp" placeholder="Nombre del documento..." id="no-doc-nombre">
+            <button class="btn btn-ghost btn-xs" onclick="addDoc()">+</button>
+          </div>
+        </div>
+        <div id="no-docs-added" style="display:flex;flex-direction:column;gap:4px;margin-top:4px"></div>
+      </div>
+      <div class="fg">
+        <label class="lbl">Vinculada a</label>
+        <select class="sel" id="no-vinculo">
+          <option value="">— Ninguna (orden directa)</option>
+          <option value="pt3">PT-003 — Replanteo tabiquería PB</option>
+          <option value="pt1">PT-001 — Armado pilar P-12</option>
+          <option value="acta012">Acta #012</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost btn-sm" onclick="closeModalEl()">Cancelar</button>
+      <button class="btn btn-prim btn-sm" onclick="crearOrden()">Crear orden</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast-el"></div>
+
+<script>
+// ── DATOS ─────────────────────────────────────────────────────────────────────
+let ORDENES = [
+  {
+    id:'oo1', codigo:'OO-018', tipo:'previa',
+    titulo:'Inicio tabiquería PYL planta baja — verificación previa',
+    sistema:'08.01 Tabiquería PYL', partida:'PTI-301.1',
+    destinatario:'Const. Martínez S.L.', contacto:'Carlos Martín (JO)',
+    desc:'Antes de iniciar la ejecución del tabique tipo T1 en zona húmeda, verificar replanteo con DEO. Aplicar membrana impermeabilizante en encuentro con solera según detalle constructivo DC-08-03. No iniciar sin conformidad escrita del DEO.',
+    inicio:'2024-11-25', fin:'2024-12-10',
+    estado:'emitida', estadoTs:'2024-11-20T10:30:00',
+    acta:'#012', punto:'PT-004',
+    docs:[
+      {tipo:'FT', nombre:'Ficha técnica membrana impermeabilizante', ok:false},
+      {tipo:'DoP',nombre:'Declaración de Prestaciones perfilería metálica', ok:false},
+    ],
+    checklist:[
+      {txt:'Replanteo verificado por DEO',done:false},
+      {txt:'Membrana impermeabilizante disponible en obra',done:false},
+      {txt:'Documentación técnica aportada y validada',done:false},
+      {txt:'Equipo de trabajo informado de las instrucciones',done:false},
+    ],
+    historial:[
+      {estado:'emitida',fecha:'20/11/2024',user:'Ana García (DEO)',nota:'Orden emitida y notificada a constructora.'},
+    ]
+  },
+  {
+    id:'oo2', codigo:'OO-017', tipo:'incidencia',
+    titulo:'Reparación armado pilar P-12 según plano adjunto',
+    sistema:'02.03 Estructura H.A.', partida:'02.03.01',
+    destinatario:'Const. Martínez S.L.', contacto:'Carlos Martín (JO)',
+    desc:'Reparar el armado incorrecto detectado en pilar P-12 según el plano de detalle DO-EST-047 revisión B. El ferralla debe verificar con el encargado antes de ejecutar. Se requiere parte fotográfico antes y después de la reparación.',
+    inicio:'2024-11-21', fin:'2024-11-25',
+    estado:'ejecucion', estadoTs:'2024-11-21T09:00:00',
+    acta:'#011', punto:'PT-001',
+    docs:[],
+    checklist:[
+      {txt:'Plano DO-EST-047 rev.B descargado y en obra',done:true},
+      {txt:'Parte fotográfico previo realizado',done:true},
+      {txt:'Reparación ejecutada',done:false},
+      {txt:'Parte fotográfico posterior enviado al DEO',done:false},
+      {txt:'DEO verifica in situ',done:false},
+    ],
+    historial:[
+      {estado:'emitida',fecha:'13/11/2024',user:'Ana García (DEO)',nota:'Orden emitida tras detección de armado incorrecto.'},
+      {estado:'recibida',fecha:'13/11/2024',user:'Carlos Martín (JO)',nota:'Confirmada recepción. Ferralla programado para la semana siguiente.'},
+      {estado:'ejecucion',fecha:'21/11/2024',user:'Carlos Martín (JO)',nota:'Inicio de reparación. Ferralla en obra.'},
+    ]
+  },
+  {
+    id:'oo3', codigo:'OO-016', tipo:'decision',
+    titulo:'Cambio criterio hormigonado forjado P2 — aditivo plastificante',
+    sistema:'02.03 Estructura H.A.', partida:'02.03.02',
+    destinatario:'Const. Martínez S.L.', contacto:'Carlos Martín (JO)',
+    desc:'Por acuerdo con DO y promotor, el hormigonado del forjado de planta 2 incorporará aditivo plastificante tipo Sika ViscoCrete para mejorar la trabajabilidad. La dosificación la certifica la planta de hormigón. Aportar certificado de la planta antes del hormigonado.',
+    inicio:'2024-11-28', fin:'2024-11-28',
+    estado:'emitida', estadoTs:'2024-11-20T11:45:00',
+    acta:'#012', punto:null,
+    docs:[
+      {tipo:'CERT',nombre:'Certificado dosificación con aditivo plastificante', ok:false},
+    ],
+    checklist:[
+      {txt:'Certificado dosificación recibido y validado',done:false},
+      {txt:'Planta de hormigón notificada del cambio',done:false},
+      {txt:'Ensayo de cono de Abrams realizado in situ',done:false},
+    ],
+    historial:[
+      {estado:'emitida',fecha:'20/11/2024',user:'Ana García (DEO)',nota:'Orden emitida por acuerdo en acta #012.'},
+    ]
+  },
+  {
+    id:'oo4', codigo:'OO-015', tipo:'incidencia',
+    titulo:'Reparación rotura tubería saneamiento colgado fase 2',
+    sistema:'03.03 Saneamiento', partida:'03.03.01',
+    destinatario:'Const. Martínez S.L.', contacto:'Carlos Martín (JO)',
+    desc:'Reparar la rotura detectada en la tubería de saneamiento colgado en la zona de fase 2. Antes de cubrir la reparación, el DEO debe inspeccionarla in situ. Realizar prueba de estanqueidad y documentarla fotográficamente.',
+    inicio:'2024-11-20', fin:'2024-11-21',
+    estado:'ejecucion', estadoTs:'2024-11-20T10:00:00',
+    acta:'#012', punto:'PT-005',
+    docs:[],
+    checklist:[
+      {txt:'Rotura localizada y documentada',done:true},
+      {txt:'Reparación ejecutada',done:false},
+      {txt:'Inspección DEO previa a cubrir',done:false},
+      {txt:'Prueba de estanqueidad realizada',done:false},
+    ],
+    historial:[
+      {estado:'emitida',fecha:'20/11/2024',user:'Ana García (DEO)',nota:'Orden emitida en visita de obra.'},
+      {estado:'ejecucion',fecha:'20/11/2024',user:'Carlos Martín (JO)',nota:'Reparación en curso.'},
+    ]
+  },
+  {
+    id:'oo5', codigo:'OO-014', tipo:'previa',
+    titulo:'Instalación carpintería exterior planta 2',
+    sistema:'01.07 Fachada', partida:'FV-102',
+    destinatario:'Carpintería Pérez S.L.', contacto:'Antonio Pérez',
+    desc:'Inicio de colocación de carpintería de aluminio lacado en planta 2. Verificar con DEO el replanteo de los premarcos antes de proceder. Seguir especificaciones del pliego de condiciones para los sellados perimetrales.',
+    inicio:'2024-12-05', fin:'2024-12-20',
+    estado:'cerrada', estadoTs:'2024-11-15T10:00:00',
+    acta:'#011', punto:null,
+    docs:[
+      {tipo:'DoP',nombre:'Declaración de Prestaciones carpintería aluminio', ok:true},
+      {tipo:'CE', nombre:'Marcado CE carpintería', ok:true},
+    ],
+    checklist:[
+      {txt:'DoP y CE validados por DEO',done:true},
+      {txt:'Replanteo premarcos verificado',done:true},
+      {txt:'Ejecución completada y verificada',done:true},
+    ],
+    historial:[
+      {estado:'emitida',fecha:'13/11/2024',user:'Ana García (DEO)',nota:''},
+      {estado:'recibida',fecha:'13/11/2024',user:'Antonio Pérez',nota:'Confirmada.'},
+      {estado:'ejecucion',fecha:'05/12/2024',user:'Carpintería Pérez S.L.',nota:'Inicio de trabajos.'},
+      {estado:'cerrada',fecha:'20/12/2024',user:'Ana García (DEO)',nota:'Verificada y conforme.'},
+    ]
+  },
+];
+
+let filterEstado = 'todas';
+let filterTipo   = 'todos';
+let filterSearch = '';
+let selectedId   = null;
+let tipoSeleccionado = 'previa';
+let docsNuevaOrden = [];
+
+// ── HELPERS ───────────────────────────────────────────────────────────────────
+function diasHasta(fecha) {
+  if (!fecha) return null;
+  const d = Math.ceil((new Date(fecha) - new Date()) / 86400000);
+  return d;
+}
+function plazoInfo(fecha, estado) {
+  if (estado === 'cerrada' || estado === 'incumplida') return null;
+  const d = diasHasta(fecha);
+  if (d === null) return null;
+  if (d < 0)   return {cls:'vencido',txt:`Vencido hace ${-d}d`};
+  if (d === 0) return {cls:'hoy',    txt:'Vence hoy'};
+  if (d <= 3)  return {cls:'pronto', txt:`${d}d`};
+  return       {cls:'ok',           txt:`${d}d`};
+}
+const TIPO_COLOR = {previa:'previa',incidencia:'incidencia',decision:'decision'};
+const TIPO_LABEL = {previa:'Previa al tajo',incidencia:'Por incidencia',decision:'Por decisión'};
+const TIPO_BADGE = {previa:'b-blue',incidencia:'b-red',decision:'b-vio'};
+const ESTADO_LABEL = {emitida:'Emitida',recibida:'Recibida',ejecucion:'En ejecución',cerrada:'Cerrada',incumplida:'Incumplida'};
+const ESTADO_DOT   = {emitida:'ed-emitida',recibida:'ed-recibida',ejecucion:'ed-ejecucion',cerrada:'ed-cerrada',incumplida:'ed-incumplida'};
+const ESTADO_BADGE = {emitida:'b-blue',recibida:'b-ylw',ejecucion:'b-ora',cerrada:'b-grn',incumplida:'b-red'};
+
+// ── RENDER KPIs ───────────────────────────────────────────────────────────────
+function renderKPIs() {
+  const tots = {
+    todas:ORDENES.length,
+    emitida:ORDENES.filter(o=>o.estado==='emitida').length,
+    ejecucion:ORDENES.filter(o=>o.estado==='ejecucion').length,
+    cerrada:ORDENES.filter(o=>o.estado==='cerrada').length,
+    vencidas:ORDENES.filter(o=>diasHasta(o.fin)<0&&o.estado!=='cerrada'&&o.estado!=='incumplida').length,
+  };
+  document.getElementById('kpi-bar').innerHTML = `
+    <div class="kpi-item${filterEstado==='todas'?' active-filter':''}" onclick="setFilter('todas')">
+      <div class="ki-val">${tots.todas}</div>
+      <div class="ki-lbl">Total</div>
+    </div>
+    <div class="kpi-item${filterEstado==='emitida'?' active-filter':''}" onclick="setFilter('emitida')">
+      <div class="ki-val" style="color:var(--blue)">${tots.emitida}</div>
+      <div class="ki-lbl">Emitidas</div>
+    </div>
+    <div class="kpi-item${filterEstado==='ejecucion'?' active-filter':''}" onclick="setFilter('ejecucion')">
+      <div class="ki-val" style="color:var(--ora)">${tots.ejecucion}</div>
+      <div class="ki-lbl">En ejecución</div>
+    </div>
+    <div class="kpi-item${filterEstado==='cerrada'?' active-filter':''}" onclick="setFilter('cerrada')">
+      <div class="ki-val" style="color:var(--grn)">${tots.cerrada}</div>
+      <div class="ki-lbl">Cerradas</div>
+    </div>
+    <div class="kpi-item${tots.vencidas>0?' active-filter':''}" onclick="setFilter('vencidas')">
+      <div class="ki-val" style="color:${tots.vencidas>0?'var(--red)':'var(--muted)'}">${tots.vencidas}</div>
+      <div class="ki-lbl">Vencidas</div>
+    </div>`;
+
+  // Tipo filters
+  document.getElementById('tb-filters').innerHTML = ['todos','previa','incidencia','decision'].map(t=>`
+    <button class="filt${filterTipo===t?' on':''}" onclick="setTipoFilter('${t}')">
+      ${t==='todos'?'Todas':TIPO_LABEL[t]}
+    </button>`).join('');
+}
+
+// ── RENDER LISTA ──────────────────────────────────────────────────────────────
+function renderLista() {
+  let ordenes = [...ORDENES];
+  if (filterEstado!=='todas')   ordenes = ordenes.filter(o=>filterEstado==='vencidas'?(diasHasta(o.fin)<0&&o.estado!=='cerrada'&&o.estado!=='incumplida'):o.estado===filterEstado);
+  if (filterTipo!=='todos')     ordenes = ordenes.filter(o=>o.tipo===filterTipo);
+  if (filterSearch) {
+    const q = filterSearch.toLowerCase();
+    ordenes = ordenes.filter(o=>o.titulo.toLowerCase().includes(q)||o.codigo.toLowerCase().includes(q)||o.sistema.toLowerCase().includes(q)||o.destinatario.toLowerCase().includes(q));
+  }
+
+  const list = document.getElementById('lista-ordenes');
+  if (!ordenes.length) {
+    list.innerHTML=`<div style="text-align:center;padding:48px;color:var(--muted)">Sin órdenes con estos filtros</div>`;
+    return;
+  }
+
+  list.innerHTML = ordenes.map(o => {
+    const pi = plazoInfo(o.fin, o.estado);
+    const checkDone = o.checklist.filter(c=>c.done).length;
+    const checkTotal= o.checklist.length;
+    return `<div class="orden-row${selectedId===o.id?' selected':''}" onclick="selectOrden('${o.id}')">
+      <div class="or-left-bar ${TIPO_COLOR[o.tipo]}"></div>
+      <div class="or-body">
+        <div class="or-top">
+          <span class="or-codigo">${o.codigo}</span>
+          <span class="or-titulo">${o.titulo}</span>
+          <div class="or-meta">
+            ${pi?`<span class="venc-tag vt-${pi.cls}">${pi.txt}</span>`:''}
+            <span class="badge ${ESTADO_BADGE[o.estado]}">${ESTADO_LABEL[o.estado]}</span>
+          </div>
+        </div>
+        <div class="or-bottom">
+          <span class="or-sistema">${o.sistema}</span>
+          <span style="color:var(--ghost)">·</span>
+          <span class="or-dest">
+            <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            ${o.destinatario}
+          </span>
+          ${o.acta?`<span style="color:var(--ghost)">·</span><span style="font-size:11px;color:var(--muted)">Acta ${o.acta}</span>`:''}
+          ${checkTotal>0?`<span style="margin-left:auto;font-size:10px;color:${checkDone===checkTotal?'var(--grn)':'var(--muted)'}">
+            ${checkDone}/${checkTotal} verificaciones
+          </span>`:''}
+        </div>
+      </div>
+      <div class="or-right">
+        <svg width="14" height="14" fill="none" stroke="var(--ghost)" stroke-width="1.5" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── DRAWER ────────────────────────────────────────────────────────────────────
+function selectOrden(id) {
+  selectedId = id;
+  renderLista();
+  const o = ORDENES.find(x=>x.id===id);
+  if (!o) return;
+
+  document.getElementById('dr-titulo').innerHTML = `
+    <span style="font-family:var(--mono);font-size:11px;color:var(--blue);margin-right:8px">${o.codigo}</span>
+    ${o.titulo}`;
+
+  const pi = plazoInfo(o.fin, o.estado);
+  const etapas = ['emitida','recibida','ejecucion','cerrada'];
+
+  document.getElementById('dr-scroll').innerHTML = `
+    <!-- Meta -->
+    <div class="dr-sec">
+      <div style="display:flex;gap:6px;flex-wrap:wrap">
+        <span class="badge ${TIPO_BADGE[o.tipo]}">${TIPO_LABEL[o.tipo]}</span>
+        <span class="badge ${ESTADO_BADGE[o.estado]}">${ESTADO_LABEL[o.estado]}</span>
+        ${pi?`<span class="venc-tag vt-${pi.cls}">${pi.txt}</span>`:''}
+      </div>
+    </div>
+
+    <!-- Campos -->
+    <div class="dr-sec">
+      <div class="dr-grid">
+        <div class="dr-field"><div class="dr-field-label">Sistema</div><div class="dr-field-val">${o.sistema}</div></div>
+        <div class="dr-field"><div class="dr-field-label">Destinatario</div><div class="dr-field-val">${o.destinatario}</div></div>
+        <div class="dr-field"><div class="dr-field-label">Contacto</div><div class="dr-field-val">${o.contacto}</div></div>
+        <div class="dr-field"><div class="dr-field-label">Plazo</div><div class="dr-field-val mono">${o.inicio||'—'} → ${o.fin||'—'}</div></div>
+        ${o.acta?`<div class="dr-field"><div class="dr-field-label">Acta origen</div><div class="dr-field-val mono">${o.acta}</div></div>`:''}
+        ${o.punto?`<div class="dr-field"><div class="dr-field-label">Punto seguimiento</div><div class="dr-field-val mono">${o.punto}</div></div>`:''}
+      </div>
+    </div>
+
+    <!-- Descripción -->
+    <div class="dr-sec">
+      <div class="dr-sec-title">Instrucciones</div>
+      <div class="dr-desc">${o.desc}</div>
+    </div>
+
+    <!-- Checklist -->
+    ${o.checklist.length?`
+    <div class="dr-sec">
+      <div class="dr-sec-title">Checklist de verificación</div>
+      <div class="checklist">
+        ${o.checklist.map((c,i)=>`
+          <div class="cl-item">
+            <input type="checkbox" class="cl-cb" ${c.done?'checked':''}
+              onchange="toggleCheck('${o.id}',${i},this.checked)">
+            <span class="cl-txt${c.done?' done':''}">${c.txt}</span>
+          </div>`).join('')}
+      </div>
+    </div>`:''}
+
+    <!-- Documentación -->
+    ${o.docs.length?`
+    <div class="dr-sec">
+      <div class="dr-sec-title">Documentación requerida</div>
+      <div class="doc-req-list">
+        ${o.docs.map(d=>`
+          <div class="doc-req ${d.ok?'ok':'pend'}">
+            <span class="drt">${d.tipo}</span>
+            <span class="drn">${d.nombre}</span>
+            <span class="drs" style="color:${d.ok?'var(--grn)':'var(--ylw)'}">
+              ${d.ok?'✓ Validado':'Pendiente'}
+            </span>
+          </div>`).join('')}
+      </div>
+    </div>`:''}
+
+    <!-- Timeline estado -->
+    <div class="dr-sec">
+      <div class="dr-sec-title">Historial</div>
+      <div class="estado-timeline">
+        ${o.historial.map(h=>`
+          <div class="et-item">
+            <div class="et-dot done"></div>
+            <div class="et-info">
+              <div class="et-label">${ESTADO_LABEL[h.estado]}</div>
+              <div class="et-meta">${h.fecha} · ${h.user}${h.nota?` · ${h.nota}`:''}</div>
+            </div>
+          </div>`).join('')}
+        ${o.estado!=='cerrada'&&o.estado!=='incumplida'?`
+          <div class="et-item">
+            <div class="et-dot current"></div>
+            <div class="et-info">
+              <div class="et-label" style="color:var(--blue)">Pendiente próximo estado</div>
+              <div class="et-meta">
+                ${o.estado==='emitida'?'Esperando confirmación de recepción':
+                  o.estado==='recibida'?'Esperando inicio de ejecución':
+                  'Pendiente cierre por DEO'}
+              </div>
+            </div>
+          </div>`:''
+        }
+      </div>
+    </div>`;
+
+  // Foot actions
+  const isConstr = false; // Para demo asumimos vista DEO
+  document.getElementById('dr-foot').innerHTML = `
+    <button class="btn btn-ghost btn-sm" onclick="toast('Exportar orden PDF')">
+      <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+      Exportar PDF
+    </button>
+    ${o.estado==='emitida'?`<button class="btn btn-ylw btn-sm" onclick="avanzarEstado('${o.id}','recibida')">Marcar recibida</button>`:''}
+    ${o.estado==='recibida'?`<button class="btn btn-ylw btn-sm" onclick="avanzarEstado('${o.id}','ejecucion')">Iniciar ejecución</button>`:''}
+    ${o.estado==='ejecucion'?`<button class="btn btn-grn btn-sm" onclick="avanzarEstado('${o.id}','cerrada')">✓ Cerrar orden</button>`:''}
+    ${o.estado!=='cerrada'&&o.estado!=='incumplida'?`<button class="btn btn-red btn-sm" onclick="avanzarEstado('${o.id}','incumplida')">Incumplida</button>`:''}`;
+
+  openDrawer();
+}
+
+function toggleCheck(id, i, val) {
+  const o = ORDENES.find(x=>x.id===id);
+  if (o) { o.checklist[i].done = val; renderLista(); }
+}
+
+function avanzarEstado(id, nuevoEstado) {
+  const o = ORDENES.find(x=>x.id===id);
+  if (!o) return;
+  o.historial.push({estado:nuevoEstado, fecha:new Date().toLocaleDateString('es-ES'), user:'Ana García (DEO)', nota:''});
+  o.estado = nuevoEstado;
+  renderKPIs();
+  renderLista();
+  selectOrden(id);
+  toast(`OO actualizada → ${ESTADO_LABEL[nuevoEstado]}`);
+}
+
+function openDrawer()  { document.getElementById('drawer').classList.add('open'); document.getElementById('drawer-overlay').classList.add('open') }
+function closeDrawer() { document.getElementById('drawer').classList.remove('open'); document.getElementById('drawer-overlay').classList.remove('open'); selectedId=null; renderLista() }
+
+// ── FILTROS ───────────────────────────────────────────────────────────────────
+function setFilter(f)      { filterEstado=f; renderKPIs(); renderLista() }
+function setTipoFilter(f)  { filterTipo=f;   renderKPIs(); renderLista() }
+function filterSearch(q)   { window.filterSearch=q; filterSearchQ=q; renderLista() }
+let filterSearchQ = '';
+
+// ── NUEVA ORDEN ───────────────────────────────────────────────────────────────
+function selTipo(tipo) {
+  tipoSeleccionado = tipo;
+  document.querySelectorAll('.tipo-opt').forEach(el=>{
+    el.className = `tipo-opt${el.dataset.tipo===tipo?` on-${tipo}`:''}`;
+  });
+}
+
+function addDoc() {
+  const tipo   = document.getElementById('no-doc-tipo').value;
+  const nombre = document.getElementById('no-doc-nombre').value.trim();
+  if (!nombre) return;
+  docsNuevaOrden.push({tipo,nombre,ok:false});
+  document.getElementById('no-doc-nombre').value='';
+  renderDocsNueva();
+}
+
+function renderDocsNueva() {
+  document.getElementById('no-docs-added').innerHTML = docsNuevaOrden.map((d,i)=>`
+    <div style="display:flex;align-items:center;gap:6px;padding:4px 8px;background:var(--surf3);border-radius:var(--r)">
+      <span style="font-family:var(--mono);font-size:10px;font-weight:600;color:var(--blue)">${d.tipo}</span>
+      <span style="font-size:11px;flex:1">${d.nombre}</span>
+      <button class="btn btn-ghost btn-xs" onclick="removeDoc(${i})" style="padding:1px 6px">×</button>
+    </div>`).join('');
+}
+
+function removeDoc(i) { docsNuevaOrden.splice(i,1); renderDocsNueva(); }
+
+function crearOrden() {
+  const desc = document.getElementById('no-desc').value.trim();
+  if (!desc) { toast('Escribe la descripción de la orden'); return; }
+  const n = ORDENES.length+1;
+  const nueva = {
+    id:'oo'+Date.now(),
+    codigo:`OO-0${(19+n).toString()}`,
+    tipo: tipoSeleccionado,
+    titulo: desc.slice(0,60)+'...',
+    sistema: document.getElementById('no-sistema').value,
+    partida:'',
+    destinatario: document.getElementById('no-dest').value,
+    contacto:'',
+    desc,
+    inicio: document.getElementById('no-inicio').value,
+    fin:    document.getElementById('no-fin').value,
+    estado:'emitida',
+    estadoTs: new Date().toISOString(),
+    acta: document.getElementById('no-vinculo').value ? '' : null,
+    punto: null,
+    docs: [...docsNuevaOrden],
+    checklist:[],
+    historial:[{estado:'emitida',fecha:new Date().toLocaleDateString('es-ES'),user:'Ana García (DEO)',nota:'Orden creada directamente (sin acta).'}],
+  };
+  ORDENES.unshift(nueva);
+  docsNuevaOrden=[];
+  closeModalEl();
+  renderKPIs(); renderLista();
+  toast(`✓ ${nueva.codigo} emitida`);
+}
+
+function openModal()   { document.getElementById('modal-nueva').classList.add('open') }
+function closeModalEl(){ document.getElementById('modal-nueva').classList.remove('open') }
+document.addEventListener('click',e=>{if(e.target.classList.contains('overlay'))closeModalEl()});
+
+function toast(msg){
+  const t=document.getElementById('toast-el');
+  t.textContent=msg;t.classList.add('show');
+  clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2400);
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+renderKPIs();
+renderLista();
+</script>
+</body>
+</html>

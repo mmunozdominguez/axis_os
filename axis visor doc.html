@@ -1,0 +1,817 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AXIS OS — Visor documental</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#f0f2f5; --surf:#fff; --surf2:#f8f9fb; --bdr:#e4e7ec; --bdr2:#cdd2db;
+  --txt:#111827; --txt2:#4b5563; --txt3:#9ca3af;
+  --cyan:#0284c7; --cyan-l:#e0f2fe; --cyan-bd:#bae6fd; --cyan-d:#0369a1;
+  --grn:#059669;  --grn-l:#d1fae5;  --grn-bd:#6ee7b7;  --grn-d:#047857;
+  --ylw:#d97706;  --ylw-l:#fef3c7;  --ylw-bd:#fde68a;
+  --red:#dc2626;  --red-l:#fee2e2;  --red-bd:#fca5a5;
+  --vio:#7c3aed;  --vio-l:#ede9fe;  --vio-bd:#c4b5fd;
+  --mono:'JetBrains Mono',monospace;
+  --r:7px; --r2:11px;
+  --sh:0 1px 3px rgba(0,0,0,.07),0 1px 2px rgba(0,0,0,.04);
+  --sh2:0 4px 16px rgba(0,0,0,.12);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--txt);font-size:13px;line-height:1.5;height:100vh;display:flex;flex-direction:column;overflow:hidden}
+
+/* TOPBAR */
+.topbar{height:50px;background:var(--surf);border-bottom:1px solid var(--bdr);display:flex;align-items:center;padding:0 16px;gap:10px;flex-shrink:0;box-shadow:var(--sh)}
+.logo{font-family:var(--mono);font-size:13px;font-weight:500;color:var(--cyan);letter-spacing:2px;flex-shrink:0}
+.vr{width:1px;height:18px;background:var(--bdr2);flex-shrink:0}
+.doc-info{display:flex;flex-direction:column;gap:1px;flex:1;min-width:0}
+.doc-titulo{font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.doc-meta{font-size:10px;color:var(--txt3);display:flex;align-items:center;gap:8px}
+.topbar-r{display:flex;gap:6px;align-items:center;flex-shrink:0}
+
+/* TABS MODO */
+.modo-tabs{background:var(--surf);border-bottom:1px solid var(--bdr);padding:0 16px;display:flex;align-items:center;gap:0;flex-shrink:0}
+.modo-tab{padding:10px 16px;font-size:12px;font-weight:500;color:var(--txt3);cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;display:flex;align-items:center;gap:6px;margin-bottom:-1px;white-space:nowrap}
+.modo-tab:hover{color:var(--txt2)}
+.modo-tab.active{color:var(--cyan);border-bottom-color:var(--cyan)}
+.modo-sep{flex:1}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;gap:5px;padding:6px 12px;border-radius:var(--r);border:1px solid;font-family:'Inter',sans-serif;font-size:12px;font-weight:500;cursor:pointer;transition:all .15s;white-space:nowrap}
+.btn-primary{background:var(--cyan);color:#fff;border-color:var(--cyan-d)}
+.btn-primary:hover{background:var(--cyan-d)}
+.btn-ghost{background:var(--surf);color:var(--txt2);border-color:var(--bdr2)}
+.btn-ghost:hover{background:var(--surf2);color:var(--txt)}
+.btn-grn{background:var(--grn);color:#fff;border-color:var(--grn-d)}
+.btn-grn:hover{background:var(--grn-d)}
+.btn-red{background:var(--red-l);color:var(--red);border-color:var(--red-bd)}
+.btn-red:hover{background:#fecaca}
+.btn-ylw{background:var(--ylw-l);color:var(--ylw);border-color:var(--ylw-bd)}
+.btn-sm{padding:4px 10px;font-size:11px}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+
+/* BADGES */
+.badge{display:inline-flex;align-items:center;font-size:10px;font-weight:600;padding:2px 8px;border-radius:10px;border:1px solid;white-space:nowrap}
+.b-pend{background:var(--surf2);color:var(--txt3);border-color:var(--bdr)}
+.b-aport{background:var(--ylw-l);color:var(--ylw);border-color:var(--ylw-bd)}
+.b-valid{background:var(--grn-l);color:var(--grn-d);border-color:var(--grn-bd)}
+.b-rech{background:var(--red-l);color:var(--red);border-color:var(--red-bd)}
+
+/* APP LAYOUT */
+.app{flex:1;display:flex;overflow:hidden}
+
+/* SIDEBAR: historial de versiones */
+.sidebar{width:240px;background:var(--surf);border-right:1px solid var(--bdr);display:flex;flex-direction:column;overflow:hidden;flex-shrink:0}
+.sb-head{padding:11px 14px;border-bottom:1px solid var(--bdr);background:var(--surf2)}
+.sb-title{font-size:11px;font-weight:700;color:var(--txt2);text-transform:uppercase;letter-spacing:.5px}
+.sb-list{flex:1;overflow-y:auto;padding:8px}
+.sb-list::-webkit-scrollbar{width:3px}
+.sb-list::-webkit-scrollbar-thumb{background:var(--bdr2);border-radius:3px}
+
+.ver-card{border:1px solid var(--bdr);border-radius:var(--r2);padding:10px 12px;margin-bottom:6px;cursor:pointer;transition:all .15s}
+.ver-card:hover{border-color:var(--bdr2);box-shadow:var(--sh)}
+.ver-card.active-ver{border-color:var(--cyan);background:var(--cyan-l)}
+.ver-card.compare-ver{border-color:var(--vio);background:var(--vio-l)}
+.ver-top{display:flex;align-items:center;gap:6px;margin-bottom:5px}
+.ver-num{font-family:var(--mono);font-size:11px;font-weight:600;padding:2px 7px;border-radius:4px;background:var(--surf2);border:1px solid var(--bdr);flex-shrink:0}
+.ver-card.active-ver .ver-num{background:#fff;border-color:var(--cyan-bd);color:var(--cyan)}
+.ver-card.compare-ver .ver-num{background:#fff;border-color:var(--vio-bd);color:var(--vio)}
+.ver-fecha{font-size:11px;color:var(--txt3);flex:1}
+.ver-autor{font-size:11px;color:var(--txt2);font-weight:500;margin-bottom:3px}
+.ver-notas{font-size:10px;color:var(--txt3);font-style:italic;line-height:1.4}
+.ver-rechazado{font-size:10px;color:var(--red);margin-top:4px;display:flex;align-items:flex-start;gap:4px}
+.ver-actions{display:flex;gap:4px;margin-top:7px;flex-wrap:wrap}
+
+.sb-upload{padding:10px;border-top:1px solid var(--bdr)}
+.upload-zone{border:2px dashed var(--bdr2);border-radius:var(--r2);padding:14px;text-align:center;cursor:pointer;transition:all .2s;background:var(--surf2)}
+.upload-zone:hover,.upload-zone.drag{border-color:var(--cyan);background:var(--cyan-l)}
+.uz-icon{font-size:20px;opacity:.4;margin-bottom:4px}
+.uz-txt{font-size:11px;font-weight:500;color:var(--txt2)}
+.uz-sub{font-size:10px;color:var(--txt3)}
+
+/* VISOR PRINCIPAL */
+.visor-main{flex:1;display:flex;flex-direction:column;overflow:hidden;background:#374151}
+
+/* TOOLBAR del visor */
+.visor-toolbar{background:#1f2937;border-bottom:1px solid #374151;padding:6px 12px;display:flex;align-items:center;gap:8px;flex-shrink:0}
+.vt-label{font-size:11px;color:#9ca3af;padding:3px 10px;border-radius:var(--r);border:1px solid #374151}
+.vt-sep{width:1px;height:20px;background:#374151}
+.vt-btn{background:none;border:1px solid #374151;border-radius:var(--r);color:#9ca3af;cursor:pointer;padding:4px 10px;font-size:11px;font-family:'Inter',sans-serif;transition:all .15s;display:flex;align-items:center;gap:4px}
+.vt-btn:hover{background:#374151;color:#e5e7eb}
+.vt-btn.active{background:#374151;color:#60a5fa;border-color:#60a5fa}
+.vt-zoom{display:flex;align-items:center;gap:4px}
+.vt-zoom-val{font-family:var(--mono);font-size:11px;color:#9ca3af;min-width:40px;text-align:center}
+.vt-page{font-family:var(--mono);font-size:11px;color:#9ca3af}
+.vt-diff-legend{display:flex;align-items:center;gap:10px;margin-left:8px}
+.vt-diff-item{display:flex;align-items:center;gap:4px;font-size:10px;color:#9ca3af}
+.vt-diff-dot{width:10px;height:10px;border-radius:2px;flex-shrink:0}
+
+/* MODO: solo visor (una página) */
+.mode-single{flex:1;display:none;overflow-y:auto;overflow-x:hidden;padding:16px;align-items:flex-start;justify-content:center}
+.mode-single.active{display:flex;flex-direction:column;align-items:center;gap:12px}
+.mode-single::-webkit-scrollbar{width:6px}
+.mode-single::-webkit-scrollbar-thumb{background:#4b5563;border-radius:3px}
+
+/* MODO: comparador lado a lado */
+.mode-compare{flex:1;display:none;overflow:hidden}
+.mode-compare.active{display:grid;grid-template-columns:1fr 1fr}
+
+.compare-panel{display:flex;flex-direction:column;overflow:hidden;border-right:1px solid #4b5563}
+.compare-panel:last-child{border-right:none}
+.cp-header{background:#111827;padding:7px 12px;display:flex;align-items:center;gap:7px;flex-shrink:0;border-bottom:1px solid #374151}
+.cp-ver{font-family:var(--mono);font-size:11px;font-weight:600;padding:2px 8px;border-radius:4px}
+.cp-ver.v1{background:rgba(239,68,68,.15);color:#f87171;border:1px solid rgba(239,68,68,.3)}
+.cp-ver.v2{background:rgba(34,197,94,.15);color:#4ade80;border:1px solid rgba(34,197,94,.3)}
+.cp-meta{font-size:10px;color:#6b7280;flex:1}
+.cp-scroll{flex:1;overflow-y:auto;overflow-x:hidden;padding:12px;display:flex;flex-direction:column;align-items:center;gap:10px}
+.cp-scroll::-webkit-scrollbar{width:5px}
+.cp-scroll::-webkit-scrollbar-thumb{background:#4b5563;border-radius:3px}
+
+/* Canvas wrappers */
+.page-wrap{position:relative;box-shadow:0 4px 20px rgba(0,0,0,.5);flex-shrink:0}
+.page-wrap canvas{display:block}
+.diff-overlay{position:absolute;top:0;left:0;pointer-events:none}
+
+/* VALIDACIÓN inline */
+.validation-bar{background:var(--surf);border-top:1px solid var(--bdr);padding:10px 16px;display:flex;align-items:center;gap:10px;flex-shrink:0}
+.vb-info{flex:1;font-size:12px;color:var(--txt2)}
+.vb-info strong{color:var(--txt)}
+
+/* MODAL RECHAZO */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;display:none;align-items:center;justify-content:center;backdrop-filter:blur(3px)}
+.overlay.open{display:flex}
+.modal{background:var(--surf);border:1px solid var(--bdr);border-radius:var(--r2);width:460px;display:flex;flex-direction:column;box-shadow:var(--sh2)}
+.modal-head{padding:14px 18px;border-bottom:1px solid var(--bdr);display:flex;align-items:center;gap:10px}
+.modal-title{font-size:14px;font-weight:700;flex:1}
+.modal-close{background:none;border:none;color:var(--txt3);cursor:pointer;font-size:18px;line-height:1;padding:2px}
+.modal-close:hover{color:var(--txt)}
+.modal-body{padding:18px;display:flex;flex-direction:column;gap:12px}
+.modal-foot{padding:12px 18px;border-top:1px solid var(--bdr);display:flex;gap:8px;justify-content:flex-end}
+.fg{display:flex;flex-direction:column;gap:5px}
+.label{font-size:11px;font-weight:600;color:var(--txt2)}
+.ta{background:var(--surf2);border:1px solid var(--bdr2);border-radius:var(--r);padding:8px 10px;font-family:'Inter',sans-serif;font-size:13px;color:var(--txt);outline:none;width:100%;resize:vertical;min-height:90px}
+.ta:focus{border-color:var(--red)}
+
+/* Loading spinner */
+.spinner-wrap{display:flex;align-items:center;justify-content:center;flex:1;flex-direction:column;gap:12px}
+.spinner{width:28px;height:28px;border:2px solid #374151;border-top-color:#60a5fa;border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.spinner-txt{font-size:12px;color:#6b7280}
+
+/* Toast */
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#1e293b;color:#fff;padding:9px 18px;border-radius:var(--r);font-size:13px;font-weight:500;z-index:500;display:none;box-shadow:var(--sh2)}
+.toast.show{display:block;animation:tin .2s ease}
+@keyframes tin{from{opacity:0;transform:translateX(-50%) translateY(8px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+
+/* Upload progress */
+.upload-progress{background:#111827;border-radius:var(--r);padding:10px 12px;display:none;flex-direction:column;gap:6px}
+.upload-progress.show{display:flex}
+.up-bar{background:#374151;border-radius:10px;height:4px;overflow:hidden}
+.up-fill{height:100%;background:linear-gradient(90deg,var(--cyan),var(--grn));border-radius:10px;transition:width .3s}
+.up-txt{font-size:10px;color:#6b7280}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="logo">AXIS OS</div>
+  <div class="vr"></div>
+  <div class="doc-info">
+    <div class="doc-titulo" id="doc-titulo">DoP — Declaración de Prestaciones · Placa YL tipo A — Knauf</div>
+    <div class="doc-meta">
+      <span>08.01 Tabiquería PYL autoportante</span>
+      <span>·</span>
+      <span id="doc-estado-badge"><span class="badge b-aport">Aportado · pendiente validación</span></span>
+    </div>
+  </div>
+  <div class="topbar-r">
+    <button class="btn btn-ghost btn-sm" onclick="window.close()">← Volver</button>
+    <button class="btn btn-red btn-sm" onclick="openRechazo()">✕ Rechazar</button>
+    <button class="btn btn-grn btn-sm" onclick="validarDoc()">✓ Validar</button>
+  </div>
+</header>
+
+<div class="modo-tabs">
+  <div class="modo-tab active" id="tab-single" onclick="setModo('single')">
+    📄 Documento actual
+    <span class="badge b-aport" style="font-size:9px">v2</span>
+  </div>
+  <div class="modo-tab" id="tab-compare" onclick="setModo('compare')">
+    ⚖ Comparar versiones
+    <span style="font-size:10px;color:var(--red);font-weight:600">v1 rechazada vs v2</span>
+  </div>
+  <div class="modo-sep"></div>
+  <div style="display:flex;align-items:center;gap:6px;padding:0 8px">
+    <span style="font-size:11px;color:var(--txt3)">Carga un PDF para probarlo:</span>
+    <button class="btn btn-ghost btn-sm" onclick="document.getElementById('fi-demo').click()">📂 Cargar PDF</button>
+    <input type="file" id="fi-demo" accept=".pdf" style="display:none" onchange="loadDemoFile(this)">
+  </div>
+</div>
+
+<div class="app">
+
+  <!-- SIDEBAR: versiones -->
+  <div class="sidebar">
+    <div class="sb-head"><div class="sb-title">Versiones del documento</div></div>
+    <div class="sb-list" id="ver-list"></div>
+    <div class="sb-upload">
+      <div class="upload-zone" id="upload-zone"
+        ondragover="event.preventDefault();this.classList.add('drag')"
+        ondragleave="this.classList.remove('drag')"
+        ondrop="handleUploadDrop(event)"
+        onclick="document.getElementById('fi-upload').click()">
+        <input type="file" id="fi-upload" accept=".pdf" style="display:none" onchange="handleUpload(this)">
+        <div class="uz-icon">⬆</div>
+        <div class="uz-txt">Nueva versión</div>
+        <div class="uz-sub">Arrastra o haz clic · PDF</div>
+      </div>
+      <div class="upload-progress" id="upload-progress">
+        <div class="up-bar"><div class="up-fill" id="up-fill" style="width:0%"></div></div>
+        <div class="up-txt" id="up-txt">Subiendo...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- VISOR PRINCIPAL -->
+  <div class="visor-main">
+    <div class="visor-toolbar" id="visor-toolbar">
+      <span class="vt-label" id="vt-mode-label">Documento actual</span>
+      <div class="vt-sep"></div>
+      <div class="vt-zoom">
+        <button class="vt-btn" onclick="changeZoom(-0.25)">−</button>
+        <span class="vt-zoom-val" id="zoom-val">100%</span>
+        <button class="vt-btn" onclick="changeZoom(0.25)">+</button>
+      </div>
+      <button class="vt-btn" onclick="fitWidth()">Ajustar</button>
+      <div class="vt-sep"></div>
+      <span class="vt-page" id="page-info">Página 1 / 1</span>
+      <div class="vt-sep"></div>
+      <!-- Diff controls (solo en modo compare) -->
+      <div id="diff-controls" style="display:none;align-items:center;gap:8px">
+        <button class="vt-btn active" id="btn-diff" onclick="toggleDiff()">Mostrar diferencias</button>
+        <div class="vt-diff-legend">
+          <div class="vt-diff-item"><div class="vt-diff-dot" style="background:rgba(239,68,68,.7)"></div>Eliminado</div>
+          <div class="vt-diff-item"><div class="vt-diff-dot" style="background:rgba(34,197,94,.7)"></div>Añadido</div>
+          <div class="vt-diff-item"><div class="vt-diff-dot" style="background:rgba(251,191,36,.5)"></div>Modificado</div>
+        </div>
+        <span id="diff-count" style="font-size:10px;color:#9ca3af"></span>
+      </div>
+    </div>
+
+    <!-- MODO SINGLE -->
+    <div class="mode-single active" id="mode-single" onscroll="syncScroll('single')">
+      <div class="spinner-wrap" id="spinner-single">
+        <div class="spinner"></div>
+        <div class="spinner-txt">Carga un PDF para visualizarlo</div>
+      </div>
+    </div>
+
+    <!-- MODO COMPARE -->
+    <div class="mode-compare" id="mode-compare">
+      <div class="compare-panel">
+        <div class="cp-header">
+          <span class="cp-ver v1">v1</span>
+          <span class="cp-meta" id="cp-meta-v1">Versión anterior · Rechazada</span>
+        </div>
+        <div class="cp-scroll" id="scroll-v1" onscroll="syncScroll('v1')">
+          <div class="spinner-wrap" id="spinner-v1">
+            <div class="spinner"></div>
+            <div class="spinner-txt">Sin documento v1</div>
+          </div>
+        </div>
+      </div>
+      <div class="compare-panel">
+        <div class="cp-header">
+          <span class="cp-ver v2">v2</span>
+          <span class="cp-meta" id="cp-meta-v2">Versión actual · Pendiente validación</span>
+        </div>
+        <div class="cp-scroll" id="scroll-v2" onscroll="syncScroll('v2')">
+          <div class="spinner-wrap" id="spinner-v2">
+            <div class="spinner"></div>
+            <div class="spinner-txt">Sin documento v2</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BARRA VALIDACIÓN -->
+    <div class="validation-bar">
+      <div class="vb-info" id="vb-info">
+        <strong>v2</strong> · Subida por <strong>Const. Martínez S.L.</strong> el 18/11/2024 · PDF · Pendiente validación DEO
+      </div>
+      <button class="btn btn-ghost btn-sm" onclick="openRechazo()">✕ Rechazar</button>
+      <button class="btn btn-grn btn-sm" onclick="validarDoc()">✓ Validar esta versión</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL RECHAZO -->
+<div class="overlay" id="modal-rechazo">
+  <div class="modal">
+    <div class="modal-head">
+      <span class="modal-title">Rechazar documento</span>
+      <button class="modal-close" onclick="closeModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <div style="font-size:12px;color:var(--txt2)">El documento no será eliminado. Quedará registrado como rechazado y se solicitará una nueva versión.</div>
+      <div class="fg">
+        <label class="label">Motivo del rechazo <span style="color:var(--red)">*</span></label>
+        <textarea class="ta" id="rechazo-motivo" placeholder="Describe qué debe corregirse o completarse en la nueva versión..."></textarea>
+      </div>
+      <div class="fg">
+        <label class="label">Notificar a</label>
+        <select style="background:var(--surf2);border:1px solid var(--bdr2);border-radius:var(--r);padding:7px 10px;font-family:'Inter',sans-serif;font-size:13px;color:var(--txt);outline:none;width:100%">
+          <option>Const. Martínez S.L. (quien subió el documento)</option>
+          <option>Todos los agentes de la obra</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost btn-sm" onclick="closeModal()">Cancelar</button>
+      <button class="btn btn-red btn-sm" onclick="confirmarRechazo()">✕ Confirmar rechazo</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// Configurar PDF.js worker
+pdfjsLib.GlobalWorkerOptions.workerSrc =
+  'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+// ── ESTADO ────────────────────────────────────────────────────────────────────
+const VERSIONES = [
+  {
+    id:'v1', num:1, fecha:'2024-11-15', autor:'Const. Martínez S.L.',
+    archivo:'DoP_placa_A_Knauf_v1.pdf', estado:'rechazado',
+    motivo_rechazo:'Falta la firma del representante autorizado del fabricante en la página 2. Además, la fecha de emisión no corresponde al año en curso.',
+    pdf: null, pages: []
+  },
+  {
+    id:'v2', num:2, fecha:'2024-11-18', autor:'Const. Martínez S.L.',
+    archivo:'DoP_placa_A_Knauf_v2.pdf', estado:'aportado',
+    motivo_rechazo: null,
+    pdf: null, pages: []
+  }
+];
+
+let modo = 'single';
+let zoom = 1.0;
+let showDiff = true;
+let activeVer = VERSIONES[1]; // v2 por defecto
+let compareVer = VERSIONES[0]; // v1 para comparar
+let syncingScroll = false;
+let diffActive = false;
+
+// ── RENDER SIDEBAR ────────────────────────────────────────────────────────────
+function renderSidebar() {
+  const list = document.getElementById('ver-list');
+  list.innerHTML = [...VERSIONES].reverse().map(v => {
+    const isActive  = v.id === activeVer.id;
+    const isCompare = v.id === compareVer?.id && modo === 'compare';
+    const cls = isActive ? 'active-ver' : isCompare ? 'compare-ver' : '';
+    const badgeCls = {rechazado:'b-rech', aportado:'b-aport', validado:'b-valid'}[v.estado] || 'b-pend';
+    const badgeTxt = {rechazado:'Rechazada', aportado:'Aportada', validado:'Validada'}[v.estado] || v.estado;
+    return `<div class="ver-card ${cls}" onclick="selectVer('${v.id}')">
+      <div class="ver-top">
+        <span class="ver-num">v${v.num}</span>
+        <span class="badge ${badgeCls}">${badgeTxt}</span>
+        <span class="ver-fecha">${v.fecha}</span>
+      </div>
+      <div class="ver-autor">${v.autor}</div>
+      <div class="ver-notas">${v.archivo}</div>
+      ${v.motivo_rechazo ? `<div class="ver-rechazado">⚠ ${v.motivo_rechazo.slice(0,80)}${v.motivo_rechazo.length>80?'...':''}</div>` : ''}
+      <div class="ver-actions">
+        ${!isActive ? `<button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();setActiveVer('${v.id}')">Ver</button>` : '<span style="font-size:10px;color:var(--cyan)">● Activa</span>'}
+        ${modo==='compare' && !isCompare && v.id !== activeVer.id ? `<button class="btn btn-ghost btn-sm" style="color:var(--vio);border-color:var(--vio-bd)" onclick="event.stopPropagation();setCompareVer('${v.id}')">Comparar</button>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function selectVer(id) {
+  if (modo === 'single') setActiveVer(id);
+  else setCompareVer(id);
+}
+
+function setActiveVer(id) {
+  activeVer = VERSIONES.find(v=>v.id===id);
+  renderSidebar();
+  renderSingle();
+}
+
+function setCompareVer(id) {
+  compareVer = VERSIONES.find(v=>v.id===id);
+  renderSidebar();
+  if (modo === 'compare') renderCompare();
+}
+
+// ── MODO ──────────────────────────────────────────────────────────────────────
+function setModo(m) {
+  modo = m;
+  document.getElementById('mode-single').classList.toggle('active', m==='single');
+  document.getElementById('mode-compare').classList.toggle('active', m==='compare');
+  document.getElementById('tab-single').classList.toggle('active', m==='single');
+  document.getElementById('tab-compare').classList.toggle('active', m==='compare');
+  document.getElementById('vt-mode-label').textContent = m==='single' ? 'Documento actual' : 'Comparando versiones';
+  document.getElementById('diff-controls').style.display = m==='compare' ? 'flex' : 'none';
+  renderSidebar();
+  if (m==='compare') renderCompare();
+  else renderSingle();
+}
+
+// ── RENDER PDF (single) ───────────────────────────────────────────────────────
+async function renderSingle() {
+  const container = document.getElementById('mode-single');
+  // Clear except spinner
+  container.innerHTML = '';
+  const v = activeVer;
+  if (!v.pdf) {
+    container.innerHTML = `<div class="spinner-wrap"><div class="spinner-txt" style="color:#9ca3af">
+      Sin PDF cargado para ${v.archivo}<br><span style="font-size:10px;opacity:.6">Carga un PDF real con el botón de arriba para visualizarlo</span>
+    </div></div>`;
+    showDemo(container, v);
+    return;
+  }
+  await renderPDFToContainer(v.pdf, container, zoom);
+  document.getElementById('page-info').textContent = `${v.pages.length} páginas`;
+}
+
+// Demo visual cuando no hay PDF real
+function showDemo(container, v) {
+  container.innerHTML = '';
+  const numPages = v.num === 1 ? 3 : 3;
+  for (let p = 1; p <= numPages; p++) {
+    const wrap = document.createElement('div');
+    wrap.className = 'page-wrap';
+    wrap.style.cssText = `width:${Math.round(595*zoom)}px;height:${Math.round(842*zoom)}px;background:#fff;position:relative`;
+    wrap.innerHTML = generateDemoPage(v, p, numPages, zoom);
+    container.appendChild(wrap);
+  }
+  document.getElementById('page-info').textContent = `${numPages} páginas`;
+}
+
+function generateDemoPage(v, pageNum, total, z) {
+  const s = Math.round(z * 100);
+  const rejected = v.estado === 'rechazado';
+  const w = Math.round(595*z), h = Math.round(842*z);
+  const fs = (n) => Math.round(n*z);
+  const content = pageNum === 1 ? `
+    <div style="font-size:${fs(18)}px;font-weight:700;color:#111;margin-bottom:${fs(8)}px">DECLARACIÓN DE PRESTACIONES</div>
+    <div style="font-size:${fs(11)}px;color:#666;margin-bottom:${fs(16)}px">Reglamento (UE) 305/2011 — Anexo III</div>
+    <div style="height:1px;background:#e5e7eb;margin-bottom:${fs(16)}px"></div>
+    <table style="width:100%;font-size:${fs(10)}px;border-collapse:collapse">
+      <tr><td style="padding:${fs(4)}px;color:#666;width:40%">Nº identificación único:</td><td style="padding:${fs(4)}px;font-weight:600">DoP-PYL-A-15-2024</td></tr>
+      <tr style="background:#f9fafb"><td style="padding:${fs(4)}px;color:#666">Tipo de producto:</td><td style="padding:${fs(4)}px;font-weight:600">Placa de yeso laminado tipo A, 15mm</td></tr>
+      <tr><td style="padding:${fs(4)}px;color:#666">Norma armonizada:</td><td style="padding:${fs(4)}px;font-weight:600">UNE-EN 520:2005+A1:2010</td></tr>
+      <tr style="background:#f9fafb"><td style="padding:${fs(4)}px;color:#666">Fabricante:</td><td style="padding:${fs(4)}px;font-weight:600">Knauf Gips KG</td></tr>
+      <tr><td style="padding:${fs(4)}px;color:#666">Organismo notificado:</td><td style="padding:${fs(4)}px;font-weight:600">CSTB — Nº 0679</td></tr>
+      <tr style="background:#f9fafb"><td style="padding:${fs(4)}px;color:#666">Año de fabricación:</td><td style="padding:${fs(4)}px;font-weight:600">${v.num===1?'2023':'2024'}</td></tr>
+    </table>
+    ${rejected ? `<div style="background:#fef2f2;border:1px solid #fca5a5;border-radius:4px;padding:${fs(10)}px;margin-top:${fs(16)}px;font-size:${fs(9)}px;color:#dc2626">⚠ RECHAZADO: ${v.motivo_rechazo}</div>` : ''}
+    ${v.num===2 && pageNum===1 ? `<div style="background:#f0fdf4;border:1px solid #6ee7b7;border-radius:4px;padding:${fs(6)}px;margin-top:${fs(12)}px;font-size:${fs(9)}px;color:#059669">✓ Año de fabricación corregido a 2024</div>` : ''}
+  ` : pageNum === 2 ? `
+    <div style="font-size:${fs(13)}px;font-weight:700;margin-bottom:${fs(12)}px">Prestaciones declaradas</div>
+    <table style="width:100%;font-size:${fs(9)}px;border-collapse:collapse;border:1px solid #e5e7eb">
+      <thead><tr style="background:#f3f4f6"><th style="padding:${fs(5)}px;text-align:left;border:1px solid #e5e7eb">Característica esencial</th><th style="padding:${fs(5)}px;border:1px solid #e5e7eb">Prestación</th><th style="padding:${fs(5)}px;border:1px solid #e5e7eb">Norma</th></tr></thead>
+      <tbody>
+        <tr><td style="padding:${fs(4)}px;border:1px solid #e5e7eb">Reacción al fuego</td><td style="padding:${fs(4)}px;border:1px solid #e5e7eb;text-align:center;font-weight:600">A2-s1,d0</td><td style="padding:${fs(4)}px;border:1px solid #e5e7eb">EN 13501-1</td></tr>
+        <tr style="background:#f9fafb"><td style="padding:${fs(4)}px;border:1px solid #e5e7eb">Resistencia a flexión</td><td style="padding:${fs(4)}px;border:1px solid #e5e7eb;text-align:center;font-weight:600">≥ 450 N</td><td style="padding:${fs(4)}px;border:1px solid #e5e7eb">EN 520</td></tr>
+        <tr><td style="padding:${fs(4)}px;border:1px solid #e5e7eb">Dureza superficial</td><td style="padding:${fs(4)}px;border:1px solid #e5e7eb;text-align:center;font-weight:600">≥ 15 N</td><td style="padding:${fs(4)}px;border:1px solid #e5e7eb">EN 520</td></tr>
+        <tr style="background:#f9fafb"><td style="padding:${fs(4)}px;border:1px solid #e5e7eb">Conductividad térmica</td><td style="padding:${fs(4)}px;border:1px solid #e5e7eb;text-align:center;font-weight:600">0,25 W/(m·K)</td><td style="padding:${fs(4)}px;border:1px solid #e5e7eb">EN 12667</td></tr>
+      </tbody>
+    </table>
+    <div style="margin-top:${fs(20)}px;font-size:${fs(11)}px;font-weight:700">Firma del fabricante</div>
+    <div style="margin-top:${fs(8)}px;border-bottom:1px solid #374151;width:${fs(200)}px"></div>
+    ${rejected ? `<div style="font-size:${fs(9)}px;color:#dc2626;margin-top:${fs(4)}px">← FALTA FIRMA (motivo del rechazo)</div>` : `<div style="font-size:${fs(9)}px;color:#059669;margin-top:${fs(4)}px">✓ Firma añadida en v2 — Dr. Klaus Weber, Director Técnico</div>`}
+  ` : `
+    <div style="font-size:${fs(13)}px;font-weight:700;margin-bottom:${fs(12)}px">Marcado CE y trazabilidad</div>
+    <div style="display:inline-block;border:3px solid #111;padding:${fs(8)}px ${fs(16)}px;font-size:${fs(24)}px;font-weight:900;font-family:serif;margin-bottom:${fs(12)}px">CE</div>
+    <div style="font-size:${fs(9)}px;color:#666;margin-bottom:${fs(12)}px">0679 — ${v.num===1?'23':'24'}</div>
+    <div style="font-size:${fs(9)}px;color:#374151;line-height:1.6">
+      Knauf Gips KG · Am Bahnhof 7 · 97346 Iphofen, Alemania<br>
+      Nº lote de fabricación: KN-PYL-A15-${v.num===1?'2023':'2024'}-LOT-042<br>
+      Fecha de emisión: ${v.fecha}<br>
+    </div>
+    <div style="position:absolute;bottom:${fs(30)}px;right:${fs(30)}px;font-size:${fs(8)}px;color:#9ca3af">Pág. ${pageNum}/${total}</div>
+  `;
+  return `<div style="padding:${fs(40)}px;height:100%;font-family:'Inter',sans-serif;position:relative">${content}</div>`;
+}
+
+// ── RENDER COMPARE ────────────────────────────────────────────────────────────
+async function renderCompare() {
+  // Render v1
+  const sv1 = document.getElementById('scroll-v1');
+  const sv2 = document.getElementById('scroll-v2');
+  sv1.innerHTML=''; sv2.innerHTML='';
+
+  const v1 = compareVer || VERSIONES[0];
+  const v2 = activeVer;
+
+  document.getElementById('cp-meta-v1').textContent = `v${v1.num} · ${v1.fecha} · ${v1.autor} · ${v1.estado==='rechazado'?'Rechazada':''}`;
+  document.getElementById('cp-meta-v2').textContent = `v${v2.num} · ${v2.fecha} · ${v2.autor} · Pendiente validación`;
+
+  const numPages = 3;
+  document.getElementById('page-info').textContent = `${numPages} páginas`;
+
+  if (v1.pdf && v2.pdf) {
+    await renderPDFToContainer(v1.pdf, sv1, zoom*0.95);
+    await renderPDFToContainer(v2.pdf, sv2, zoom*0.95);
+    if (showDiff) computeAndShowDiff();
+  } else {
+    // Demo visual
+    for (let p=1;p<=numPages;p++) {
+      const w1=document.createElement('div');
+      w1.className='page-wrap';
+      const pw=Math.round(595*(zoom*0.95)), ph=Math.round(842*(zoom*0.95));
+      w1.style.cssText=`width:${pw}px;height:${ph}px;background:#fff;position:relative`;
+      w1.innerHTML=generateDemoPage(v1,p,numPages,zoom*0.95);
+      sv1.appendChild(w1);
+
+      const w2=document.createElement('div');
+      w2.className='page-wrap';
+      w2.style.cssText=`width:${pw}px;height:${ph}px;background:#fff;position:relative`;
+      w2.innerHTML=generateDemoPage(v2,p,numPages,zoom*0.95);
+      sv2.appendChild(w2);
+    }
+    if (showDiff) setTimeout(computeAndShowDiff, 100);
+  }
+}
+
+// ── DIFF ENGINE ───────────────────────────────────────────────────────────────
+function computeAndShowDiff() {
+  if (!showDiff || modo !== 'compare') return;
+  const pages1 = document.getElementById('scroll-v1').querySelectorAll('.page-wrap');
+  const pages2 = document.getElementById('scroll-v2').querySelectorAll('.page-wrap');
+  let totalDiffs = 0;
+
+  pages1.forEach((p1, i) => {
+    const p2 = pages2[i];
+    if (!p2) return;
+    const c1 = p1.querySelector('canvas');
+    const c2 = p2.querySelector('canvas');
+    if (c1 && c2) {
+      totalDiffs += diffCanvases(c1, c2, p1, p2);
+    } else {
+      // Demo: añadir overlays simulados en zonas específicas por página
+      totalDiffs += addSimulatedDiff(p1, p2, i+1);
+    }
+  });
+
+  document.getElementById('diff-count').textContent =
+    totalDiffs > 0 ? `${totalDiffs} zona${totalDiffs>1?'s':''} con diferencias` : 'Sin diferencias detectadas';
+}
+
+function diffCanvases(c1, c2, wrap1, wrap2) {
+  const ctx1 = c1.getContext('2d');
+  const ctx2 = c2.getContext('2d');
+  const w = Math.min(c1.width, c2.width);
+  const h = Math.min(c1.height, c2.height);
+  const d1 = ctx1.getImageData(0,0,w,h).data;
+  const d2 = ctx2.getImageData(0,0,w,h).data;
+
+  // Crear overlay canvas
+  const ov1 = document.createElement('canvas');
+  const ov2 = document.createElement('canvas');
+  ov1.width=w; ov1.height=h; ov2.width=w; ov2.height=h;
+  const oc1=ov1.getContext('2d'), oc2=ov2.getContext('2d');
+
+  // Diff pixel a pixel con blur de bloque (bloques de 8px)
+  let diffCount = 0;
+  const BLOCK = 8;
+  for (let by=0;by<h;by+=BLOCK) {
+    for (let bx=0;bx<w;bx+=BLOCK) {
+      let diff=0;
+      for (let py=by;py<Math.min(by+BLOCK,h);py++) {
+        for (let px=bx;px<Math.min(bx+BLOCK,w);px++) {
+          const idx=(py*w+px)*4;
+          const dr=Math.abs(d1[idx]-d2[idx]);
+          const dg=Math.abs(d1[idx+1]-d2[idx+1]);
+          const db=Math.abs(d1[idx+2]-d2[idx+2]);
+          if (dr+dg+db > 30) diff++;
+        }
+      }
+      const pct = diff / (BLOCK*BLOCK);
+      if (pct > 0.1) {
+        diffCount++;
+        // En v1: rojo (eliminado), en v2: verde (añadido)
+        const alpha = Math.min(0.5, pct * 1.5);
+        oc1.fillStyle=`rgba(239,68,68,${alpha})`;
+        oc2.fillStyle=`rgba(34,197,94,${alpha})`;
+        oc1.fillRect(bx,by,BLOCK,BLOCK);
+        oc2.fillRect(bx,by,BLOCK,BLOCK);
+      }
+    }
+  }
+
+  // Añadir overlays
+  [ov1, ov2].forEach((ov, idx) => {
+    ov.className='diff-overlay';
+    ov.style.cssText=`position:absolute;top:0;left:0;pointer-events:none;width:${c1.style.width||w+'px'};height:${c1.style.height||h+'px'}`;
+    (idx===0?wrap1:wrap2).appendChild(ov);
+  });
+
+  return diffCount > 0 ? Math.ceil(diffCount/10) : 0;
+}
+
+function addSimulatedDiff(wrap1, wrap2, pageNum) {
+  // Zonas de cambio simuladas según la página
+  const zones = {
+    1: [{x:0.05,y:0.58,w:0.5,h:0.06,type:'modified'},{x:0.05,y:0.72,w:0.7,h:0.05,type:'added'}],
+    2: [{x:0.05,y:0.62,w:0.7,h:0.08,type:'added'},{x:0.05,y:0.78,w:0.5,h:0.06,type:'modified'}],
+    3: [{x:0.05,y:0.12,w:0.25,h:0.04,type:'modified'},{x:0.05,y:0.20,w:0.5,h:0.04,type:'modified'}],
+  };
+
+  const z = zones[pageNum] || [];
+  const pw = wrap1.offsetWidth || parseInt(wrap1.style.width);
+  const ph = wrap1.offsetHeight || parseInt(wrap1.style.height);
+
+  z.forEach(zone => {
+    const colors = {
+      modified: ['rgba(251,191,36,.45)', 'rgba(251,191,36,.45)'],
+      added:    ['rgba(239,68,68,.4)',   'rgba(34,197,94,.4)'],
+      removed:  ['rgba(239,68,68,.5)',   'transparent'],
+    };
+    const [c1, c2] = colors[zone.type] || colors.modified;
+
+    [wrap1, wrap2].forEach((wrap, idx) => {
+      if ((idx===0 && c1==='transparent') || (idx===1 && c2==='transparent')) return;
+      const ov = document.createElement('div');
+      ov.style.cssText=`position:absolute;left:${zone.x*100}%;top:${zone.y*100}%;width:${zone.w*100}%;height:${zone.h*100}%;
+        background:${idx===0?c1:c2};pointer-events:none;border-radius:3px;
+        box-shadow:0 0 0 1px ${idx===0?'rgba(239,68,68,.6)':'rgba(34,197,94,.6)'}`;
+      wrap.appendChild(ov);
+    });
+  });
+
+  return z.length;
+}
+
+function toggleDiff() {
+  showDiff = !showDiff;
+  const btn = document.getElementById('btn-diff');
+  btn.classList.toggle('active', showDiff);
+  btn.textContent = showDiff ? 'Mostrar diferencias' : 'Ocultar diferencias';
+
+  // Quitar/añadir overlays
+  document.querySelectorAll('.diff-overlay, [style*="rgba(239,68,68"], [style*="rgba(34,197,94"], [style*="rgba(251,191,36"]')
+    .forEach(el => { if (!el.classList.contains('vt-diff-dot')) el.style.display = showDiff ? '' : 'none'; });
+
+  if (showDiff && modo==='compare') computeAndShowDiff();
+}
+
+// ── RENDER PDF REAL ───────────────────────────────────────────────────────────
+async function renderPDFToContainer(pdfDoc, container, z) {
+  container.innerHTML = '';
+  const numPages = pdfDoc.numPages;
+  for (let p=1;p<=numPages;p++) {
+    const page = await pdfDoc.getPage(p);
+    const viewport = page.getViewport({scale: z * 1.5});
+    const canvas = document.createElement('canvas');
+    canvas.width = viewport.width; canvas.height = viewport.height;
+    canvas.style.width  = Math.round(viewport.width/1.5)+'px';
+    canvas.style.height = Math.round(viewport.height/1.5)+'px';
+    await page.render({canvasContext:canvas.getContext('2d'), viewport}).promise;
+    const wrap = document.createElement('div');
+    wrap.className = 'page-wrap';
+    wrap.style.cssText=`width:${Math.round(viewport.width/1.5)}px;height:${Math.round(viewport.height/1.5)}px;position:relative`;
+    wrap.appendChild(canvas);
+    container.appendChild(wrap);
+  }
+}
+
+// ── CARGAR PDF ────────────────────────────────────────────────────────────────
+function loadDemoFile(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = async e => {
+    const pdfDoc = await pdfjsLib.getDocument({data: e.target.result}).promise;
+    activeVer.pdf = pdfDoc;
+    activeVer.pages = Array.from({length:pdfDoc.numPages});
+    showToast(`PDF cargado: ${pdfDoc.numPages} páginas`);
+    if (modo==='single') renderSingle();
+    else renderCompare();
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function handleUploadDrop(ev) {
+  ev.preventDefault();
+  document.getElementById('upload-zone').classList.remove('drag');
+  const f = ev.dataTransfer.files[0];
+  if (f) processUpload(f);
+}
+function handleUpload(input) { if(input.files[0]) processUpload(input.files[0]); }
+
+async function processUpload(file) {
+  if (!file.name.toLowerCase().endsWith('.pdf')) { showToast('Solo se aceptan archivos PDF'); return; }
+  const prog = document.getElementById('upload-progress');
+  const fill = document.getElementById('up-fill');
+  const txt  = document.getElementById('up-txt');
+  prog.classList.add('show');
+
+  // Simular progreso de subida
+  for (let i=0;i<=100;i+=10) {
+    fill.style.width = i+'%';
+    txt.textContent = i < 100 ? `Subiendo... ${i}%` : 'Procesando...';
+    await new Promise(r=>setTimeout(r,60));
+  }
+
+  // Leer el PDF real
+  const reader = new FileReader();
+  reader.onload = async e => {
+    const pdfDoc = await pdfjsLib.getDocument({data:e.target.result}).promise;
+    const newVer = {
+      id: 'v'+(VERSIONES.length+1), num: VERSIONES.length+1,
+      fecha: new Date().toISOString().slice(0,10),
+      autor: 'Ana García (DEO)',
+      archivo: file.name, estado: 'aportado',
+      motivo_rechazo: null, pdf: pdfDoc,
+      pages: Array.from({length:pdfDoc.numPages})
+    };
+    VERSIONES.push(newVer);
+    activeVer = newVer;
+    prog.classList.remove('show');
+    fill.style.width='0%';
+    renderSidebar();
+    if (modo==='single') renderSingle();
+    else renderCompare();
+    showToast(`✓ v${newVer.num} subida — ${pdfDoc.numPages} páginas · validada automáticamente (DEO)`);
+    // Auto-validación DEO
+    newVer.estado = 'validado';
+    renderSidebar();
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+// ── ZOOM & SCROLL ─────────────────────────────────────────────────────────────
+function changeZoom(delta) {
+  zoom = Math.max(0.5, Math.min(2.5, zoom + delta));
+  document.getElementById('zoom-val').textContent = Math.round(zoom*100)+'%';
+  if (modo==='single') renderSingle();
+  else renderCompare();
+}
+
+function fitWidth() {
+  const container = document.getElementById('mode-single');
+  const cw = container.clientWidth - 32;
+  zoom = cw / 595;
+  document.getElementById('zoom-val').textContent = Math.round(zoom*100)+'%';
+  if (modo==='single') renderSingle();
+  else renderCompare();
+}
+
+function syncScroll(source) {
+  if (syncingScroll) return;
+  syncingScroll = true;
+  const sv1 = document.getElementById('scroll-v1');
+  const sv2 = document.getElementById('scroll-v2');
+  if (source==='v1' && sv2) sv2.scrollTop = sv1.scrollTop;
+  if (source==='v2' && sv1) sv1.scrollTop = sv2.scrollTop;
+  syncingScroll = false;
+}
+
+// ── VALIDAR / RECHAZAR ────────────────────────────────────────────────────────
+function validarDoc() {
+  activeVer.estado = 'validado';
+  document.getElementById('doc-estado-badge').innerHTML = '<span class="badge b-valid">✓ Validado</span>';
+  document.querySelector('.validation-bar').style.display='none';
+  renderSidebar();
+  showToast('✓ Documento validado correctamente');
+}
+
+function openRechazo() { document.getElementById('modal-rechazo').classList.add('open'); }
+function closeModal()   { document.getElementById('modal-rechazo').classList.remove('open'); }
+
+function confirmarRechazo() {
+  const motivo = document.getElementById('rechazo-motivo').value.trim();
+  if (!motivo) { showToast('Escribe el motivo del rechazo'); return; }
+  activeVer.estado = 'rechazado';
+  activeVer.motivo_rechazo = motivo;
+  document.getElementById('doc-estado-badge').innerHTML = '<span class="badge b-rech">✕ Rechazado</span>';
+  closeModal();
+  renderSidebar();
+  showToast('Documento rechazado · Se ha notificado a la constructora');
+}
+
+// ── UTILS ─────────────────────────────────────────────────────────────────────
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  clearTimeout(t._t); t._t=setTimeout(()=>t.classList.remove('show'),2800);
+}
+document.addEventListener('click', e => {
+  if (e.target.classList.contains('overlay')) closeModal();
+});
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+renderSidebar();
+renderSingle();
+</script>
+</body>
+</html>
